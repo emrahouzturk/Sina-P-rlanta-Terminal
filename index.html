@@ -47,21 +47,25 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
-            gap: 12px;
-            z-index: 100;
-            background: rgba(255,255,255,.88);
+            padding: 10px 16px;
+            gap: 10px;
+            z-index: 200;
+            background: rgba(255,255,255,.95);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            width: 100%;
         }
 
+        /* On desktop: overlay the left panel only, don't affect layout */
         @media (min-width: 951px) {
             .top-bar {
                 position: absolute;
-                top: 0; left: 0; width: 400px;
-                background: transparent;
-                border-bottom: none;
-                backdrop-filter: none;
+                top: 0; left: 0;
+                width: calc(100vw - 380px);
+                background: rgba(247,245,248,.92);
                 pointer-events: none;
             }
             .top-bar * { pointer-events: auto; }
@@ -73,14 +77,13 @@
             font-weight: 600;
             color: var(--ink-mid);
             background: var(--surface);
-            padding: 8px 14px;
+            padding: 7px 12px;
             border-radius: 100px;
             border: 1px solid var(--border);
             box-shadow: var(--shadow-sm);
             line-height: 1.6;
             flex-shrink: 0;
         }
-        .rates-chip strong { color: var(--rose); }
         .tech-time {
             font-size: 9px;
             color: var(--ink-dim);
@@ -90,34 +93,38 @@
         }
         .tech-time .live { color: var(--success); font-weight: 700; }
 
-        .top-actions { display: flex; gap: 8px; }
+        .top-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
         .btn-ghost {
             background: var(--surface);
-            border: 1px solid var(--border);
+            border: 1.5px solid var(--border);
             color: var(--ink-mid);
-            padding: 8px 16px;
+            padding: 9px 14px;
             border-radius: 100px;
             cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
             font-weight: 600;
             font-size: 11px;
             letter-spacing: .04em;
             display: flex; align-items: center; gap: 6px;
+            white-space: nowrap;
             transition: box-shadow .18s, border-color .18s;
         }
         .btn-ghost:hover { border-color: var(--rose-soft); box-shadow: var(--shadow-sm); }
 
         .btn-solid {
             background: var(--ink);
-            border: 1px solid var(--ink);
+            border: 1.5px solid var(--ink);
             color: #fff;
-            padding: 8px 16px;
+            padding: 9px 14px;
             border-radius: 100px;
             cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
             font-weight: 600;
             font-size: 11px;
             letter-spacing: .04em;
             display: flex; align-items: center; gap: 6px;
+            white-space: nowrap;
             transition: background .18s;
         }
         .btn-solid:hover { background: #2e2e3e; }
@@ -136,7 +143,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 80px 28px 40px;
+            padding: 28px 28px 40px;
+        }
+        @media (min-width: 951px) {
+            .left-panel { padding-top: 70px; }
         }
 
         /* ── LOGO ── */
@@ -1017,31 +1027,169 @@
 
     <!-- PRINT AREA -->
     <div id="print-area">
-        <div style="text-align:center; border-bottom:2px solid #f8c8d2; padding-bottom:20px; margin-bottom:20px;">
-            <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" style="height:50px; margin-bottom:10px;">
-            <h2 style="color:#1a1a24; font-weight:900; letter-spacing:1px; margin:0; font-size:20px;">SİPARİŞ TEKLİF FORMU</h2>
-            <p id="p-date" style="font-size:11px; color:#888; margin:5px 0 0 0; font-weight:500;"></p>
+        <style>
+            #print-area {
+                font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+                color: #1a1a24;
+                padding: 40px 48px;
+                background: #fff;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            .p-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                padding-bottom: 24px;
+                margin-bottom: 28px;
+                border-bottom: 2px solid #1a1a24;
+            }
+            .p-header-left {}
+            .p-header-left img { height: 42px; display: block; margin-bottom: 10px; }
+            .p-doc-title {
+                font-size: 22px;
+                font-weight: 800;
+                color: #1a1a24;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+                margin: 0 0 4px;
+            }
+            .p-doc-subtitle { font-size: 11px; color: #9090a0; font-weight: 500; }
+            .p-header-right { text-align: right; }
+            .p-store-name-big { font-size: 13px; font-weight: 700; color: #1a1a24; }
+            .p-store-detail   { font-size: 10px; color: #9090a0; line-height: 1.7; margin-top: 4px; }
+
+            .p-meta {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                margin-bottom: 24px;
+                gap: 20px;
+            }
+            .p-customer-box {
+                background: #fdf0f3;
+                border-left: 4px solid #c8244c;
+                padding: 12px 16px;
+                border-radius: 0 8px 8px 0;
+                flex: 1;
+            }
+            .p-customer-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #c8244c; margin-bottom: 5px; }
+            .p-customer-name  { font-size: 15px; font-weight: 800; color: #1a1a24; }
+            .p-customer-phone { font-size: 11px; color: #4a4a5a; font-weight: 500; margin-top: 2px; }
+
+            .p-date-box { text-align: right; }
+            .p-date-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: #9090a0; }
+            .p-date-val   { font-size: 13px; font-weight: 700; color: #1a1a24; margin-top: 3px; }
+
+            /* TABLE */
+            .p-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 0; }
+            .p-table thead tr {
+                background: #1a1a24;
+                color: #fff;
+            }
+            .p-table thead th {
+                padding: 11px 10px;
+                font-weight: 700;
+                font-size: 9px;
+                letter-spacing: .1em;
+                text-transform: uppercase;
+                text-align: center;
+            }
+            .p-table thead th:first-child { text-align: left; border-radius: 8px 0 0 0; }
+            .p-table thead th:last-child  { border-radius: 0 8px 0 0; background: #c8244c; }
+            .p-table tbody tr { border-bottom: 1px solid #f0edf4; }
+            .p-table tbody tr:last-child { border-bottom: none; }
+            .p-table tbody td { padding: 12px 10px; text-align: center; vertical-align: middle; }
+            .p-table tbody td:first-child { text-align: left; font-weight: 800; font-size: 12px; }
+            .p-table tbody td:nth-child(2) { font-size: 9px; text-align: left; color: #9090a0; line-height: 1.5; }
+            .p-table tbody td.p-old { text-decoration: line-through; color: #c0bcc8; font-weight: 400; }
+            .p-table tbody td.p-cash { background: #fdf0f3; color: #c8244c; font-weight: 800; font-size: 13px; }
+            .p-table tbody tr:nth-child(even) { background: #faf9fc; }
+
+            /* SUMMARY ROW */
+            .p-totals {
+                display: flex;
+                justify-content: flex-end;
+                gap: 0;
+                margin-top: 0;
+                border-top: 2px solid #1a1a24;
+            }
+            .p-total-cell {
+                padding: 16px 20px;
+                text-align: right;
+                border-left: 1px solid #e8e4ec;
+            }
+            .p-total-cell:first-child { border-left: none; }
+            .p-total-label { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: #9090a0; font-weight: 700; margin-bottom: 4px; }
+            .p-total-val   { font-size: 16px; font-weight: 800; color: #1a1a24; }
+            .p-total-cell.p-total-cash { background: #c8244c; border-radius: 0 0 8px 0; }
+            .p-total-cell.p-total-cash .p-total-label { color: rgba(255,255,255,.7); }
+            .p-total-cell.p-total-cash .p-total-val   { color: #fff; font-size: 20px; }
+
+            .p-table-wrap {
+                border: 1px solid #e8e4ec;
+                border-radius: 10px;
+                overflow: hidden;
+                margin-bottom: 28px;
+            }
+
+            /* FOOTER */
+            .p-footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-top: 1px solid #e8e4ec;
+                padding-top: 16px;
+                margin-top: 8px;
+            }
+            .p-footer-note { font-size: 10px; color: #c0bcc8; font-weight: 500; font-style: italic; }
+            .p-ref         { font-family: monospace; font-size: 8px; color: #d8d4e0; }
+        </style>
+
+        <!-- HEADER -->
+        <div class="p-header">
+            <div class="p-header-left">
+                <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" alt="Sina Pırlanta">
+                <div class="p-doc-title">Sipariş Teklif Formu</div>
+                <div class="p-doc-subtitle" id="p-date"></div>
+            </div>
+            <div class="p-header-right">
+                <div class="p-store-name-big" id="p-store-name"></div>
+                <div class="p-store-detail" id="p-store-addr-block"></div>
+            </div>
         </div>
-        <div id="p-cus-info" style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:12px; color:#1a1a24; font-weight:600;"></div>
-        <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center; margin-bottom:20px;">
-            <thead>
-                <tr style="background:#fdf0f3; color:#c8244c; border-bottom:2px solid #c8244c;">
-                    <th style="padding:10px 5px;">ÜRÜN KODU</th>
-                    <th style="padding:10px 5px;">DETAYLAR</th>
-                    <th style="padding:10px 5px;">LİSTE FİYATI</th>
-                    <th style="padding:10px 5px;">3 TAKSİT</th>
-                    <th style="padding:10px 5px;">TEK ÇEKİM</th>
-                    <th style="padding:10px 5px; background:#c8244c; color:#fff;">NAKİT ÖDEME</th>
-                </tr>
-            </thead>
-            <tbody id="p-body"></tbody>
-        </table>
-        <div id="p-summary" style="display:flex; justify-content:flex-end; gap:40px; border-top:2px solid #fdf0f3; padding-top:20px; align-items:center;"></div>
-        <div style="margin-top:40px; text-align:center; font-size:10px; color:#999; border-top:1px solid #eee; padding-top:15px; font-weight:500;">
-            <b id="p-store-name"></b><br>
-            <span id="p-store-addr"></span> — Tel: <span id="p-store-tel"></span><br>
-            Bilgilendirme Amaçlıdır.
-            <div id="p-ref-line" style="margin-top:10px; font-family:monospace; font-size:8px; opacity:0.3;"></div>
+
+        <!-- META -->
+        <div class="p-meta">
+            <div class="p-customer-box" id="p-cus-info"></div>
+            <div class="p-date-box">
+                <div class="p-date-label">Belge No</div>
+                <div class="p-date-val" id="p-ref-line"></div>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="p-table-wrap">
+            <table class="p-table">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">Ürün Kodu</th>
+                        <th style="text-align:left;">Detaylar</th>
+                        <th>Liste Fiyatı</th>
+                        <th>3 Taksit</th>
+                        <th>Tek Çekim</th>
+                        <th>Nakit Ödeme</th>
+                    </tr>
+                </thead>
+                <tbody id="p-body"></tbody>
+            </table>
+            <div class="p-totals" id="p-summary"></div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="p-footer">
+            <div class="p-footer-note">Bu belge bilgilendirme amaçlıdır. Fiyatlar döviz kuruna göre değişkenlik gösterebilir.</div>
+            <div class="p-ref" id="p-ref-tech"></div>
         </div>
     </div>
 
@@ -1217,31 +1365,61 @@
 
     function generatePDF() {
         const now = new Date();
-        document.getElementById('p-date').innerText = 'Tarih: ' + now.toLocaleString('tr-TR');
-        const ts = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR');
-        document.getElementById('p-ref-line').innerText = `Ref: U: ${document.getElementById('cfgU').value} - H: ${document.getElementById('cfgA').value} / ${ts}`;
-        document.getElementById('p-cus-info').innerHTML = `<div>Sayın: <b style="color:#c8244c;">${document.getElementById('iCus').value || 'Müşterimiz'}</b></div><div>Tel: <b>${document.getElementById('iPhone').value || '—'}</b></div>`;
-        document.getElementById('p-store-name').innerText  = document.getElementById('cfgStore').value;
-        document.getElementById('p-store-tel').innerText   = document.getElementById('cfgTel').value;
-        document.getElementById('p-store-addr').innerText  = document.getElementById('cfgAddr').value;
+        const ts  = now.toLocaleString('tr-TR');
+        const dateShort = now.toLocaleDateString('tr-TR');
+        const ref = `${dateShort.replace(/\./g,'')}/${Math.floor(Math.random()*9000)+1000}`;
+
+        document.getElementById('p-date').innerText = ts;
+        document.getElementById('p-ref-line').innerText = ref;
+        document.getElementById('p-ref-tech').innerText =
+            `U:${document.getElementById('cfgU').value} H:${document.getElementById('cfgA').value} — ${ts}`;
+
+        document.getElementById('p-store-name').innerText = document.getElementById('cfgStore').value;
+        document.getElementById('p-store-addr-block').innerHTML =
+            `${document.getElementById('cfgAddr').value}<br>Tel: ${document.getElementById('cfgTel').value}`;
+
+        const cusName = document.getElementById('iCus').value || 'Müşterimiz';
+        const cusPhone = document.getElementById('iPhone').value || '—';
+        document.getElementById('p-cus-info').innerHTML =
+            `<div class="p-customer-label">Müşteri</div>
+             <div class="p-customer-name">${cusName}</div>
+             <div class="p-customer-phone">${cusPhone}</div>`;
+
         const b = document.getElementById('p-body'); b.innerHTML = '';
         basket.forEach(i => {
-            b.innerHTML += `<tr style="border-bottom:1px solid #fdf0f3;">
-                <td style="padding:10px 5px; font-weight:800;">${i.k}</td>
-                <td style="padding:10px 5px; font-size:9px; text-align:left;">${i.d}</td>
-                <td style="padding:10px 5px; text-decoration:line-through; color:#aaa;">${Math.round(i.v.old).toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:10px 5px;">${Math.round(i.v.v3).toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:10px 5px;">${Math.round(i.v.v1).toLocaleString('tr-TR')} ₺</td>
-                <td style="padding:10px 5px; background:#fdf0f3; color:#c8244c; font-weight:900;">${Math.round(i.v.vN).toLocaleString('tr-TR')} ₺</td>
+            b.innerHTML += `<tr>
+                <td>${i.k}</td>
+                <td>${i.d}</td>
+                <td class="p-old">${Math.round(i.v.old).toLocaleString('tr-TR')} ₺</td>
+                <td>${Math.round(i.v.v3).toLocaleString('tr-TR')} ₺</td>
+                <td>${Math.round(i.v.v1).toLocaleString('tr-TR')} ₺</td>
+                <td class="p-cash">${Math.round(i.v.vN).toLocaleString('tr-TR')} ₺</td>
             </tr>`;
         });
-        const s3 = Math.round(basket.reduce((a,b)=>a+b.v.v3,0)),
-              sN = Math.round(basket.reduce((a,b)=>a+b.v.vN,0));
+
+        const s3 = Math.round(basket.reduce((a,b)=>a+b.v.v3,0));
+        const s1 = Math.round(basket.reduce((a,b)=>a+b.v.v1,0));
+        const sN = Math.round(basket.reduce((a,b)=>a+b.v.vN,0));
         document.getElementById('p-summary').innerHTML = `
-            <div style="text-align:right;"><div style="font-size:11px; color:#888;">3 Taksit Toplam</div><div style="font-size:18px; font-weight:800;">${s3.toLocaleString('tr-TR')} ₺</div></div>
-            <div style="text-align:right;"><div style="font-size:11px; color:#c8244c; font-weight:900;">Nakit İndirimli Toplam</div><div style="color:#c8244c; font-size:24px; font-weight:900;">${sN.toLocaleString('tr-TR')} ₺</div></div>`;
+            <div class="p-total-cell">
+                <div class="p-total-label">3 Taksit Toplam</div>
+                <div class="p-total-val">${s3.toLocaleString('tr-TR')} ₺</div>
+            </div>
+            <div class="p-total-cell">
+                <div class="p-total-label">Tek Çekim Toplam</div>
+                <div class="p-total-val">${s1.toLocaleString('tr-TR')} ₺</div>
+            </div>
+            <div class="p-total-cell p-total-cash">
+                <div class="p-total-label">Nakit İndirimli</div>
+                <div class="p-total-val">${sN.toLocaleString('tr-TR')} ₺</div>
+            </div>`;
+
         document.getElementById('print-area').style.display = 'block';
-        setTimeout(() => { window.print(); document.getElementById('print-area').style.display = 'none'; closeModal('cusModal'); }, 500);
+        setTimeout(() => {
+            window.print();
+            document.getElementById('print-area').style.display = 'none';
+            closeModal('cusModal');
+        }, 500);
     }
 
     function toggleGroup(m)  { document.getElementById('group-'+m).classList.toggle('hidden'); }
