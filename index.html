@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sina Pırlanta - Terminal</title>
+    
+    <link rel="icon" type="image/svg+xml" href="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --pudra: #f8c8d2; --bg: #fdf2f4; --primary: #d63384; 
+            --text-main: #2d3436; --shadow: 0 10px 30px rgba(0,0,0,0.1); --success: #27ae60;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { min-height: 100vh; margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        .top-info-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; width: 100%; z-index: 100; gap: 10px; }
+        
+        @media (min-width: 951px) { 
+            .top-info-bar { position: absolute; top: 0; left: 0; pointer-events: none; } 
+            .top-info-bar * { pointer-events: auto; } 
+        }
+
+        .btn-group-top { display: flex; gap: 8px; }
+        .secret-rates { font-size: 10px; font-weight: 800; color: var(--primary); background: #fff; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--pudra); line-height: 1.3; box-shadow: var(--shadow); flex-shrink: 0; }
+        .tech-info { font-family: monospace; font-size: 9px; color: #999; margin-top: 3px; border-top: 1px solid #eee; padding-top: 3px; }
+        .set-trigger { background: #fff; border: 2px solid var(--pudra); padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: 800; font-size: 11px; white-space: nowrap; }
+        .help-trigger { background: #2d3436; color: #fff; border: none; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: 800; font-size: 11px; }
+
+        .master-wrapper { display: flex; flex-direction: row; min-height: 100vh; width: 100vw; }
+        .left-content { flex: 1; display: flex; flex-direction: column; padding: 20px; align-items: center; }
+        
+        .logo-container { text-align: center; margin-bottom: 20px; width: 100%; margin-top: 10px; }
+        .logo-container img { height: 40px; }
+        
+        .main-tabs { display: flex; background: #eee; padding: 5px; border-radius: 50px; width: 100%; max-width: 320px; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 12px; border: none; background: transparent; cursor: pointer; border-radius: 50px; font-weight: 800; color: #777; font-size: 12px; transition: 0.3s; }
+        .tab.active { background: var(--primary); color: #fff; }
+
+        .quick-entry { background: #fff; padding: 20px; border-radius: 25px; box-shadow: var(--shadow); width: 100%; max-width: 480px; border: 1px solid var(--pudra); }
+        input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; text-align: center; font-weight: 800; font-size: 18px; margin-top: 5px; outline: none; }
+        .big-input { font-size: 24px !important; color: var(--primary); border-color: var(--pudra) !important; }
+        label { display: block; font-size: 10px; font-weight: 900; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+
+        .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 500px; margin: 20px 0; }
+        .live-box { background: #fff; padding: 15px 10px; border-radius: 20px; text-align: center; box-shadow: var(--shadow); position: relative; border: 2px solid transparent; overflow: hidden; }
+        .price-main { display: block; font-size: 18px; font-weight: 900; color: var(--primary); margin: 3px 0; }
+        .old-p { font-size: 11px; text-decoration: line-through; opacity: 0.5; font-weight: 700; }
+        .sticker { position: absolute; top: 0; right: 0; background: var(--primary); color: #fff; font-size: 10px; font-weight: 900; padding: 5px 10px; border-bottom-left-radius: 12px; z-index: 2; }
+        .sub-inst { font-size: 10px; font-weight: 800; color: #666; background: #f8f8f8; padding: 3px; border-radius: 6px; }
+        
+        .live-box.cash { border: 3px solid var(--success); background: #f0fff4; transform: scale(1.02); }
+        .live-box.cash .price-main { color: var(--success); font-size: 24px; }
+        .live-box.cash .sub-inst { background: var(--success); color: #fff; font-size: 11px; font-weight: 900; }
+        .live-box.cash .sticker { background: var(--success); }
+
+        .secret-margin { font-size: 9px; color: #ccc; font-weight: 700; display: block; margin-top: 4px; opacity: 0.6; font-family: monospace; }
+
+        .right-basket { width: 400px; background: #fff; border-left: 1px solid var(--pudra); padding: 20px; display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0; }
+        #basket-container { flex: 1; overflow-y: auto; padding-bottom: 20px; -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%); mask-image: linear-gradient(to bottom, black 90%, transparent 100%); }
+        #sum-box { background: #2d3436; color: #fff; padding: 15px; border-radius: 15px; margin-top: 10px; box-shadow: 0 -10px 20px rgba(0,0,0,0.1); z-index: 10; }
+
+        .basket-group { margin-bottom: 15px; border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
+        .group-header { background: #f8f9fa; padding: 12px 15px; cursor: pointer; display: flex; font-weight: 800; font-size: 13px; border-bottom: 1px solid #eee; }
+        .group-content { padding: 10px; display: block; }
+        .group-content.hidden { display: none; }
+        
+        .group-summary { background: #fdf2f4; padding: 8px 12px; font-size: 10px; border-top: 1px dashed var(--pudra); display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; color: var(--text-main); font-weight: 700; }
+        .group-summary span { display: block; }
+        .group-summary b { display: block; color: var(--primary); font-size: 11px; }
+
+        .basket-item { background:#fff; padding:12px; border-radius:12px; margin-bottom:10px; border:1px solid #f1f1f1; position: relative; }
+        .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; font-size: 10px; border-top: 1px solid #eee; padding-top: 8px; }
+        .mini-grid b { display: block; font-size: 12px; color: var(--text-main); }
+
+        .action-btns { display:flex; gap:12px; width:100%; max-width:500px; margin-bottom: 20px; }
+        .btn-add { background: var(--primary); color: #fff; border: none; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; flex: 1; font-size: 13px; }
+        .btn-pdf { background: #2d3436; color: #fff; border: none; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; flex: 1; font-size: 13px; }
+
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter: blur(8px); display:none; justify-content:center; align-items:center; z-index: 9999; padding: 15px; }
+        .modal { background:#fff; width: 100%; max-width: 600px; border-radius: 25px; overflow: hidden; max-height: 90vh; display: flex; flex-direction: column; position: relative; }
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; }
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        
+        .pane { display: none; }
+        .pane.active { display: block; }
+        .s-tab-group { display: flex; background: #f1f1f1; flex-wrap: wrap; }
+        .s-tab { flex: 1; min-width: 50%; padding: 12px; border:none; font-size: 10px; font-weight: 800; cursor:pointer; border-bottom: 1px solid #ddd; }
+        .s-tab.active { background:#fff; color:var(--primary); }
+
+        .help-section { margin-bottom: 25px; }
+        .help-section h4 { color: var(--primary); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 10px; font-size: 15px; }
+        .help-section p { font-size: 13px; line-height: 1.6; color: #555; margin-bottom: 10px; }
+        .help-card { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-top: 10px; }
+        .help-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-right: 5px; color: #fff; }
+        .b-pink { background: var(--primary); }
+        .b-dark { background: #2d3436; }
+
+        @media (max-width: 950px) {
+            .master-wrapper { flex-direction: column; }
+            .right-basket { width: 100%; border-left: none; border-top: 5px solid var(--pudra); height: auto; position: static; }
+            .live-grid { grid-template-columns: 1fr; }
+            #basket-container { max-height: 400px; }
+        }
+
+        #print-area { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-info-bar no-print">
+        <div class="secret-rates">
+            <div id="tech-rates">U: -- | xU: -- <br> H: -- | xH: --</div>
+            <div id="tech-time" class="tech-info">-- <br> --</div>
+        </div>
+        <div class="btn-group-top">
+            <button class="help-trigger" onclick="openModal('helpModal')">❓ YARDIM</button>
+            <button class="set-trigger" onclick="openModal('settingsModal')">⚙️ AYARLAR</button>
+        </div>
+    </div>
+
+    <div class="master-wrapper no-print">
+        <div class="left-content">
+            <div class="logo-container">
+                <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
+                <div id="h-store-display" style="font-size:11px; font-weight:800; color:#d63384; margin-top:8px; text-transform: uppercase;">SINA TERMİNAL</div>
+                <div id="h-tel-display" style="font-size:10px; font-weight:600; color:#999;"></div>
+            </div>
+            
+            <div class="main-tabs">
+                <button class="tab active" id="btnP" onclick="switchTab('pirlanta')">💎 PIRLANTA</button>
+                <button class="tab" id="btnA" onclick="switchTab('altin')">✨ ALTIN</button>
+            </div>
+
+            <div class="quick-entry">
+                <div id="formP">
+                    <label>Pırlanta Etiket</label>
+                    <input type="text" id="inpP" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
+                </div>
+                <div id="formA" style="display:none; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div><label>Sina Has (SHG)</label><input type="text" id="inpA" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search"></div>
+                    <div><label>Ürün Gram (G)</label><input type="text" id="inpAG" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search"></div>
+                </div>
+            </div>
+
+            <div class="live-grid">
+                <div class="live-box" id="box3"><div class="sticker" id="stk3">0%</div><label>3 Taksit</label><span class="old-p" id="old3">0 ₺</span><span class="price-main" id="v3">0 ₺</span><div class="sub-inst" id="sub3">3 x 0 ₺</div><span class="secret-margin" id="sm3"></span></div>
+                <div class="live-box" id="box2"><div class="sticker" id="stk2">0%</div><label>2 Taksit</label><span class="old-p" id="old2">0 ₺</span><span class="price-main" id="v2">0 ₺</span><div class="sub-inst" id="sub2">2 x 0 ₺</div><span class="secret-margin" id="sm2"></span></div>
+                <div class="live-box" id="box1"><div class="sticker" id="stk1">0%</div><label>Tek Çekim</label><span class="old-p" id="old1">0 ₺</span><span class="price-main" id="v1">0 ₺</span><div class="sub-inst">Peşin Fiyat</div><span class="secret-margin" id="sm1"></span></div>
+                <div class="live-box cash" id="boxN"><div class="sticker" id="stkN">0%</div><label>Nakit Ödeme</label><span class="old-p" id="oldN">0 ₺</span><span class="price-main" id="vN">0 ₺</span><div class="sub-inst">EN İYİ FİYAT</div><span class="secret-margin" id="smN"></span></div>
+            </div>
+
+            <div class="action-btns">
+                <button class="btn-add" onclick="openModal('kodModal')">SEPETE EKLE</button>
+                <button class="btn-pdf" onclick="openModal('cusModal')">PDF TEKLİF</button>
+            </div>
+        </div>
+
+        <div class="right-basket">
+            <h2 style="margin:0 0 15px 0; color:var(--primary); font-size:18px;">Sipariş Listesi</h2>
+            <div id="basket-container"></div>
+            <div id="sum-box" style="display:none;">
+                <div style="font-size:10px; color:#888; margin-bottom:5px; font-weight:800; text-align:center;">GENEL TOPLAM</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; font-size:11px;">
+                    <div>3T: <b id="sum3">0</b></div><div>2T: <b id="sum2">0</b></div>
+                    <div>TEK: <b id="sum1">0</b></div><div style="color:var(--success)">NK: <b id="sumN">0</b></div>
+                </div>
+                <button onclick="clearBasket()" style="width:100%; margin-top:10px; background:#444; border:none; color:#ccc; padding:8px; border-radius:8px; cursor:pointer;">TEMİZLE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="helpModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 style="margin:0; color:var(--primary);">📖 Sina Terminal Kullanım Kılavuzu</h3>
+                <span style="cursor:pointer; font-weight:bold; font-size:20px;" onclick="closeModal('helpModal')">✕</span>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h4>1. Pırlanta Hesaplama (Diamond)</h4>
+                    <p>Pırlanta sekmesinde, sertifika üzerindeki <b>USD Etiket Fiyatını</b> giriniz. Sistem bu fiyatı "U" (Dolar Kuru) ve "xU" (Dolar Katsayısı) ile çarparak önce liste fiyatını bulur, ardından belirlediğiniz kâr oranlarını ekleyerek satış fiyatlarını hesaplar.</p>
+                    <div class="help-card">
+                        <span class="help-badge b-pink">K+12</span> <b>Kodu Nedir?</b><br>
+                        Personelin karlılığını takip etmesi içindir. Ürünün maliyeti üzerine eklenen kâr yüzdesini gösterir. <i>(Örn: K+40, maliyetin %40 üstü satış demektir.)</i>
+                    </div>
+                </div>
+                <div class="help-section">
+                    <h4>2. Altın Hesaplama (Gold)</h4>
+                    <p>Altın sekmesinde ürüne ait <b>Sina Has (SHG)</b> ve <b>Gram (G)</b> değerlerini giriniz. Sistem "H" (Has Altın TL) ve "xH" (Has Katsayısı) kullanarak liste fiyatını oluşturur.</p>
+                    <div class="help-card">
+                        <span class="help-badge b-dark">İ-28</span> <b>Kodu Nedir?</b><br>
+                        Altın ürünlerinde liste fiyatı üzerinden yapılan <b>İskonto</b> oranını gösterir. <i>(Örn: İ-35, etiketten %35 indirim yapıldığını belirtir.)</i>
+                    </div>
+                </div>
+                <div class="help-section">
+                    <h4>3. Sepet ve PDF Teklif</h4>
+                    <p>Hesapladığınız ürünü <b>"Sepete Ekle"</b> butonu ile listeye atabilirsiniz. Kod kısmına model numarasını (örn: SINA-1200) girmeyi unutmayın.</p>
+                    <p><b>PDF TEKLİF:</b> Sepetteki tüm ürünleri profesyonel bir çıktı formatına dönüştürür.</p>
+                </div>
+                <div class="help-section">
+                    <h4>4. Ayarlar (Kur ve Oranlar)</h4>
+                    <p>Ayarlar kısmından güncel Dolar ve Has değerlerini güncelleyiniz. Kaydettiğiniz ayarlar cihazınızın hafızasında tutulur.</p>
+                </div>
+                <button class="btn-add" style="width:100%; margin-top:20px;" onclick="closeModal('helpModal')">ANLADIM, KAPAT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal">
+            <div class="s-tab-group">
+                <button class="s-tab active" onclick="setSTab(0)">KUR/KATSAYI</button>
+                <button class="s-tab" onclick="setSTab(1)">PIRLANTA KAR</button>
+                <button class="s-tab" onclick="setSTab(2)">ALTIN İSKONTO</button>
+                <button class="s-tab" onclick="setSTab(3)">MAĞAZA</button>
+            </div>
+            <div id="pane0" class="pane active">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:20px;">
+                    <div><label>U (USD)</label><input type="text" id="cfgU" value="34.20" inputmode="decimal"></div>
+                    <div><label>xU (%)</label><input type="text" id="cfgU_plus" value="3" inputmode="decimal"></div>
+                    <div><label>H (HAS)</label><input type="text" id="cfgA" value="3150" inputmode="decimal"></div>
+                    <div><label>xH (%)</label><input type="text" id="cfgA_plus" value="20" inputmode="decimal"></div>
+                </div>
+            </div>
+            <div id="pane1" class="pane">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:20px;">
+                    <div><label>3T KAR %</label><input type="text" id="pk3" value="50"></div>
+                    <div><label>2T KAR %</label><input type="text" id="pk2" value="44"></div>
+                    <div><label>1T KAR %</label><input type="text" id="pk1" value="38"></div>
+                    <div><label>NAKİT KAR %</label><input type="text" id="pkN" value="32"></div>
+                </div>
+            </div>
+            <div id="pane2" class="pane">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:20px;">
+                    <div><label>3T İSK %</label><input type="text" id="ak3" value="28"></div>
+                    <div><label>2T İSK %</label><input type="text" id="ak2" value="28"></div>
+                    <div><label>1T İSK %</label><input type="text" id="ak1" value="28"></div>
+                    <div><label>NAKİT İSK %</label><input type="text" id="akN" value="35"></div>
+                </div>
+            </div>
+            <div id="pane3" class="pane">
+                <div style="padding:20px;">
+                    <label>Mağaza Adı</label><input type="text" id="cfgStore" value="Sina Pırlanta Maltepe Piazza">
+                    <label style="margin-top:10px;">Telefon</label><input type="text" id="cfgTel" value="0216 XXX XX XX">
+                    <label style="margin-top:10px;">Adres</label><input type="text" id="cfgAddr" value="Maltepe / İstanbul">
+                </div>
+            </div>
+            <button class="btn-add" style="width:100%; border-radius:0;" onclick="saveCfg(); closeModal('settingsModal')">AYARLARI KAYDET</button>
+        </div>
+    </div>
+
+    <div id="kodModal" class="modal-overlay"><div class="modal" style="padding:25px;"><h3>Ürün Kodu</h3><input type="text" id="iKod" placeholder="SINA-100"><button class="btn-add" style="width:100%; margin-top:15px;" onclick="addBasket()">SEPETE EKLE</button></div></div>
+    
+    <div id="cusModal" class="modal-overlay">
+        <div class="modal" style="padding:25px;">
+            <h3>Müşteri Bilgileri</h3>
+            <input type="text" id="iCus" placeholder="Müşteri İsmi">
+            <input type="text" id="iPhone" placeholder="Telefon" style="margin-top:10px;">
+            <button class="btn-add" style="width:100%; margin-top:15px;" onclick="generatePDF()">TEKLİFİ YAZDIR</button>
+        </div>
+    </div>
+
+    <div id="print-area">
+        <div style="text-align:center; border-bottom:2px solid #f8c8d2; padding-bottom:20px; margin-bottom:20px;">
+            <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" style="height:50px; margin-bottom:10px;">
+            <h2 style="color:#2d3436; font-weight:900; letter-spacing:1px; margin:0; font-size:20px;">SİPARİŞ TEKLİF FORMU</h2>
+            <p id="p-date" style="font-size:11px; color:#888; margin:5px 0 0 0; font-weight:500;"></p>
+        </div>
+        <div id="p-cus-info" style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:12px; color:#2d3436; font-weight:600;"></div>
+        <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center; margin-bottom:20px;">
+            <thead>
+                <tr style="background:#fdf2f4; color:#d63384; border-bottom:2px solid #d63384;">
+                    <th style="padding:10px 5px;">ÜRÜN KODU</th>
+                    <th style="padding:10px 5px;">DETAYLAR</th>
+                    <th style="padding:10px 5px;">LİSTE FİYATI</th>
+                    <th style="padding:10px 5px;">3 TAKSİT</th>
+                    <th style="padding:10px 5px;">TEK ÇEKİM</th>
+                    <th style="padding:10px 5px; background:#d63384; color:#fff;">NAKİT ÖDEME</th>
+                </tr>
+            </thead>
+            <tbody id="p-body"></tbody>
+        </table>
+        <div id="p-summary" style="display:flex; justify-content:flex-end; gap:40px; border-top:2px solid #fdf2f4; padding-top:20px; align-items:center;"></div>
+        <div style="margin-top:40px; text-align:center; font-size:10px; color:#999; border-top:1px solid #eee; padding-top:15px; font-weight:500;">
+            <b id="p-store-name"></b><br>
+            <span id="p-store-addr"></span> - Tel: <span id="p-store-tel"></span><br>
+            Bilgilendirme Amaçlıdır.
+            <div id="p-ref-line" style="margin-top:10px; font-family:monospace; font-size:8px; opacity:0.3;"></div>
+        </div>
+    </div>
+
+<script>
+    let basket = [];
+    let currentMode = 'pirlanta';
+    let lastUpdate = null;
+
+    function smartEval(s) { 
+        if(!s) return 0; 
+        let val = s.toString().replace(/,/g, '.');
+        let total = 0; 
+        val.split('+').forEach(p => { 
+            let v = parseFloat(p.trim()); 
+            if(!isNaN(v)) total += v; 
+        }); 
+        return total; 
+    }
+
+    function saveCfg() {
+        const ids = ['cfgU', 'cfgU_plus', 'cfgA', 'cfgA_plus', 'pk3', 'pk2', 'pk1', 'pkN', 'ak3', 'ak2', 'ak1', 'akN', 'cfgStore', 'cfgTel', 'cfgAddr'];
+        ids.forEach(id => localStorage.setItem('s_' + id, document.getElementById(id).value));
+        document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
+        document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
+        lastUpdate = new Date(); localStorage.setItem('s_last_time', lastUpdate.toISOString());
+        runCalc();
+    }
+
+    function loadCfg() {
+        const ids = ['cfgU', 'cfgU_plus', 'cfgA', 'cfgA_plus', 'pk3', 'pk2', 'pk1', 'pkN', 'ak3', 'ak2', 'ak1', 'akN', 'cfgStore', 'cfgTel', 'cfgAddr'];
+        ids.forEach(id => { if(localStorage.getItem('s_' + id)) document.getElementById(id).value = localStorage.getItem('s_' + id); });
+        document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
+        document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
+        const st = localStorage.getItem('s_last_time'); if(st) lastUpdate = new Date(st);
+        runCalc(); setInterval(updateTech, 1000);
+    }
+
+    function updateTech() {
+        if(!lastUpdate) return;
+        const diff = Math.floor((new Date() - lastUpdate) / 1000);
+        document.getElementById('tech-time').innerHTML = `GÜNCEL: ${lastUpdate.toLocaleTimeString()} <br> <span style="color:var(--success)">${diff < 60 ? diff + " sn" : Math.floor(diff/60) + " dk"} önce</span>`;
+    }
+
+    function runCalc() {
+        const u = smartEval(document.getElementById('cfgU').value), up = smartEval(document.getElementById('cfgU_plus').value);
+        const h = smartEval(document.getElementById('cfgA').value), hp = smartEval(document.getElementById('cfgA_plus').value);
+        const xU = u * (1 + up/100), xH = h * (1 + hp/100);
+        document.getElementById('tech-rates').innerHTML = `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)}<br>H: ${h.toFixed(0)} | xH: ${xH.toFixed(0)}`;
+        
+        let res = {v3:0, v2:0, v1:0, vN:0, old:0, m3:"", m2:"", m1:"", mN:""}, details = "";
+        
+        if(currentMode === 'pirlanta') {
+            let labelVal = smartEval(document.getElementById('inpP').value);
+            if(labelVal > 0) {
+                let listTl = labelVal * xU;
+                let costTl = (labelVal / 3) * xU;
+                const getPCode = (v) => "K" + (Math.round(((v - costTl)/costTl)*100) >= 0 ? "+" : "") + Math.round(((v - costTl)/costTl)*100);
+                res = { 
+                    v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100), 
+                    v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100), 
+                    v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100), 
+                    vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100), 
+                    old: listTl 
+                };
+                res.m3 = getPCode(res.v3); res.m2 = getPCode(res.v2); res.m1 = getPCode(res.v1); res.mN = getPCode(res.vN);
+                details = "Pırlanta";
+            }
+        } else {
+            let shgVal = smartEval(document.getElementById('inpA').value);
+            let gramVal = smartEval(document.getElementById('inpAG').value);
+            if(shgVal > 0) {
+                let listTl = shgVal * xH;
+                let hasMaliyet = shgVal * h;
+                const getACode = (v) => "İ" + (Math.round(((v - hasMaliyet)/hasMaliyet)*100) >= 0 ? "+" : "") + Math.round(((v - hasMaliyet)/hasMaliyet)*100);
+                res = { 
+                    v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100), 
+                    v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100), 
+                    v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100), 
+                    vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100), 
+                    old: listTl 
+                };
+                res.m3 = getACode(res.v3); res.m2 = getACode(res.v2); res.m1 = getACode(res.v1); res.mN = getACode(res.vN);
+                details = `Altın (SHG: ${shgVal.toFixed(2)} | Gram: ${gramVal.toFixed(2)}g)`;
+            }
+        }
+        updateBox('3', res.old, res.v3, 3, res.m3); 
+        updateBox('2', res.old, res.v2, 2, res.m2); 
+        updateBox('1', res.old, res.v1, 1, res.m1); 
+        updateBox('N', res.old, res.vN, 0, res.mN);
+        return { res, details, mode: currentMode };
+    }
+
+    function updateBox(id, old, v, div, mCode) {
+        document.getElementById('old'+id).innerText = Math.round(old).toLocaleString() + ' ₺';
+        document.getElementById('v'+id).innerText = Math.round(v).toLocaleString() + ' ₺';
+        if(div > 1) document.getElementById('sub'+id).innerText = `${div} x ${Math.round(v/div).toLocaleString()} ₺`;
+        document.getElementById('sm'+id).innerText = old > 0 ? mCode : "";
+        const diff = old > 0 ? Math.round(((v - old) / old) * 100) : 0;
+        document.getElementById('stk'+id).innerText = (diff > 0 ? "+" : "") + diff + "%";
+    }
+
+    function addBasket() {
+        const k = document.getElementById('iKod').value; if(!k) return;
+        const calc = runCalc();
+        basket.push({ id: Date.now(), k: k.toUpperCase(), v: calc.res, d: calc.details, mode: calc.mode });
+        
+        // Inputları sıfırla
+        document.getElementById('iKod').value = ""; 
+        document.getElementById('inpP').value = "";
+        document.getElementById('inpA').value = "";
+        document.getElementById('inpAG').value = "";
+        
+        closeModal('kodModal'); 
+        runCalc(); // Ekranı temizle (0₺ göster)
+        renderBasket();
+        setTimeout(() => { const c = document.getElementById('basket-container'); c.scrollTop = c.scrollHeight; }, 100);
+    }
+
+    function renderBasket() {
+        const container = document.getElementById('basket-container');
+        if(!basket.length) { container.innerHTML = '<p style="text-align:center; color:#bbb; margin-top:20px;">Sepet boş.</p>'; document.getElementById('sum-box').style.display='none'; return; }
+        document.getElementById('sum-box').style.display='block';
+        const pItems = basket.filter(i => i.mode === 'pirlanta'), aItems = basket.filter(i => i.mode === 'altin');
+        container.innerHTML = (pItems.length ? createGroupHtml('💎 PIRLANTA', 'pirlanta', pItems) : '') + (aItems.length ? createGroupHtml('✨ ALTIN', 'altin', aItems) : '');
+        document.getElementById('sum3').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v3, 0)).toLocaleString();
+        document.getElementById('sum2').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v2, 0)).toLocaleString();
+        document.getElementById('sum1').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v1, 0)).toLocaleString();
+        document.getElementById('sumN').innerText = Math.round(basket.reduce((a,b)=>a+b.v.vN, 0)).toLocaleString();
+    }
+
+    function createGroupHtml(title, mode, items) {
+        const gSum3 = Math.round(items.reduce((a,b)=>a+b.v.v3, 0)).toLocaleString();
+        const gSum2 = Math.round(items.reduce((a,b)=>a+b.v.v2, 0)).toLocaleString();
+        const gSum1 = Math.round(items.reduce((a,b)=>a+b.v.v1, 0)).toLocaleString();
+        const gSumN = Math.round(items.reduce((a,b)=>a+b.v.vN, 0)).toLocaleString();
+
+        return `
+            <div class="basket-group">
+                <div class="group-header" onclick="toggleGroup('${mode}')"><span>${title} (${items.length})</span><span>▼</span></div>
+                <div id="group-${mode}" class="group-content">
+                    ${items.map(i => `<div class="basket-item"><span style="position:absolute; right:10px; top:10px; color:red; cursor:pointer;" onclick="removeItem(${i.id})">✕</span><b>${i.k}</b> <br><small style="color:#888;">${i.d}</small><div class="mini-grid"><div>3T <b>${Math.round(i.v.v3).toLocaleString()}</b> <span class="secret-margin">${i.v.m3}</span></div><div style="color:var(--success)">NK <b>${Math.round(i.v.vN).toLocaleString()}</b> <span class="secret-margin">${i.v.mN}</span></div></div></div>`).join('')}
+                </div>
+                <div class="group-summary">
+                    <span>3T <b>${gSum3}</b></span>
+                    <span>2T <b>${gSum2}</b></span>
+                    <span>TEK <b>${gSum1}</b></span>
+                    <span>NK <b style="color:var(--success)">${gSumN}</b></span>
+                </div>
+            </div>`;
+    }
+
+    function generatePDF() {
+        const now = new Date();
+        document.getElementById('p-date').innerText = "Tarih: " + now.toLocaleString('tr-TR');
+        const ts = now.toLocaleDateString('tr-TR') + " " + now.toLocaleTimeString('tr-TR');
+        document.getElementById('p-ref-line').innerText = `Ref: U: ${document.getElementById('cfgU').value} - H: ${document.getElementById('cfgA').value} / ${ts}`;
+        document.getElementById('p-cus-info').innerHTML = `<div>Sayın: <b style="color:#d63384;">${document.getElementById('iCus').value || 'Müşterimiz'}</b></div><div>Tel: <b>${document.getElementById('iPhone').value || '-'}</b></div>`;
+        document.getElementById('p-store-name').innerText = document.getElementById('cfgStore').value;
+        document.getElementById('p-store-tel').innerText = document.getElementById('cfgTel').value;
+        document.getElementById('p-store-addr').innerText = document.getElementById('cfgAddr').value;
+        const b = document.getElementById('p-body'); b.innerHTML = "";
+        basket.forEach(i => { b.innerHTML += `<tr style="border-bottom: 1px solid #fdf2f4;"><td style="padding:10px 5px; font-weight:800;">${i.k}</td><td style="padding:10px 5px; font-size:9px; text-align:left;">${i.d}</td><td style="padding:10px 5px; text-decoration:line-through; color:#aaa;">${Math.round(i.v.old).toLocaleString()} ₺</td><td style="padding:10px 5px;">${Math.round(i.v.v3).toLocaleString()} ₺</td><td style="padding:10px 5px;">${Math.round(i.v.v1).toLocaleString()} ₺</td><td style="padding:10px 5px; background:#fdf2f4; color:#d63384; font-weight:900;">${Math.round(i.v.vN).toLocaleString()} ₺</td></tr>`; });
+        const s3 = Math.round(basket.reduce((a,b)=>a+b.v.v3, 0)), sN = Math.round(basket.reduce((a,b)=>a+b.v.vN, 0));
+        document.getElementById('p-summary').innerHTML = `<div style="text-align:right;"><div style="font-size:11px; color:#888;">3 Taksit Toplam</div><div style="font-size:18px; font-weight:800;">${s3.toLocaleString()} ₺</div></div><div style="text-align:right;"><div style="font-size:11px; color:#d63384; font-weight:900;">Nakit İndirimli Toplam</div><div style="color:#d63384; font-size:24px; font-weight:900;">${sN.toLocaleString()} ₺</div></div>`;
+        document.getElementById('print-area').style.display = 'block'; setTimeout(() => { window.print(); document.getElementById('print-area').style.display = 'none'; closeModal('cusModal'); }, 500);
+    }
+
+    function toggleGroup(m) { document.getElementById('group-'+m).classList.toggle('hidden'); }
+    function switchTab(m) { currentMode = m; document.getElementById('btnP').classList.toggle('active', m==='pirlanta'); document.getElementById('btnA').classList.toggle('active', m==='altin'); document.getElementById('formP').style.display = m==='pirlanta' ? 'block' : 'none'; document.getElementById('formA').style.display = m==='altin' ? 'grid' : 'none'; runCalc(); }
+    function setSTab(i) { document.querySelectorAll('.s-tab').forEach((t, idx) => t.classList.toggle('active', idx===i)); document.querySelectorAll('.pane').forEach((p, idx) => p.classList.toggle('active', idx===i)); }
+    function removeItem(id) { basket = basket.filter(i=>i.id!==id); renderBasket(); }
+    function clearBasket() { basket = []; renderBasket(); }
+    function openModal(id) { document.getElementById(id).style.display='flex'; }
+    function closeModal(id) { document.getElementById(id).style.display='none'; }
+    window.onload = loadCfg;
+</script>
+</body>
+</html>
