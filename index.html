@@ -42,58 +42,61 @@
             font-size: 14px;
         }
 
-        /* ── TOP BAR ── */
+        /* ── TOP BAR ──
+           Her cihazda tam görünür. Kesinlikle position:absolute/fixed yok.
+           Normal akışta, left-column'un en üstünde, sticky ile yerinde kalır.
+        ── */
         .top-bar {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 10px 16px;
-            gap: 10px;
-            z-index: 200;
-            background: rgba(255,255,255,.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            gap: 8px;
+            padding: 10px 14px;
+            background: var(--surface);
             border-bottom: 1px solid var(--border);
+            width: 100%;
+            box-sizing: border-box;
             position: sticky;
             top: 0;
-            width: 100%;
-        }
-
-        /* On desktop: overlay the left panel only, don't affect layout */
-        @media (min-width: 951px) {
-            .top-bar {
-                position: absolute;
-                top: 0; left: 0;
-                width: calc(100vw - 380px);
-                background: rgba(247,245,248,.92);
-                pointer-events: none;
-            }
-            .top-bar * { pointer-events: auto; }
+            z-index: 200;
+            flex-shrink: 0;
         }
 
         .rates-chip {
-            font-family: 'DM Sans', monospace;
+            font-family: 'DM Sans', sans-serif;
             font-size: 10px;
             font-weight: 600;
             color: var(--ink-mid);
-            background: var(--surface);
-            padding: 7px 12px;
-            border-radius: 100px;
+            background: var(--bg);
+            padding: 6px 10px;
+            border-radius: 10px;
             border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
-            line-height: 1.6;
-            flex-shrink: 0;
+            line-height: 1.65;
+            flex: 1 1 0;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .rates-chip #tech-rates {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .tech-time {
             font-size: 9px;
             color: var(--ink-dim);
             border-top: 1px solid var(--border);
-            margin-top: 4px;
-            padding-top: 4px;
+            margin-top: 3px;
+            padding-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .tech-time .live { color: var(--success); font-weight: 700; }
 
-        .top-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .top-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
 
         .btn-ghost {
             background: var(--surface);
@@ -105,36 +108,46 @@
             font-family: 'DM Sans', sans-serif;
             font-weight: 600;
             font-size: 11px;
-            letter-spacing: .04em;
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 5px;
             white-space: nowrap;
+            flex-shrink: 0;
             transition: box-shadow .18s, border-color .18s;
         }
         .btn-ghost:hover { border-color: var(--rose-soft); box-shadow: var(--shadow-sm); }
 
         .btn-solid {
-            background: var(--ink);
-            border: 1.5px solid var(--ink);
+            background: var(--rose);
+            border: 1.5px solid var(--rose);
             color: #fff;
             padding: 9px 14px;
             border-radius: 100px;
             cursor: pointer;
             font-family: 'DM Sans', sans-serif;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 11px;
-            letter-spacing: .04em;
-            display: flex; align-items: center; gap: 6px;
+            display: flex; align-items: center; gap: 5px;
             white-space: nowrap;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(200,36,76,.28);
             transition: background .18s;
         }
-        .btn-solid:hover { background: #2e2e3e; }
+        .btn-solid:hover { background: var(--rose-dim); border-color: var(--rose-dim); }
 
         /* ── MASTER LAYOUT ── */
         .master-wrapper {
             display: flex;
             flex-direction: row;
             min-height: 100vh;
-            width: 100vw;
+            width: 100%;
+        }
+
+        /* Left column: top-bar + scrollable content stacked vertically */
+        .left-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            /* overflow-y:auto burada OLMAMALI — logo kaymasına neden olur */
         }
 
         /* ── LEFT PANEL ── */
@@ -144,9 +157,6 @@
             flex-direction: column;
             align-items: center;
             padding: 28px 28px 40px;
-        }
-        @media (min-width: 951px) {
-            .left-panel { padding-top: 70px; }
         }
 
         /* ── LOGO ── */
@@ -331,24 +341,39 @@
             opacity: .7;
         }
 
-        /* ── CASH CARD SPECIAL ── */
+        /* ── CASH CARD — PUDRA PEMBE KURUMSAL ── */
         .price-card.cash {
-            border-color: var(--success);
-            background: var(--success-bg);
+            border: 2px solid var(--rose);
+            background: linear-gradient(145deg, #fff5f8 0%, #fde8ef 100%);
+            box-shadow: 0 4px 20px rgba(200,36,76,.14);
         }
         .price-card.cash .price-value {
-            color: var(--success);
-            font-size: 26px;
+            color: var(--rose);
+            font-size: 28px;
+            font-weight: 800;
         }
         .price-card.cash .price-badge {
-            background: var(--success);
+            background: var(--rose);
+            color: #fff;
         }
         .price-card.cash .price-sub {
-            background: var(--success);
+            background: var(--rose);
             color: #fff;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: .08em;
+            font-size: 10px;
+            box-shadow: 0 2px 8px rgba(200,36,76,.3);
         }
-        .price-card.cash .price-card-label { color: var(--success); }
+        .price-card.cash .price-card-label {
+            color: var(--rose-dim);
+            font-weight: 800;
+            font-size: 10px;
+            letter-spacing: .16em;
+        }
+        .price-card.cash .price-old {
+            color: var(--rose-dim);
+            opacity: .5;
+        }
 
         /* ── ACTION BUTTONS ── */
         .action-row {
@@ -539,7 +564,7 @@
             font-weight: 700;
             color: var(--ink);
         }
-        .mini-grid-item.cash b { color: var(--success); }
+        .mini-grid-item.cash b { color: var(--rose); }
 
         /* ── SUM BOX ── */
         #sum-box {
@@ -569,9 +594,9 @@
         }
         .sum-cell-label { font-size: 9px; color: var(--ink-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
         .sum-cell-val { font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 2px; }
-        .sum-cell.cash { border-color: var(--success); background: var(--success-bg); }
-        .sum-cell.cash .sum-cell-val { color: var(--success); }
-        .sum-cell.cash .sum-cell-label { color: var(--success); }
+        .sum-cell.cash { border-color: var(--rose); background: var(--rose-pale); }
+        .sum-cell.cash .sum-cell-val { color: var(--rose); font-weight: 800; }
+        .sum-cell.cash .sum-cell-label { color: var(--rose); font-weight: 700; }
 
         .btn-clear {
             width: 100%;
@@ -776,6 +801,7 @@
         /* ── MOBILE ── */
         @media (max-width: 950px) {
             .master-wrapper { flex-direction: column; }
+            .left-column { height: auto; }
             .left-panel { padding: 16px 16px 30px; }
             .right-basket {
                 width: 100%;
@@ -786,7 +812,6 @@
             }
             #basket-container { max-height: 380px; }
             .price-grid { grid-template-columns: 1fr 1fr; }
-            .top-bar { position: static; width: 100%; }
         }
 
         @media (max-width: 400px) {
@@ -798,26 +823,27 @@
 </head>
 <body>
 
-    <!-- TOP BAR -->
-    <div class="top-bar no-print">
-        <div class="rates-chip">
-            <div id="tech-rates">U: — | xU: —&nbsp;&nbsp; H: — | xH: —</div>
-            <div id="tech-time" class="tech-time">—</div>
-        </div>
-        <div class="top-actions">
-            <button class="btn-ghost" onclick="openModal('helpModal')">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Yardım
-            </button>
-            <button class="btn-solid" onclick="openModal('settingsModal')">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                Ayarlar
-            </button>
-        </div>
-    </div>
-
     <!-- MASTER LAYOUT -->
     <div class="master-wrapper no-print">
+        <div class="left-column">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="rates-chip">
+                <div id="tech-rates">U: — | xU: —&nbsp;&nbsp; H: — | xH: —</div>
+                <div id="tech-time" class="tech-time">—</div>
+            </div>
+            <div class="top-actions">
+                <button class="btn-solid" onclick="openModal('settingsModal')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Ayarlar
+                </button>
+                <button class="btn-ghost" onclick="openModal('helpModal')">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Yardım
+                </button>
+            </div>
+        </div>
 
         <!-- LEFT PANEL -->
         <div class="left-panel">
@@ -890,7 +916,8 @@
                 <button class="btn-dark" onclick="openModal('cusModal')">PDF Teklif</button>
             </div>
 
-        </div>
+        </div><!-- /.left-panel -->
+        </div><!-- /.left-column -->
 
         <!-- RIGHT BASKET -->
         <div class="right-basket">
@@ -1103,7 +1130,7 @@
             .p-table tbody td:first-child { text-align: left; font-weight: 800; font-size: 12px; }
             .p-table tbody td:nth-child(2) { font-size: 9px; text-align: left; color: #9090a0; line-height: 1.5; }
             .p-table tbody td.p-old { text-decoration: line-through; color: #c0bcc8; font-weight: 400; }
-            .p-table tbody td.p-cash { background: #fdf0f3; color: #c8244c; font-weight: 800; font-size: 13px; }
+            .p-table tbody td.p-cash { background: linear-gradient(135deg, #fde8ef 0%, #f8c8d2 100%); color: #9c1a38; font-weight: 900; font-size: 13px; border-left: 2px solid #f5a0b8; }
             .p-table tbody tr:nth-child(even) { background: #faf9fc; }
 
             /* SUMMARY ROW */
@@ -1122,9 +1149,13 @@
             .p-total-cell:first-child { border-left: none; }
             .p-total-label { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: #9090a0; font-weight: 700; margin-bottom: 4px; }
             .p-total-val   { font-size: 16px; font-weight: 800; color: #1a1a24; }
-            .p-total-cell.p-total-cash { background: #c8244c; border-radius: 0 0 8px 0; }
-            .p-total-cell.p-total-cash .p-total-label { color: rgba(255,255,255,.7); }
-            .p-total-cell.p-total-cash .p-total-val   { color: #fff; font-size: 20px; }
+            .p-total-cell.p-total-cash {
+                background: linear-gradient(135deg, #fde8ef 0%, #f8c8d2 100%);
+                border-radius: 0 0 8px 0;
+                border-left: 2px solid #f5a0b8;
+            }
+            .p-total-cell.p-total-cash .p-total-label { color: #c8244c; font-weight: 800; letter-spacing: .14em; }
+            .p-total-cell.p-total-cash .p-total-val   { color: #9c1a38; font-size: 22px; font-weight: 900; }
 
             .p-table-wrap {
                 border: 1px solid #e8e4ec;
@@ -1358,7 +1389,7 @@
                 <span>3T<b>${gSum3}</b></span>
                 <span>2T<b>${gSum2}</b></span>
                 <span>Tek<b>${gSum1}</b></span>
-                <span style="color:var(--success)">NK<b style="color:var(--success)">${gSumN}</b></span>
+                <span style="color:var(--rose)">NK<b style="color:var(--rose)">${gSumN}</b></span>
             </div>
         </div>`;
     }
@@ -1422,6 +1453,16 @@
         }, 500);
     }
 
+    function adjustPadding() {
+        // Masaüstünde top-bar absolute olduğundan, sol paneli tam o kadar aşağı iter
+        if(window.innerWidth >= 951) {
+            const h = document.querySelector('.top-bar').offsetHeight;
+            document.querySelector('.left-panel').style.paddingTop = (h + 16) + 'px';
+        } else {
+            document.querySelector('.left-panel').style.paddingTop = '28px';
+        }
+    }
+
     function toggleGroup(m)  { document.getElementById('group-'+m).classList.toggle('hidden'); }
     function switchTab(m)    {
         currentMode = m;
@@ -1436,7 +1477,8 @@
     function clearBasket()   { basket = []; renderBasket(); }
     function openModal(id)   { document.getElementById(id).style.display='flex'; }
     function closeModal(id)  { document.getElementById(id).style.display='none'; }
-    window.onload = loadCfg;
+    window.onload = () => { loadCfg(); adjustPadding(); };
+    window.addEventListener('resize', adjustPadding);
 </script>
 </body>
 </html>
