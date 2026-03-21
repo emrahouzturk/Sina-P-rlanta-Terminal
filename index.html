@@ -3,296 +3,1043 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sina Pırlanta - Terminal</title>
-    
+    <title>Sina Pırlanta — Terminal</title>
     <link rel="icon" type="image/svg+xml" href="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        :root { 
-            --pudra: #f8c8d2; --bg: #fdf2f4; --primary: #d63384; 
-            --text-main: #2d3436; --shadow: 0 10px 30px rgba(0,0,0,0.1); --success: #27ae60;
+        :root {
+            --rose:      #c8244c;
+            --rose-dim:  #9c1a38;
+            --rose-soft: #f5dde4;
+            --rose-pale: #fdf0f3;
+            --gold:      #b8966a;
+            --gold-pale: #f9f5ef;
+            --success:   #1a7a4a;
+            --success-bg:#eaf6f0;
+            --ink:       #1a1a24;
+            --ink-mid:   #4a4a5a;
+            --ink-dim:   #9090a0;
+            --border:    #e8e4ec;
+            --surface:   #ffffff;
+            --bg:        #f7f5f8;
+            --shadow-sm: 0 1px 4px rgba(26,26,36,.06);
+            --shadow-md: 0 4px 20px rgba(26,26,36,.10);
+            --shadow-lg: 0 12px 40px rgba(26,26,36,.14);
+            --r-sm: 8px;
+            --r-md: 14px;
+            --r-lg: 22px;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { min-height: 100vh; margin: 0; background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        
-        .top-info-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; width: 100%; z-index: 100; gap: 10px; }
-        
-        @media (min-width: 951px) { 
-            .top-info-bar { position: absolute; top: 0; left: 0; pointer-events: none; } 
-            .top-info-bar * { pointer-events: auto; } 
+        *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            min-height: 100vh; margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+            overflow-x: hidden;
+            font-size: 14px;
         }
 
-        .btn-group-top { display: flex; gap: 8px; }
-        .secret-rates { font-size: 10px; font-weight: 800; color: var(--primary); background: #fff; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--pudra); line-height: 1.3; box-shadow: var(--shadow); flex-shrink: 0; }
-        .tech-info { font-family: monospace; font-size: 9px; color: #999; margin-top: 3px; border-top: 1px solid #eee; padding-top: 3px; }
-        .set-trigger { background: #fff; border: 2px solid var(--pudra); padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: 800; font-size: 11px; white-space: nowrap; }
-        .help-trigger { background: #2d3436; color: #fff; border: none; padding: 8px 15px; border-radius: 50px; cursor: pointer; font-weight: 800; font-size: 11px; }
+        /* ── TOP BAR ── */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            gap: 12px;
+            z-index: 100;
+            background: rgba(255,255,255,.88);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
 
-        .master-wrapper { display: flex; flex-direction: row; min-height: 100vh; width: 100vw; }
-        .left-content { flex: 1; display: flex; flex-direction: column; padding: 20px; align-items: center; }
-        
-        .logo-container { text-align: center; margin-bottom: 20px; width: 100%; margin-top: 10px; }
-        .logo-container img { height: 40px; }
-        
-        .main-tabs { display: flex; background: #eee; padding: 5px; border-radius: 50px; width: 100%; max-width: 320px; margin-bottom: 15px; }
-        .tab { flex: 1; padding: 12px; border: none; background: transparent; cursor: pointer; border-radius: 50px; font-weight: 800; color: #777; font-size: 12px; transition: 0.3s; }
-        .tab.active { background: var(--primary); color: #fff; }
+        @media (min-width: 951px) {
+            .top-bar {
+                position: absolute;
+                top: 0; left: 0; width: 400px;
+                background: transparent;
+                border-bottom: none;
+                backdrop-filter: none;
+                pointer-events: none;
+            }
+            .top-bar * { pointer-events: auto; }
+        }
 
-        .quick-entry { background: #fff; padding: 20px; border-radius: 25px; box-shadow: var(--shadow); width: 100%; max-width: 480px; border: 1px solid var(--pudra); }
-        input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #eee; text-align: center; font-weight: 800; font-size: 18px; margin-top: 5px; outline: none; }
-        .big-input { font-size: 24px !important; color: var(--primary); border-color: var(--pudra) !important; }
-        label { display: block; font-size: 10px; font-weight: 900; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        .rates-chip {
+            font-family: 'DM Sans', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--ink-mid);
+            background: var(--surface);
+            padding: 8px 14px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            line-height: 1.6;
+            flex-shrink: 0;
+        }
+        .rates-chip strong { color: var(--rose); }
+        .tech-time {
+            font-size: 9px;
+            color: var(--ink-dim);
+            border-top: 1px solid var(--border);
+            margin-top: 4px;
+            padding-top: 4px;
+        }
+        .tech-time .live { color: var(--success); font-weight: 700; }
 
-        .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 500px; margin: 20px 0; }
-        .live-box { background: #fff; padding: 15px 10px; border-radius: 20px; text-align: center; box-shadow: var(--shadow); position: relative; border: 2px solid transparent; overflow: hidden; }
-        .price-main { display: block; font-size: 18px; font-weight: 900; color: var(--primary); margin: 3px 0; }
-        .old-p { font-size: 11px; text-decoration: line-through; opacity: 0.5; font-weight: 700; }
-        .sticker { position: absolute; top: 0; right: 0; background: var(--primary); color: #fff; font-size: 10px; font-weight: 900; padding: 5px 10px; border-bottom-left-radius: 12px; z-index: 2; }
-        .sub-inst { font-size: 10px; font-weight: 800; color: #666; background: #f8f8f8; padding: 3px; border-radius: 6px; }
-        
-        .live-box.cash { border: 3px solid var(--success); background: #f0fff4; transform: scale(1.02); }
-        .live-box.cash .price-main { color: var(--success); font-size: 24px; }
-        .live-box.cash .sub-inst { background: var(--success); color: #fff; font-size: 11px; font-weight: 900; }
-        .live-box.cash .sticker { background: var(--success); }
+        .top-actions { display: flex; gap: 8px; }
 
-        .secret-margin { font-size: 9px; color: #ccc; font-weight: 700; display: block; margin-top: 4px; opacity: 0.6; font-family: monospace; }
+        .btn-ghost {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--ink-mid);
+            padding: 8px 16px;
+            border-radius: 100px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: .04em;
+            display: flex; align-items: center; gap: 6px;
+            transition: box-shadow .18s, border-color .18s;
+        }
+        .btn-ghost:hover { border-color: var(--rose-soft); box-shadow: var(--shadow-sm); }
 
-        .right-basket { width: 400px; background: #fff; border-left: 1px solid var(--pudra); padding: 20px; display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0; }
-        #basket-container { flex: 1; overflow-y: auto; padding-bottom: 20px; -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%); mask-image: linear-gradient(to bottom, black 90%, transparent 100%); }
-        #sum-box { background: #2d3436; color: #fff; padding: 15px; border-radius: 15px; margin-top: 10px; box-shadow: 0 -10px 20px rgba(0,0,0,0.1); z-index: 10; }
+        .btn-solid {
+            background: var(--ink);
+            border: 1px solid var(--ink);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 100px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: .04em;
+            display: flex; align-items: center; gap: 6px;
+            transition: background .18s;
+        }
+        .btn-solid:hover { background: #2e2e3e; }
 
-        .basket-group { margin-bottom: 15px; border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
-        .group-header { background: #f8f9fa; padding: 12px 15px; cursor: pointer; display: flex; font-weight: 800; font-size: 13px; border-bottom: 1px solid #eee; }
+        /* ── MASTER LAYOUT ── */
+        .master-wrapper {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            width: 100vw;
+        }
+
+        /* ── LEFT PANEL ── */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 28px 40px;
+        }
+
+        /* ── LOGO ── */
+        .brand-block {
+            text-align: center;
+            margin-bottom: 28px;
+            width: 100%;
+        }
+        .brand-block img { height: 36px; }
+        .brand-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--rose);
+            margin-top: 10px;
+        }
+        .brand-sub {
+            font-size: 10px;
+            color: var(--ink-dim);
+            font-weight: 400;
+            margin-top: 2px;
+            letter-spacing: .05em;
+        }
+
+        /* ── TABS ── */
+        .segment {
+            display: flex;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 4px;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .seg-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 100px;
+            font-weight: 600;
+            color: var(--ink-dim);
+            font-size: 11px;
+            letter-spacing: .05em;
+            transition: background .2s, color .2s, box-shadow .2s;
+        }
+        .seg-btn.active {
+            background: var(--rose);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(200,36,76,.35);
+        }
+
+        /* ── INPUT CARD ── */
+        .input-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow-md);
+            padding: 24px;
+            width: 100%;
+            max-width: 460px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--ink-dim);
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            margin-bottom: 6px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: var(--r-sm);
+            border: 1.5px solid var(--border);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+            text-align: center;
+            color: var(--ink);
+            outline: none;
+            background: var(--bg);
+            transition: border-color .18s, box-shadow .18s;
+            margin-top: 0;
+        }
+        input[type="text"]:focus {
+            border-color: var(--rose);
+            box-shadow: 0 0 0 3px rgba(200,36,76,.12);
+            background: var(--surface);
+        }
+        .big-input { font-size: 26px !important; color: var(--rose); }
+
+        .dual-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        /* ── PRICE GRID ── */
+        .price-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 460px;
+            margin: 20px 0;
+        }
+
+        .price-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-md);
+            padding: 16px 14px 14px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow .2s;
+        }
+        .price-card:hover { box-shadow: var(--shadow-md); }
+
+        .price-badge {
+            position: absolute;
+            top: 0; right: 0;
+            background: var(--ink-dim);
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-bottom-left-radius: 10px;
+            letter-spacing: .04em;
+        }
+        .price-card-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--ink-dim);
+            margin-bottom: 6px;
+            display: block;
+        }
+        .price-old {
+            font-size: 11px;
+            text-decoration: line-through;
+            color: var(--ink-dim);
+            font-weight: 500;
+            display: block;
+            height: 16px;
+        }
+        .price-value {
+            display: block;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--rose);
+            margin: 4px 0;
+            line-height: 1;
+        }
+        .price-sub {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--ink-mid);
+            background: var(--bg);
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .price-code {
+            font-size: 9px;
+            color: var(--ink-dim);
+            font-family: monospace;
+            display: block;
+            margin-top: 5px;
+            opacity: .7;
+        }
+
+        /* ── CASH CARD SPECIAL ── */
+        .price-card.cash {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+        .price-card.cash .price-value {
+            color: var(--success);
+            font-size: 26px;
+        }
+        .price-card.cash .price-badge {
+            background: var(--success);
+        }
+        .price-card.cash .price-sub {
+            background: var(--success);
+            color: #fff;
+            font-weight: 700;
+        }
+        .price-card.cash .price-card-label { color: var(--success); }
+
+        /* ── ACTION BUTTONS ── */
+        .action-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 460px;
+            margin-bottom: 0;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 14px;
+            background: var(--rose);
+            color: #fff;
+            border: none;
+            border-radius: var(--r-md);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background .2s, box-shadow .2s, transform .1s;
+            box-shadow: 0 4px 16px rgba(200,36,76,.3);
+        }
+        .btn-primary:hover { background: var(--rose-dim); box-shadow: 0 6px 20px rgba(200,36,76,.4); }
+        .btn-primary:active { transform: scale(.98); }
+
+        .btn-dark {
+            flex: 1;
+            padding: 14px;
+            background: var(--ink);
+            color: #fff;
+            border: none;
+            border-radius: var(--r-md);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background .2s, transform .1s;
+        }
+        .btn-dark:hover { background: #2e2e3e; }
+        .btn-dark:active { transform: scale(.98); }
+
+        /* ── RIGHT BASKET ── */
+        .right-basket {
+            width: 380px;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+
+        .basket-header {
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .basket-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: .02em;
+        }
+        .basket-title span {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--rose);
+            background: var(--rose-pale);
+            border: 1px solid var(--rose-soft);
+            padding: 3px 10px;
+            border-radius: 100px;
+            margin-left: 8px;
+        }
+
+        #basket-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            -webkit-mask-image: linear-gradient(to bottom, black 92%, transparent 100%);
+            mask-image: linear-gradient(to bottom, black 92%, transparent 100%);
+        }
+        #basket-container::-webkit-scrollbar { width: 4px; }
+        #basket-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* ── BASKET GROUPS ── */
+        .basket-group {
+            margin-bottom: 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--r-md);
+            overflow: hidden;
+        }
+
+        .group-header {
+            background: var(--bg);
+            padding: 11px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: .08em;
+            color: var(--ink-mid);
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+            transition: background .15s;
+        }
+        .group-header:hover { background: var(--rose-pale); }
+
         .group-content { padding: 10px; display: block; }
         .group-content.hidden { display: none; }
-        
-        .group-summary { background: #fdf2f4; padding: 8px 12px; font-size: 10px; border-top: 1px dashed var(--pudra); display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; color: var(--text-main); font-weight: 700; }
-        .group-summary span { display: block; }
-        .group-summary b { display: block; color: var(--primary); font-size: 11px; }
 
-        .basket-item { background:#fff; padding:12px; border-radius:12px; margin-bottom:10px; border:1px solid #f1f1f1; position: relative; }
-        .mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; font-size: 10px; border-top: 1px solid #eee; padding-top: 8px; }
-        .mini-grid b { display: block; font-size: 12px; color: var(--text-main); }
-
-        .action-btns { display:flex; gap:12px; width:100%; max-width:500px; margin-bottom: 20px; }
-        .btn-add { background: var(--primary); color: #fff; border: none; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; flex: 1; font-size: 13px; }
-        .btn-pdf { background: #2d3436; color: #fff; border: none; padding: 16px; border-radius: 15px; font-weight: 900; cursor: pointer; flex: 1; font-size: 13px; }
-
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter: blur(8px); display:none; justify-content:center; align-items:center; z-index: 9999; padding: 15px; }
-        .modal { background:#fff; width: 100%; max-width: 600px; border-radius: 25px; overflow: hidden; max-height: 90vh; display: flex; flex-direction: column; position: relative; }
-        .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; }
-        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-        
-        .pane { display: none; }
-        .pane.active { display: block; }
-        .s-tab-group { display: flex; background: #f1f1f1; flex-wrap: wrap; }
-        .s-tab { flex: 1; min-width: 50%; padding: 12px; border:none; font-size: 10px; font-weight: 800; cursor:pointer; border-bottom: 1px solid #ddd; }
-        .s-tab.active { background:#fff; color:var(--primary); }
-
-        .help-section { margin-bottom: 25px; }
-        .help-section h4 { color: var(--primary); border-left: 4px solid var(--primary); padding-left: 10px; margin-bottom: 10px; font-size: 15px; }
-        .help-section p { font-size: 13px; line-height: 1.6; color: #555; margin-bottom: 10px; }
-        .help-card { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 1px solid #eee; margin-top: 10px; }
-        .help-badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-right: 5px; color: #fff; }
-        .b-pink { background: var(--primary); }
-        .b-dark { background: #2d3436; }
-
-        @media (max-width: 950px) {
-            .master-wrapper { flex-direction: column; }
-            .right-basket { width: 100%; border-left: none; border-top: 5px solid var(--pudra); height: auto; position: static; }
-            .live-grid { grid-template-columns: 1fr; }
-            #basket-container { max-height: 400px; }
+        .group-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            padding: 10px 14px;
+            background: var(--rose-pale);
+            border-top: 1px dashed var(--rose-soft);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--ink-mid);
+        }
+        .group-summary b {
+            display: block;
+            font-size: 11px;
+            color: var(--rose);
+            font-weight: 700;
         }
 
+        /* ── BASKET ITEM ── */
+        .basket-item {
+            background: var(--surface);
+            padding: 12px;
+            border-radius: var(--r-sm);
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .basket-item-title {
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--ink);
+            padding-right: 24px;
+        }
+        .basket-item-detail {
+            font-size: 10px;
+            color: var(--ink-dim);
+            font-weight: 400;
+            display: block;
+            margin-top: 3px;
+        }
+        .item-remove {
+            position: absolute;
+            right: 10px; top: 10px;
+            color: var(--ink-dim);
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            transition: color .15s;
+        }
+        .item-remove:hover { color: var(--rose); }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 10px;
+            font-size: 10px;
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
+        }
+        .mini-grid-item { color: var(--ink-dim); }
+        .mini-grid-item b {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+        .mini-grid-item.cash b { color: var(--success); }
+
+        /* ── SUM BOX ── */
+        #sum-box {
+            margin: 0;
+            border-top: 1px solid var(--border);
+            padding: 16px;
+        }
+        .sum-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .14em;
+            color: var(--ink-dim);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .sum-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .sum-cell {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            padding: 10px 12px;
+        }
+        .sum-cell-label { font-size: 9px; color: var(--ink-dim); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+        .sum-cell-val { font-size: 15px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+        .sum-cell.cash { border-color: var(--success); background: var(--success-bg); }
+        .sum-cell.cash .sum-cell-val { color: var(--success); }
+        .sum-cell.cash .sum-cell-label { color: var(--success); }
+
+        .btn-clear {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            color: var(--ink-dim);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: .08em;
+            transition: border-color .15s, color .15s;
+        }
+        .btn-clear:hover { border-color: #e55; color: #e55; }
+
+        /* ── MODALS ── */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(26,26,36,.65);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 16px;
+        }
+
+        .modal {
+            background: var(--surface);
+            width: 100%;
+            max-width: 560px;
+            border-radius: var(--r-lg);
+            overflow: hidden;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            flex-shrink: 0;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ink);
+        }
+        .modal-close {
+            cursor: pointer;
+            color: var(--ink-dim);
+            font-size: 22px;
+            line-height: 1;
+            transition: color .15s;
+        }
+        .modal-close:hover { color: var(--rose); }
+
+        .modal-body { padding: 22px; overflow-y: auto; flex: 1; }
+
+        /* ── SETTINGS TABS ── */
+        .s-tab-bar {
+            display: flex;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .s-tab {
+            flex: 1;
+            min-width: 50%;
+            padding: 13px 8px;
+            border: none;
+            background: transparent;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            cursor: pointer;
+            color: var(--ink-dim);
+            border-bottom: 2px solid transparent;
+            transition: color .15s, border-color .15s;
+        }
+        .s-tab.active { color: var(--rose); border-bottom-color: var(--rose); background: var(--surface); }
+
+        .pane { display: none; }
+        .pane.active { display: block; }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            padding: 20px;
+        }
+        .settings-grid label { margin-top: 0; }
+        .settings-grid input[type="text"] { font-size: 16px; }
+
+        .settings-single { padding: 20px; }
+        .settings-single label { margin-top: 12px; }
+        .settings-single label:first-child { margin-top: 0; }
+        .settings-single input[type="text"] { font-size: 16px; }
+
+        .btn-save {
+            width: 100%;
+            padding: 14px;
+            background: var(--rose);
+            color: #fff;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background .2s;
+            flex-shrink: 0;
+        }
+        .btn-save:hover { background: var(--rose-dim); }
+
+        /* ── HELP CONTENT ── */
+        .help-section { margin-bottom: 24px; }
+        .help-section h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--rose);
+            border-left: 3px solid var(--rose);
+            padding-left: 12px;
+            margin: 0 0 10px;
+        }
+        .help-section p {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--ink-mid);
+            margin: 0 0 10px;
+        }
+        .help-card {
+            background: var(--bg);
+            padding: 14px;
+            border-radius: var(--r-sm);
+            border: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--ink-mid);
+            margin-top: 8px;
+        }
+        .help-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            margin-right: 6px;
+        }
+        .b-pink { background: var(--rose); }
+        .b-dark { background: var(--ink); }
+
+        /* ── KOD / MÜŞTERİ MODAL ── */
+        .simple-modal-body {
+            padding: 26px;
+        }
+        .simple-modal-body h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--ink);
+            margin: 0 0 16px;
+        }
+        .simple-modal-body input[type="text"] { font-size: 17px; }
+        .mt-10 { margin-top: 10px; }
+        .mt-14 { margin-top: 14px; }
+
+        /* ── EMPTY STATE ── */
+        .empty-basket {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--ink-dim);
+        }
+        .empty-basket svg { opacity: .25; margin-bottom: 12px; }
+        .empty-basket p { font-size: 12px; font-weight: 500; margin: 0; }
+
+        /* ── PRINT ── */
         #print-area { display: none; }
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
             #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
         }
+
+        /* ── MOBILE ── */
+        @media (max-width: 950px) {
+            .master-wrapper { flex-direction: column; }
+            .left-panel { padding: 16px 16px 30px; }
+            .right-basket {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                height: auto;
+                position: static;
+            }
+            #basket-container { max-height: 380px; }
+            .price-grid { grid-template-columns: 1fr 1fr; }
+            .top-bar { position: static; width: 100%; }
+        }
+
+        @media (max-width: 400px) {
+            .price-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .price-value { font-size: 17px; }
+            .price-card.cash .price-value { font-size: 21px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="top-info-bar no-print">
-        <div class="secret-rates">
-            <div id="tech-rates">U: -- | xU: -- <br> H: -- | xH: --</div>
-            <div id="tech-time" class="tech-info">-- <br> --</div>
+    <!-- TOP BAR -->
+    <div class="top-bar no-print">
+        <div class="rates-chip">
+            <div id="tech-rates">U: — | xU: —&nbsp;&nbsp; H: — | xH: —</div>
+            <div id="tech-time" class="tech-time">—</div>
         </div>
-        <div class="btn-group-top">
-            <button class="help-trigger" onclick="openModal('helpModal')">❓ YARDIM</button>
-            <button class="set-trigger" onclick="openModal('settingsModal')">⚙️ AYARLAR</button>
+        <div class="top-actions">
+            <button class="btn-ghost" onclick="openModal('helpModal')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Yardım
+            </button>
+            <button class="btn-solid" onclick="openModal('settingsModal')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Ayarlar
+            </button>
         </div>
     </div>
 
+    <!-- MASTER LAYOUT -->
     <div class="master-wrapper no-print">
-        <div class="left-content">
-            <div class="logo-container">
-                <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
-                <div id="h-store-display" style="font-size:11px; font-weight:800; color:#d63384; margin-top:8px; text-transform: uppercase;">SINA TERMİNAL</div>
-                <div id="h-tel-display" style="font-size:10px; font-weight:600; color:#999;"></div>
-            </div>
-            
-            <div class="main-tabs">
-                <button class="tab active" id="btnP" onclick="switchTab('pirlanta')">💎 PIRLANTA</button>
-                <button class="tab" id="btnA" onclick="switchTab('altin')">✨ ALTIN</button>
+
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+
+            <div class="brand-block">
+                <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" alt="Sina Pırlanta">
+                <div id="h-store-display" class="brand-name">SINA TERMİNAL</div>
+                <div id="h-tel-display" class="brand-sub"></div>
             </div>
 
-            <div class="quick-entry">
+            <div class="segment">
+                <button class="seg-btn active" id="btnP" onclick="switchTab('pirlanta')">💎 Pırlanta</button>
+                <button class="seg-btn" id="btnA" onclick="switchTab('altin')">✨ Altın</button>
+            </div>
+
+            <div class="input-card">
                 <div id="formP">
-                    <label>Pırlanta Etiket</label>
+                    <label class="field-label">Pırlanta Etiket (USD)</label>
                     <input type="text" id="inpP" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
                 </div>
-                <div id="formA" style="display:none; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div><label>Sina Has (SHG)</label><input type="text" id="inpA" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search"></div>
-                    <div><label>Ürün Gram (G)</label><input type="text" id="inpAG" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search"></div>
+                <div id="formA" style="display:none;" class="dual-fields">
+                    <div>
+                        <label class="field-label">Sina Has (SHG)</label>
+                        <input type="text" id="inpA" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
+                    </div>
+                    <div>
+                        <label class="field-label">Ürün Gram (G)</label>
+                        <input type="text" id="inpAG" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
+                    </div>
                 </div>
             </div>
 
-            <div class="live-grid">
-                <div class="live-box" id="box3"><div class="sticker" id="stk3">0%</div><label>3 Taksit</label><span class="old-p" id="old3">0 ₺</span><span class="price-main" id="v3">0 ₺</span><div class="sub-inst" id="sub3">3 x 0 ₺</div><span class="secret-margin" id="sm3"></span></div>
-                <div class="live-box" id="box2"><div class="sticker" id="stk2">0%</div><label>2 Taksit</label><span class="old-p" id="old2">0 ₺</span><span class="price-main" id="v2">0 ₺</span><div class="sub-inst" id="sub2">2 x 0 ₺</div><span class="secret-margin" id="sm2"></span></div>
-                <div class="live-box" id="box1"><div class="sticker" id="stk1">0%</div><label>Tek Çekim</label><span class="old-p" id="old1">0 ₺</span><span class="price-main" id="v1">0 ₺</span><div class="sub-inst">Peşin Fiyat</div><span class="secret-margin" id="sm1"></span></div>
-                <div class="live-box cash" id="boxN"><div class="sticker" id="stkN">0%</div><label>Nakit Ödeme</label><span class="old-p" id="oldN">0 ₺</span><span class="price-main" id="vN">0 ₺</span><div class="sub-inst">EN İYİ FİYAT</div><span class="secret-margin" id="smN"></span></div>
+            <div class="price-grid">
+                <div class="price-card" id="box3">
+                    <div class="price-badge" id="stk3">0%</div>
+                    <span class="price-card-label">3 Taksit</span>
+                    <span class="price-old" id="old3">—</span>
+                    <span class="price-value" id="v3">0 ₺</span>
+                    <div class="price-sub" id="sub3">3 × 0 ₺</div>
+                    <span class="price-code" id="sm3"></span>
+                </div>
+                <div class="price-card" id="box2">
+                    <div class="price-badge" id="stk2">0%</div>
+                    <span class="price-card-label">2 Taksit</span>
+                    <span class="price-old" id="old2">—</span>
+                    <span class="price-value" id="v2">0 ₺</span>
+                    <div class="price-sub" id="sub2">2 × 0 ₺</div>
+                    <span class="price-code" id="sm2"></span>
+                </div>
+                <div class="price-card" id="box1">
+                    <div class="price-badge" id="stk1">0%</div>
+                    <span class="price-card-label">Tek Çekim</span>
+                    <span class="price-old" id="old1">—</span>
+                    <span class="price-value" id="v1">0 ₺</span>
+                    <div class="price-sub">Peşin Fiyat</div>
+                    <span class="price-code" id="sm1"></span>
+                </div>
+                <div class="price-card cash" id="boxN">
+                    <div class="price-badge" id="stkN">0%</div>
+                    <span class="price-card-label">Nakit Ödeme</span>
+                    <span class="price-old" id="oldN">—</span>
+                    <span class="price-value" id="vN">0 ₺</span>
+                    <div class="price-sub">EN İYİ FİYAT</div>
+                    <span class="price-code" id="smN"></span>
+                </div>
             </div>
 
-            <div class="action-btns">
-                <button class="btn-add" onclick="openModal('kodModal')">SEPETE EKLE</button>
-                <button class="btn-pdf" onclick="openModal('cusModal')">PDF TEKLİF</button>
+            <div class="action-row">
+                <button class="btn-primary" onclick="openModal('kodModal')">+ Sepete Ekle</button>
+                <button class="btn-dark" onclick="openModal('cusModal')">PDF Teklif</button>
             </div>
+
         </div>
 
+        <!-- RIGHT BASKET -->
         <div class="right-basket">
-            <h2 style="margin:0 0 15px 0; color:var(--primary); font-size:18px;">Sipariş Listesi</h2>
-            <div id="basket-container"></div>
-            <div id="sum-box" style="display:none;">
-                <div style="font-size:10px; color:#888; margin-bottom:5px; font-weight:800; text-align:center;">GENEL TOPLAM</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; font-size:11px;">
-                    <div>3T: <b id="sum3">0</b></div><div>2T: <b id="sum2">0</b></div>
-                    <div>TEK: <b id="sum1">0</b></div><div style="color:var(--success)">NK: <b id="sumN">0</b></div>
+            <div class="basket-header">
+                <div>
+                    <span class="basket-title">Sipariş Listesi<span id="basket-count"></span></span>
                 </div>
-                <button onclick="clearBasket()" style="width:100%; margin-top:10px; background:#444; border:none; color:#ccc; padding:8px; border-radius:8px; cursor:pointer;">TEMİZLE</button>
+            </div>
+            <div id="basket-container">
+                <div class="empty-basket">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                    <p>Sepet boş</p>
+                </div>
+            </div>
+            <div id="sum-box" style="display:none;">
+                <div class="sum-label">Genel Toplam</div>
+                <div class="sum-grid">
+                    <div class="sum-cell"><div class="sum-cell-label">3 Taksit</div><div class="sum-cell-val"><span id="sum3">0</span> ₺</div></div>
+                    <div class="sum-cell"><div class="sum-cell-label">2 Taksit</div><div class="sum-cell-val"><span id="sum2">0</span> ₺</div></div>
+                    <div class="sum-cell"><div class="sum-cell-label">Tek Çekim</div><div class="sum-cell-val"><span id="sum1">0</span> ₺</div></div>
+                    <div class="sum-cell cash"><div class="sum-cell-label">Nakit</div><div class="sum-cell-val"><span id="sumN">0</span> ₺</div></div>
+                </div>
+                <button class="btn-clear" onclick="clearBasket()">Sepeti Temizle</button>
             </div>
         </div>
+
     </div>
 
+    <!-- HELP MODAL -->
     <div id="helpModal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h3 style="margin:0; color:var(--primary);">📖 Sina Terminal Kullanım Kılavuzu</h3>
-                <span style="cursor:pointer; font-weight:bold; font-size:20px;" onclick="closeModal('helpModal')">✕</span>
+                <h3>Kullanım Kılavuzu</h3>
+                <span class="modal-close" onclick="closeModal('helpModal')">×</span>
             </div>
             <div class="modal-body">
                 <div class="help-section">
-                    <h4>1. Pırlanta Hesaplama (Diamond)</h4>
-                    <p>Pırlanta sekmesinde, sertifika üzerindeki <b>USD Etiket Fiyatını</b> giriniz. Sistem bu fiyatı "U" (Dolar Kuru) ve "xU" (Dolar Katsayısı) ile çarparak önce liste fiyatını bulur, ardından belirlediğiniz kâr oranlarını ekleyerek satış fiyatlarını hesaplar.</p>
-                    <div class="help-card">
-                        <span class="help-badge b-pink">K+12</span> <b>Kodu Nedir?</b><br>
-                        Personelin karlılığını takip etmesi içindir. Ürünün maliyeti üzerine eklenen kâr yüzdesini gösterir. <i>(Örn: K+40, maliyetin %40 üstü satış demektir.)</i>
-                    </div>
+                    <h4>1. Pırlanta Hesaplama</h4>
+                    <p>Pırlanta sekmesinde, sertifika üzerindeki <strong>USD Etiket Fiyatını</strong> giriniz. Sistem bu fiyatı <em>U</em> (Dolar Kuru) ve <em>xU</em> (Dolar Katsayısı) ile çarparak liste fiyatını bulur, ardından belirlediğiniz kâr oranlarını ekleyerek satış fiyatlarını hesaplar.</p>
+                    <div class="help-card"><span class="help-badge b-pink">K+12</span> <strong>Kodu Nedir?</strong><br>Personelin karlılığını takip etmesi içindir. Ürünün maliyeti üzerine eklenen kâr yüzdesini gösterir. <em>(Örn: K+40, maliyetin %40 üstü satış demektir.)</em></div>
                 </div>
                 <div class="help-section">
-                    <h4>2. Altın Hesaplama (Gold)</h4>
-                    <p>Altın sekmesinde ürüne ait <b>Sina Has (SHG)</b> ve <b>Gram (G)</b> değerlerini giriniz. Sistem "H" (Has Altın TL) ve "xH" (Has Katsayısı) kullanarak liste fiyatını oluşturur.</p>
-                    <div class="help-card">
-                        <span class="help-badge b-dark">İ-28</span> <b>Kodu Nedir?</b><br>
-                        Altın ürünlerinde liste fiyatı üzerinden yapılan <b>İskonto</b> oranını gösterir. <i>(Örn: İ-35, etiketten %35 indirim yapıldığını belirtir.)</i>
-                    </div>
+                    <h4>2. Altın Hesaplama</h4>
+                    <p>Altın sekmesinde ürüne ait <strong>Sina Has (SHG)</strong> ve <strong>Gram (G)</strong> değerlerini giriniz. Sistem <em>H</em> (Has Altın TL) ve <em>xH</em> (Has Katsayısı) kullanarak liste fiyatını oluşturur.</p>
+                    <div class="help-card"><span class="help-badge b-dark">İ-28</span> <strong>Kodu Nedir?</strong><br>Altın ürünlerinde liste fiyatı üzerinden yapılan <strong>İskonto</strong> oranını gösterir. <em>(Örn: İ-35, etiketten %35 indirim yapıldığını belirtir.)</em></div>
                 </div>
                 <div class="help-section">
                     <h4>3. Sepet ve PDF Teklif</h4>
-                    <p>Hesapladığınız ürünü <b>"Sepete Ekle"</b> butonu ile listeye atabilirsiniz. Kod kısmına model numarasını (örn: SINA-1200) girmeyi unutmayın.</p>
-                    <p><b>PDF TEKLİF:</b> Sepetteki tüm ürünleri profesyonel bir çıktı formatına dönüştürür.</p>
+                    <p>Hesapladığınız ürünü <strong>"Sepete Ekle"</strong> butonu ile listeye atabilirsiniz. Kod kısmına model numarasını (örn: SINA-1200) girmeyi unutmayın.</p>
+                    <p><strong>PDF TEKLİF:</strong> Sepetteki tüm ürünleri profesyonel bir çıktı formatına dönüştürür.</p>
                 </div>
                 <div class="help-section">
                     <h4>4. Ayarlar (Kur ve Oranlar)</h4>
                     <p>Ayarlar kısmından güncel Dolar ve Has değerlerini güncelleyiniz. Kaydettiğiniz ayarlar cihazınızın hafızasında tutulur.</p>
                 </div>
-                <button class="btn-add" style="width:100%; margin-top:20px;" onclick="closeModal('helpModal')">ANLADIM, KAPAT</button>
+                <button class="btn-primary" style="width:100%; margin-top:8px; border-radius:var(--r-sm);" onclick="closeModal('helpModal')">Anladım, Kapat</button>
             </div>
         </div>
     </div>
 
+    <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="modal-overlay">
         <div class="modal">
-            <div class="s-tab-group">
-                <button class="s-tab active" onclick="setSTab(0)">KUR/KATSAYI</button>
-                <button class="s-tab" onclick="setSTab(1)">PIRLANTA KAR</button>
-                <button class="s-tab" onclick="setSTab(2)">ALTIN İSKONTO</button>
-                <button class="s-tab" onclick="setSTab(3)">MAĞAZA</button>
+            <div class="modal-header">
+                <h3>Ayarlar</h3>
+                <span class="modal-close" onclick="closeModal('settingsModal')">×</span>
+            </div>
+            <div class="s-tab-bar">
+                <button class="s-tab active" onclick="setSTab(0)">Kur / Katsayı</button>
+                <button class="s-tab" onclick="setSTab(1)">Pırlanta Kâr</button>
+                <button class="s-tab" onclick="setSTab(2)">Altın İskonto</button>
+                <button class="s-tab" onclick="setSTab(3)">Mağaza</button>
             </div>
             <div id="pane0" class="pane active">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:20px;">
-                    <div><label>U (USD)</label><input type="text" id="cfgU" value="34.20" inputmode="decimal"></div>
-                    <div><label>xU (%)</label><input type="text" id="cfgU_plus" value="3" inputmode="decimal"></div>
-                    <div><label>H (HAS)</label><input type="text" id="cfgA" value="3150" inputmode="decimal"></div>
-                    <div><label>xH (%)</label><input type="text" id="cfgA_plus" value="20" inputmode="decimal"></div>
+                <div class="settings-grid">
+                    <div><label class="field-label">U (USD)</label><input type="text" id="cfgU" value="34.20" inputmode="decimal"></div>
+                    <div><label class="field-label">xU (%)</label><input type="text" id="cfgU_plus" value="3" inputmode="decimal"></div>
+                    <div><label class="field-label">H (Has)</label><input type="text" id="cfgA" value="3150" inputmode="decimal"></div>
+                    <div><label class="field-label">xH (%)</label><input type="text" id="cfgA_plus" value="20" inputmode="decimal"></div>
                 </div>
             </div>
             <div id="pane1" class="pane">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:20px;">
-                    <div><label>3T KAR %</label><input type="text" id="pk3" value="50"></div>
-                    <div><label>2T KAR %</label><input type="text" id="pk2" value="44"></div>
-                    <div><label>1T KAR %</label><input type="text" id="pk1" value="38"></div>
-                    <div><label>NAKİT KAR %</label><input type="text" id="pkN" value="32"></div>
+                <div class="settings-grid">
+                    <div><label class="field-label">3T Kâr %</label><input type="text" id="pk3" value="50"></div>
+                    <div><label class="field-label">2T Kâr %</label><input type="text" id="pk2" value="44"></div>
+                    <div><label class="field-label">1T Kâr %</label><input type="text" id="pk1" value="38"></div>
+                    <div><label class="field-label">Nakit Kâr %</label><input type="text" id="pkN" value="32"></div>
                 </div>
             </div>
             <div id="pane2" class="pane">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:20px;">
-                    <div><label>3T İSK %</label><input type="text" id="ak3" value="28"></div>
-                    <div><label>2T İSK %</label><input type="text" id="ak2" value="28"></div>
-                    <div><label>1T İSK %</label><input type="text" id="ak1" value="28"></div>
-                    <div><label>NAKİT İSK %</label><input type="text" id="akN" value="35"></div>
+                <div class="settings-grid">
+                    <div><label class="field-label">3T İsk %</label><input type="text" id="ak3" value="28"></div>
+                    <div><label class="field-label">2T İsk %</label><input type="text" id="ak2" value="28"></div>
+                    <div><label class="field-label">1T İsk %</label><input type="text" id="ak1" value="28"></div>
+                    <div><label class="field-label">Nakit İsk %</label><input type="text" id="akN" value="35"></div>
                 </div>
             </div>
             <div id="pane3" class="pane">
-                <div style="padding:20px;">
-                    <label>Mağaza Adı</label><input type="text" id="cfgStore" value="Sina Pırlanta Maltepe Piazza">
-                    <label style="margin-top:10px;">Telefon</label><input type="text" id="cfgTel" value="0216 XXX XX XX">
-                    <label style="margin-top:10px;">Adres</label><input type="text" id="cfgAddr" value="Maltepe / İstanbul">
+                <div class="settings-single">
+                    <label class="field-label">Mağaza Adı</label><input type="text" id="cfgStore" value="Sina Pırlanta Maltepe Piazza" style="font-size:14px;">
+                    <label class="field-label mt-10" style="margin-top:12px;">Telefon</label><input type="text" id="cfgTel" value="0216 XXX XX XX" style="font-size:14px;">
+                    <label class="field-label" style="margin-top:12px;">Adres</label><input type="text" id="cfgAddr" value="Maltepe / İstanbul" style="font-size:14px;">
                 </div>
             </div>
-            <button class="btn-add" style="width:100%; border-radius:0;" onclick="saveCfg(); closeModal('settingsModal')">AYARLARI KAYDET</button>
+            <button class="btn-save" onclick="saveCfg(); closeModal('settingsModal')">Ayarları Kaydet</button>
         </div>
     </div>
 
-    <div id="kodModal" class="modal-overlay"><div class="modal" style="padding:25px;"><h3>Ürün Kodu</h3><input type="text" id="iKod" placeholder="SINA-100"><button class="btn-add" style="width:100%; margin-top:15px;" onclick="addBasket()">SEPETE EKLE</button></div></div>
-    
+    <!-- KOD MODAL -->
+    <div id="kodModal" class="modal-overlay">
+        <div class="modal" style="max-width:380px;">
+            <div class="simple-modal-body">
+                <h3>Ürün Kodu</h3>
+                <label class="field-label">Model / Stok Kodu</label>
+                <input type="text" id="iKod" placeholder="SINA-100" style="font-size:18px;">
+                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" onclick="addBasket()">Sepete Ekle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÜŞTERİ / PDF MODAL -->
     <div id="cusModal" class="modal-overlay">
-        <div class="modal" style="padding:25px;">
-            <h3>Müşteri Bilgileri</h3>
-            <input type="text" id="iCus" placeholder="Müşteri İsmi">
-            <input type="text" id="iPhone" placeholder="Telefon" style="margin-top:10px;">
-            <button class="btn-add" style="width:100%; margin-top:15px;" onclick="generatePDF()">TEKLİFİ YAZDIR</button>
+        <div class="modal" style="max-width:380px;">
+            <div class="simple-modal-body">
+                <h3>Müşteri Bilgileri</h3>
+                <label class="field-label">Müşteri Adı</label>
+                <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px;">
+                <label class="field-label" style="margin-top:12px;">Telefon</label>
+                <input type="text" id="iPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
+                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" onclick="generatePDF()">Teklifi Yazdır</button>
+            </div>
         </div>
     </div>
 
+    <!-- PRINT AREA -->
     <div id="print-area">
         <div style="text-align:center; border-bottom:2px solid #f8c8d2; padding-bottom:20px; margin-bottom:20px;">
             <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" style="height:50px; margin-bottom:10px;">
-            <h2 style="color:#2d3436; font-weight:900; letter-spacing:1px; margin:0; font-size:20px;">SİPARİŞ TEKLİF FORMU</h2>
+            <h2 style="color:#1a1a24; font-weight:900; letter-spacing:1px; margin:0; font-size:20px;">SİPARİŞ TEKLİF FORMU</h2>
             <p id="p-date" style="font-size:11px; color:#888; margin:5px 0 0 0; font-weight:500;"></p>
         </div>
-        <div id="p-cus-info" style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:12px; color:#2d3436; font-weight:600;"></div>
+        <div id="p-cus-info" style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:12px; color:#1a1a24; font-weight:600;"></div>
         <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:center; margin-bottom:20px;">
             <thead>
-                <tr style="background:#fdf2f4; color:#d63384; border-bottom:2px solid #d63384;">
+                <tr style="background:#fdf0f3; color:#c8244c; border-bottom:2px solid #c8244c;">
                     <th style="padding:10px 5px;">ÜRÜN KODU</th>
                     <th style="padding:10px 5px;">DETAYLAR</th>
                     <th style="padding:10px 5px;">LİSTE FİYATI</th>
                     <th style="padding:10px 5px;">3 TAKSİT</th>
                     <th style="padding:10px 5px;">TEK ÇEKİM</th>
-                    <th style="padding:10px 5px; background:#d63384; color:#fff;">NAKİT ÖDEME</th>
+                    <th style="padding:10px 5px; background:#c8244c; color:#fff;">NAKİT ÖDEME</th>
                 </tr>
             </thead>
             <tbody id="p-body"></tbody>
         </table>
-        <div id="p-summary" style="display:flex; justify-content:flex-end; gap:40px; border-top:2px solid #fdf2f4; padding-top:20px; align-items:center;"></div>
+        <div id="p-summary" style="display:flex; justify-content:flex-end; gap:40px; border-top:2px solid #fdf0f3; padding-top:20px; align-items:center;"></div>
         <div style="margin-top:40px; text-align:center; font-size:10px; color:#999; border-top:1px solid #eee; padding-top:15px; font-weight:500;">
             <b id="p-store-name"></b><br>
-            <span id="p-store-addr"></span> - Tel: <span id="p-store-tel"></span><br>
+            <span id="p-store-addr"></span> — Tel: <span id="p-store-tel"></span><br>
             Bilgilendirme Amaçlıdır.
             <div id="p-ref-line" style="margin-top:10px; font-family:monospace; font-size:8px; opacity:0.3;"></div>
         </div>
@@ -303,15 +1050,12 @@
     let currentMode = 'pirlanta';
     let lastUpdate = null;
 
-    function smartEval(s) { 
-        if(!s) return 0; 
+    function smartEval(s) {
+        if(!s) return 0;
         let val = s.toString().replace(/,/g, '.');
-        let total = 0; 
-        val.split('+').forEach(p => { 
-            let v = parseFloat(p.trim()); 
-            if(!isNaN(v)) total += v; 
-        }); 
-        return total; 
+        let total = 0;
+        val.split('+').forEach(p => { let v = parseFloat(p.trim()); if(!isNaN(v)) total += v; });
+        return total;
     }
 
     function saveCfg() {
@@ -335,140 +1079,185 @@
     function updateTech() {
         if(!lastUpdate) return;
         const diff = Math.floor((new Date() - lastUpdate) / 1000);
-        document.getElementById('tech-time').innerHTML = `GÜNCEL: ${lastUpdate.toLocaleTimeString()} <br> <span style="color:var(--success)">${diff < 60 ? diff + " sn" : Math.floor(diff/60) + " dk"} önce</span>`;
+        const timeStr = lastUpdate.toLocaleTimeString('tr-TR');
+        const agoStr = diff < 60 ? diff + ' sn önce' : Math.floor(diff/60) + ' dk önce';
+        document.getElementById('tech-time').innerHTML = `${timeStr} &nbsp;<span class="live">● ${agoStr}</span>`;
     }
 
     function runCalc() {
-        const u = smartEval(document.getElementById('cfgU').value), up = smartEval(document.getElementById('cfgU_plus').value);
-        const h = smartEval(document.getElementById('cfgA').value), hp = smartEval(document.getElementById('cfgA_plus').value);
+        const u  = smartEval(document.getElementById('cfgU').value),
+              up = smartEval(document.getElementById('cfgU_plus').value),
+              h  = smartEval(document.getElementById('cfgA').value),
+              hp = smartEval(document.getElementById('cfgA_plus').value);
         const xU = u * (1 + up/100), xH = h * (1 + hp/100);
-        document.getElementById('tech-rates').innerHTML = `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)}<br>H: ${h.toFixed(0)} | xH: ${xH.toFixed(0)}`;
-        
-        let res = {v3:0, v2:0, v1:0, vN:0, old:0, m3:"", m2:"", m1:"", mN:""}, details = "";
-        
+        document.getElementById('tech-rates').innerHTML =
+            `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)}&nbsp;&nbsp; H: ${h.toFixed(0)} | xH: ${xH.toFixed(0)}`;
+
+        let res = {v3:0, v2:0, v1:0, vN:0, old:0, m3:'', m2:'', m1:'', mN:''}, details = '';
+
         if(currentMode === 'pirlanta') {
             let labelVal = smartEval(document.getElementById('inpP').value);
             if(labelVal > 0) {
                 let listTl = labelVal * xU;
                 let costTl = (labelVal / 3) * xU;
-                const getPCode = (v) => "K" + (Math.round(((v - costTl)/costTl)*100) >= 0 ? "+" : "") + Math.round(((v - costTl)/costTl)*100);
-                res = { 
-                    v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100), 
-                    v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100), 
-                    v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100), 
-                    vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100), 
-                    old: listTl 
+                const getPCode = (v) => 'K' + (Math.round(((v - costTl)/costTl)*100) >= 0 ? '+' : '') + Math.round(((v - costTl)/costTl)*100);
+                res = {
+                    v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
+                    v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
+                    v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
+                    vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
+                    old: listTl
                 };
                 res.m3 = getPCode(res.v3); res.m2 = getPCode(res.v2); res.m1 = getPCode(res.v1); res.mN = getPCode(res.vN);
-                details = "Pırlanta";
+                details = 'Pırlanta';
             }
         } else {
-            let shgVal = smartEval(document.getElementById('inpA').value);
+            let shgVal  = smartEval(document.getElementById('inpA').value);
             let gramVal = smartEval(document.getElementById('inpAG').value);
             if(shgVal > 0) {
                 let listTl = shgVal * xH;
                 let hasMaliyet = shgVal * h;
-                const getACode = (v) => "İ" + (Math.round(((v - hasMaliyet)/hasMaliyet)*100) >= 0 ? "+" : "") + Math.round(((v - hasMaliyet)/hasMaliyet)*100);
-                res = { 
-                    v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100), 
-                    v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100), 
-                    v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100), 
-                    vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100), 
-                    old: listTl 
+                const getACode = (v) => 'İ' + (Math.round(((v - hasMaliyet)/hasMaliyet)*100) >= 0 ? '+' : '') + Math.round(((v - hasMaliyet)/hasMaliyet)*100);
+                res = {
+                    v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100),
+                    v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100),
+                    v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100),
+                    vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100),
+                    old: listTl
                 };
                 res.m3 = getACode(res.v3); res.m2 = getACode(res.v2); res.m1 = getACode(res.v1); res.mN = getACode(res.vN);
                 details = `Altın (SHG: ${shgVal.toFixed(2)} | Gram: ${gramVal.toFixed(2)}g)`;
             }
         }
-        updateBox('3', res.old, res.v3, 3, res.m3); 
-        updateBox('2', res.old, res.v2, 2, res.m2); 
-        updateBox('1', res.old, res.v1, 1, res.m1); 
+
+        updateBox('3', res.old, res.v3, 3, res.m3);
+        updateBox('2', res.old, res.v2, 2, res.m2);
+        updateBox('1', res.old, res.v1, 1, res.m1);
         updateBox('N', res.old, res.vN, 0, res.mN);
         return { res, details, mode: currentMode };
     }
 
     function updateBox(id, old, v, div, mCode) {
-        document.getElementById('old'+id).innerText = Math.round(old).toLocaleString() + ' ₺';
-        document.getElementById('v'+id).innerText = Math.round(v).toLocaleString() + ' ₺';
-        if(div > 1) document.getElementById('sub'+id).innerText = `${div} x ${Math.round(v/div).toLocaleString()} ₺`;
-        document.getElementById('sm'+id).innerText = old > 0 ? mCode : "";
+        document.getElementById('old'+id).innerText = old > 0 ? Math.round(old).toLocaleString('tr-TR') + ' ₺' : '—';
+        document.getElementById('v'+id).innerText   = Math.round(v).toLocaleString('tr-TR') + ' ₺';
+        if(div > 1) document.getElementById('sub'+id).innerText = `${div} × ${Math.round(v/div).toLocaleString('tr-TR')} ₺`;
+        document.getElementById('sm'+id).innerText  = old > 0 ? mCode : '';
         const diff = old > 0 ? Math.round(((v - old) / old) * 100) : 0;
-        document.getElementById('stk'+id).innerText = (diff > 0 ? "+" : "") + diff + "%";
+        document.getElementById('stk'+id).innerText = (diff > 0 ? '+' : '') + diff + '%';
     }
 
     function addBasket() {
         const k = document.getElementById('iKod').value; if(!k) return;
         const calc = runCalc();
         basket.push({ id: Date.now(), k: k.toUpperCase(), v: calc.res, d: calc.details, mode: calc.mode });
-        
-        // Inputları sıfırla
-        document.getElementById('iKod').value = ""; 
-        document.getElementById('inpP').value = "";
-        document.getElementById('inpA').value = "";
-        document.getElementById('inpAG').value = "";
-        
-        closeModal('kodModal'); 
-        runCalc(); // Ekranı temizle (0₺ göster)
+        document.getElementById('iKod').value  = '';
+        document.getElementById('inpP').value  = '';
+        document.getElementById('inpA').value  = '';
+        document.getElementById('inpAG').value = '';
+        closeModal('kodModal');
+        runCalc();
         renderBasket();
         setTimeout(() => { const c = document.getElementById('basket-container'); c.scrollTop = c.scrollHeight; }, 100);
     }
 
     function renderBasket() {
         const container = document.getElementById('basket-container');
-        if(!basket.length) { container.innerHTML = '<p style="text-align:center; color:#bbb; margin-top:20px;">Sepet boş.</p>'; document.getElementById('sum-box').style.display='none'; return; }
-        document.getElementById('sum-box').style.display='block';
-        const pItems = basket.filter(i => i.mode === 'pirlanta'), aItems = basket.filter(i => i.mode === 'altin');
-        container.innerHTML = (pItems.length ? createGroupHtml('💎 PIRLANTA', 'pirlanta', pItems) : '') + (aItems.length ? createGroupHtml('✨ ALTIN', 'altin', aItems) : '');
-        document.getElementById('sum3').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v3, 0)).toLocaleString();
-        document.getElementById('sum2').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v2, 0)).toLocaleString();
-        document.getElementById('sum1').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v1, 0)).toLocaleString();
-        document.getElementById('sumN').innerText = Math.round(basket.reduce((a,b)=>a+b.v.vN, 0)).toLocaleString();
+        const countEl   = document.getElementById('basket-count');
+        if(!basket.length) {
+            container.innerHTML = `<div class="empty-basket"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><p>Sepet boş</p></div>`;
+            document.getElementById('sum-box').style.display = 'none';
+            if(countEl) countEl.innerText = '';
+            return;
+        }
+        document.getElementById('sum-box').style.display = 'block';
+        if(countEl) countEl.innerText = basket.length;
+        const pItems = basket.filter(i => i.mode === 'pirlanta'),
+              aItems = basket.filter(i => i.mode === 'altin');
+        container.innerHTML =
+            (pItems.length ? createGroupHtml('💎 Pırlanta', 'pirlanta', pItems) : '') +
+            (aItems.length ? createGroupHtml('✨ Altın', 'altin', aItems) : '');
+        document.getElementById('sum3').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v3, 0)).toLocaleString('tr-TR');
+        document.getElementById('sum2').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v2, 0)).toLocaleString('tr-TR');
+        document.getElementById('sum1').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v1, 0)).toLocaleString('tr-TR');
+        document.getElementById('sumN').innerText = Math.round(basket.reduce((a,b)=>a+b.v.vN, 0)).toLocaleString('tr-TR');
     }
 
     function createGroupHtml(title, mode, items) {
-        const gSum3 = Math.round(items.reduce((a,b)=>a+b.v.v3, 0)).toLocaleString();
-        const gSum2 = Math.round(items.reduce((a,b)=>a+b.v.v2, 0)).toLocaleString();
-        const gSum1 = Math.round(items.reduce((a,b)=>a+b.v.v1, 0)).toLocaleString();
-        const gSumN = Math.round(items.reduce((a,b)=>a+b.v.vN, 0)).toLocaleString();
-
+        const f = (n) => Math.round(n).toLocaleString('tr-TR');
+        const gSum3 = f(items.reduce((a,b)=>a+b.v.v3,0)),
+              gSum2 = f(items.reduce((a,b)=>a+b.v.v2,0)),
+              gSum1 = f(items.reduce((a,b)=>a+b.v.v1,0)),
+              gSumN = f(items.reduce((a,b)=>a+b.v.vN,0));
         return `
-            <div class="basket-group">
-                <div class="group-header" onclick="toggleGroup('${mode}')"><span>${title} (${items.length})</span><span>▼</span></div>
-                <div id="group-${mode}" class="group-content">
-                    ${items.map(i => `<div class="basket-item"><span style="position:absolute; right:10px; top:10px; color:red; cursor:pointer;" onclick="removeItem(${i.id})">✕</span><b>${i.k}</b> <br><small style="color:#888;">${i.d}</small><div class="mini-grid"><div>3T <b>${Math.round(i.v.v3).toLocaleString()}</b> <span class="secret-margin">${i.v.m3}</span></div><div style="color:var(--success)">NK <b>${Math.round(i.v.vN).toLocaleString()}</b> <span class="secret-margin">${i.v.mN}</span></div></div></div>`).join('')}
-                </div>
-                <div class="group-summary">
-                    <span>3T <b>${gSum3}</b></span>
-                    <span>2T <b>${gSum2}</b></span>
-                    <span>TEK <b>${gSum1}</b></span>
-                    <span>NK <b style="color:var(--success)">${gSumN}</b></span>
-                </div>
-            </div>`;
+        <div class="basket-group">
+            <div class="group-header" onclick="toggleGroup('${mode}')">
+                <span>${title} <span style="opacity:.6;font-weight:500;">(${items.length})</span></span>
+                <span style="font-size:10px; opacity:.5;">▾</span>
+            </div>
+            <div id="group-${mode}" class="group-content">
+                ${items.map(i => `
+                <div class="basket-item">
+                    <span class="item-remove" onclick="removeItem(${i.id})">×</span>
+                    <div class="basket-item-title">${i.k}</div>
+                    <span class="basket-item-detail">${i.d}</span>
+                    <div class="mini-grid">
+                        <div class="mini-grid-item">3T <b>${f(i.v.v3)} ₺</b><span style="font-size:9px;color:var(--ink-dim);font-family:monospace;display:block;">${i.v.m3}</span></div>
+                        <div class="mini-grid-item cash">Nakit <b>${f(i.v.vN)} ₺</b><span style="font-size:9px;color:var(--ink-dim);font-family:monospace;display:block;">${i.v.mN}</span></div>
+                    </div>
+                </div>`).join('')}
+            </div>
+            <div class="group-summary">
+                <span>3T<b>${gSum3}</b></span>
+                <span>2T<b>${gSum2}</b></span>
+                <span>Tek<b>${gSum1}</b></span>
+                <span style="color:var(--success)">NK<b style="color:var(--success)">${gSumN}</b></span>
+            </div>
+        </div>`;
     }
 
     function generatePDF() {
         const now = new Date();
-        document.getElementById('p-date').innerText = "Tarih: " + now.toLocaleString('tr-TR');
-        const ts = now.toLocaleDateString('tr-TR') + " " + now.toLocaleTimeString('tr-TR');
+        document.getElementById('p-date').innerText = 'Tarih: ' + now.toLocaleString('tr-TR');
+        const ts = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR');
         document.getElementById('p-ref-line').innerText = `Ref: U: ${document.getElementById('cfgU').value} - H: ${document.getElementById('cfgA').value} / ${ts}`;
-        document.getElementById('p-cus-info').innerHTML = `<div>Sayın: <b style="color:#d63384;">${document.getElementById('iCus').value || 'Müşterimiz'}</b></div><div>Tel: <b>${document.getElementById('iPhone').value || '-'}</b></div>`;
-        document.getElementById('p-store-name').innerText = document.getElementById('cfgStore').value;
-        document.getElementById('p-store-tel').innerText = document.getElementById('cfgTel').value;
-        document.getElementById('p-store-addr').innerText = document.getElementById('cfgAddr').value;
-        const b = document.getElementById('p-body'); b.innerHTML = "";
-        basket.forEach(i => { b.innerHTML += `<tr style="border-bottom: 1px solid #fdf2f4;"><td style="padding:10px 5px; font-weight:800;">${i.k}</td><td style="padding:10px 5px; font-size:9px; text-align:left;">${i.d}</td><td style="padding:10px 5px; text-decoration:line-through; color:#aaa;">${Math.round(i.v.old).toLocaleString()} ₺</td><td style="padding:10px 5px;">${Math.round(i.v.v3).toLocaleString()} ₺</td><td style="padding:10px 5px;">${Math.round(i.v.v1).toLocaleString()} ₺</td><td style="padding:10px 5px; background:#fdf2f4; color:#d63384; font-weight:900;">${Math.round(i.v.vN).toLocaleString()} ₺</td></tr>`; });
-        const s3 = Math.round(basket.reduce((a,b)=>a+b.v.v3, 0)), sN = Math.round(basket.reduce((a,b)=>a+b.v.vN, 0));
-        document.getElementById('p-summary').innerHTML = `<div style="text-align:right;"><div style="font-size:11px; color:#888;">3 Taksit Toplam</div><div style="font-size:18px; font-weight:800;">${s3.toLocaleString()} ₺</div></div><div style="text-align:right;"><div style="font-size:11px; color:#d63384; font-weight:900;">Nakit İndirimli Toplam</div><div style="color:#d63384; font-size:24px; font-weight:900;">${sN.toLocaleString()} ₺</div></div>`;
-        document.getElementById('print-area').style.display = 'block'; setTimeout(() => { window.print(); document.getElementById('print-area').style.display = 'none'; closeModal('cusModal'); }, 500);
+        document.getElementById('p-cus-info').innerHTML = `<div>Sayın: <b style="color:#c8244c;">${document.getElementById('iCus').value || 'Müşterimiz'}</b></div><div>Tel: <b>${document.getElementById('iPhone').value || '—'}</b></div>`;
+        document.getElementById('p-store-name').innerText  = document.getElementById('cfgStore').value;
+        document.getElementById('p-store-tel').innerText   = document.getElementById('cfgTel').value;
+        document.getElementById('p-store-addr').innerText  = document.getElementById('cfgAddr').value;
+        const b = document.getElementById('p-body'); b.innerHTML = '';
+        basket.forEach(i => {
+            b.innerHTML += `<tr style="border-bottom:1px solid #fdf0f3;">
+                <td style="padding:10px 5px; font-weight:800;">${i.k}</td>
+                <td style="padding:10px 5px; font-size:9px; text-align:left;">${i.d}</td>
+                <td style="padding:10px 5px; text-decoration:line-through; color:#aaa;">${Math.round(i.v.old).toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px 5px;">${Math.round(i.v.v3).toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px 5px;">${Math.round(i.v.v1).toLocaleString('tr-TR')} ₺</td>
+                <td style="padding:10px 5px; background:#fdf0f3; color:#c8244c; font-weight:900;">${Math.round(i.v.vN).toLocaleString('tr-TR')} ₺</td>
+            </tr>`;
+        });
+        const s3 = Math.round(basket.reduce((a,b)=>a+b.v.v3,0)),
+              sN = Math.round(basket.reduce((a,b)=>a+b.v.vN,0));
+        document.getElementById('p-summary').innerHTML = `
+            <div style="text-align:right;"><div style="font-size:11px; color:#888;">3 Taksit Toplam</div><div style="font-size:18px; font-weight:800;">${s3.toLocaleString('tr-TR')} ₺</div></div>
+            <div style="text-align:right;"><div style="font-size:11px; color:#c8244c; font-weight:900;">Nakit İndirimli Toplam</div><div style="color:#c8244c; font-size:24px; font-weight:900;">${sN.toLocaleString('tr-TR')} ₺</div></div>`;
+        document.getElementById('print-area').style.display = 'block';
+        setTimeout(() => { window.print(); document.getElementById('print-area').style.display = 'none'; closeModal('cusModal'); }, 500);
     }
 
-    function toggleGroup(m) { document.getElementById('group-'+m).classList.toggle('hidden'); }
-    function switchTab(m) { currentMode = m; document.getElementById('btnP').classList.toggle('active', m==='pirlanta'); document.getElementById('btnA').classList.toggle('active', m==='altin'); document.getElementById('formP').style.display = m==='pirlanta' ? 'block' : 'none'; document.getElementById('formA').style.display = m==='altin' ? 'grid' : 'none'; runCalc(); }
-    function setSTab(i) { document.querySelectorAll('.s-tab').forEach((t, idx) => t.classList.toggle('active', idx===i)); document.querySelectorAll('.pane').forEach((p, idx) => p.classList.toggle('active', idx===i)); }
-    function removeItem(id) { basket = basket.filter(i=>i.id!==id); renderBasket(); }
-    function clearBasket() { basket = []; renderBasket(); }
-    function openModal(id) { document.getElementById(id).style.display='flex'; }
-    function closeModal(id) { document.getElementById(id).style.display='none'; }
+    function toggleGroup(m)  { document.getElementById('group-'+m).classList.toggle('hidden'); }
+    function switchTab(m)    {
+        currentMode = m;
+        document.getElementById('btnP').classList.toggle('active', m === 'pirlanta');
+        document.getElementById('btnA').classList.toggle('active', m === 'altin');
+        document.getElementById('formP').style.display = m === 'pirlanta' ? 'block' : 'none';
+        document.getElementById('formA').style.display = m === 'altin'    ? 'grid'  : 'none';
+        runCalc();
+    }
+    function setSTab(i)      { document.querySelectorAll('.s-tab').forEach((t,idx) => t.classList.toggle('active', idx===i)); document.querySelectorAll('.pane').forEach((p,idx) => p.classList.toggle('active', idx===i)); }
+    function removeItem(id)  { basket = basket.filter(i=>i.id!==id); renderBasket(); }
+    function clearBasket()   { basket = []; renderBasket(); }
+    function openModal(id)   { document.getElementById(id).style.display='flex'; }
+    function closeModal(id)  { document.getElementById(id).style.display='none'; }
     window.onload = loadCfg;
 </script>
 </body>
