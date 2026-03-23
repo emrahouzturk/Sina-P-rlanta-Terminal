@@ -793,9 +793,10 @@
         /* ── PRINT ── */
         #print-area { display: none; }
         @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
+            @page { margin: 0; size: A4; }
+            body > * { display: none !important; }
+            #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; z-index: 99999; page-break-after: avoid; }
+            #print-area * { page-break-inside: avoid; }
         }
 
         /* ── MOBILE ── */
@@ -812,6 +813,20 @@
             }
             #basket-container { max-height: 380px; }
             .price-grid { grid-template-columns: 1fr 1fr; }
+
+            /* Kur chip'i + butonlar mobilde üst üste: kur tam genişlik, butonlar altında */
+            .top-bar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .rates-chip {
+                flex: 1 1 100%;   /* kur satırı tam genişlik */
+                min-width: 0;
+            }
+            .top-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
         }
 
         @media (max-width: 400px) {
@@ -824,7 +839,7 @@
 <body>
 
     <!-- MASTER LAYOUT -->
-    <div class="master-wrapper no-print">
+    <div class="master-wrapper no-print" id="main-wrapper">
         <div class="left-column">
 
         <!-- TOP BAR -->
@@ -861,13 +876,15 @@
 
             <div class="input-card">
                 <div id="formP">
-                    <label class="field-label">Pırlanta Etiket (USD)</label>
+                    <label class="field-label">Pırlanta Etiket</label>
                     <input type="text" id="inpP" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
+                    <div id="inpP-parts" style="display:none; margin-top:6px; font-size:10px; color:var(--ink-dim); text-align:center; line-height:1.8;"></div>
                 </div>
                 <div id="formA" style="display:none;" class="dual-fields">
                     <div>
                         <label class="field-label">Sina Has (SHG)</label>
                         <input type="text" id="inpA" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
+                        <div id="inpA-parts" style="display:none; margin-top:6px; font-size:10px; color:var(--ink-dim); text-align:center; line-height:1.8;"></div>
                     </div>
                     <div>
                         <label class="field-label">Ürün Gram (G)</label>
@@ -911,12 +928,29 @@
                 </div>
             </div>
 
-            <div class="action-row">
-                <button class="btn-primary" onclick="openModal('kodModal')">+ Sepete Ekle</button>
-                <button class="btn-dark" onclick="openModal('cusModal')">PDF Teklif</button>
+            <div class="action-row" style="flex-direction:column; gap:8px;">
+                <div style="display:flex; gap:8px; width:100%;">
+                    <input type="text" id="iKod" placeholder="Model / Stok Kodu" style="font-size:15px; flex:1; text-align:left; padding:12px 14px;">
+                    <button class="btn-primary" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
+                </div>
+                <div style="display:flex; gap:8px; width:100%;">
+                    <button class="btn-dark" style="flex:1;" onclick="openModal('cusModal')">📄 PDF Teklif</button>
+                    <button class="btn-ghost" style="flex:1;" onclick="openModal('historyModal')">🕐 Geçmiş</button>
+                </div>
             </div>
 
         </div><!-- /.left-panel -->
+
+        <!-- FOOTER -->
+        <div style="text-align:center; padding:18px 16px 14px; border-top:1px solid var(--border); margin-top:auto;">
+            <div style="font-size:10px; color:var(--ink-dim); font-weight:500; letter-spacing:.06em;">
+                © 2026 Emrah ÖZTÜRK — Tüm hakları saklıdır
+            </div>
+            <div style="font-size:9px; color:var(--ink-dim); opacity:.5; margin-top:3px; font-family:monospace;">
+                Sina Terminal v3
+            </div>
+        </div>
+
         </div><!-- /.left-column -->
 
         <!-- RIGHT BASKET -->
@@ -954,25 +988,54 @@
                 <span class="modal-close" onclick="closeModal('helpModal')">×</span>
             </div>
             <div class="modal-body">
+
                 <div class="help-section">
-                    <h4>1. Pırlanta Hesaplama</h4>
-                    <p>Pırlanta sekmesinde, sertifika üzerindeki <strong>USD Etiket Fiyatını</strong> giriniz. Sistem bu fiyatı <em>U</em> (Dolar Kuru) ve <em>xU</em> (Dolar Katsayısı) ile çarparak liste fiyatını bulur, ardından belirlediğiniz kâr oranlarını ekleyerek satış fiyatlarını hesaplar.</p>
-                    <div class="help-card"><span class="help-badge b-pink">K+12</span> <strong>Kodu Nedir?</strong><br>Personelin karlılığını takip etmesi içindir. Ürünün maliyeti üzerine eklenen kâr yüzdesini gösterir. <em>(Örn: K+40, maliyetin %40 üstü satış demektir.)</em></div>
+                    <h4>1. İlk Kurulum — Ayarlar</h4>
+                    <p>Sağ üstteki <strong>Ayarlar</strong> butonuna bas. Dört sekme var:</p>
+                    <div class="help-card">
+                        <b>Kur / Katsayı:</b> <em>U</em> = güncel dolar kuru (örn: 38.50). <em>xU</em> = liste fiyatını şişirmek için kur üstü pay yüzdesi (örn: 8 → kur 38.50 × 1.08 = 41.58 olur, müşteri bu fiyattan görür). <em>H</em> = güncel has altın TL fiyatı. <em>xH</em> = altın liste payı. Kuru değiştirince <b>Kaydet</b>'e bas — üst bardaki U/xU H/xH rakamları anında güncellenir.<br><br>
+                        <b>Pırlanta Kâr %:</b> Maliyet üzerine eklenecek kâr. 3T, 2T, Tek Çekim, Nakit için ayrı ayrı ayarla.<br><br>
+                        <b>Altın İskonto %:</b> Altın liste fiyatından düşülecek iskonto. Her ödeme tipi için ayrı.<br><br>
+                        <b>Mağaza:</b> PDF'e basılacak mağaza adı, telefon, adres.
+                    </div>
                 </div>
+
                 <div class="help-section">
-                    <h4>2. Altın Hesaplama</h4>
-                    <p>Altın sekmesinde ürüne ait <strong>Sina Has (SHG)</strong> ve <strong>Gram (G)</strong> değerlerini giriniz. Sistem <em>H</em> (Has Altın TL) ve <em>xH</em> (Has Katsayısı) kullanarak liste fiyatını oluşturur.</p>
-                    <div class="help-card"><span class="help-badge b-dark">İ-28</span> <strong>Kodu Nedir?</strong><br>Altın ürünlerinde liste fiyatı üzerinden yapılan <strong>İskonto</strong> oranını gösterir. <em>(Örn: İ-35, etiketten %35 indirim yapıldığını belirtir.)</em></div>
+                    <h4>2. Pırlanta Fiyatı Hesapla</h4>
+                    <p>Üstten <strong>💎 Pırlanta</strong> sekmesini seç (ya da ekranda sola kaydır). Sertifika etiket değerini gir.</p>
+                    <div class="help-card">
+                        <b>Tek ürün:</b> Sadece rakamı yaz → <em>1500</em><br>
+                        <b>Birden fazla ürün tek seferde:</b> Artı ile yaz → <em>1000+2000+500</em> — sistem otomatik toplar, kaç ürün olduğunu input alanının altında gösterir (1. 1000, 2. 2000, 3. 500 = 3 ürün).<br><br>
+                        4 fiyat kartı anında hesaplanır: <em>3 Taksit, 2 Taksit, Tek Çekim, Nakit.</em><br><br>
+                        <b>K kodu:</b> Her kartın köşesindeki gizli kod sadece senin için. Baştaki <b>1</b> = kârlı, <b>0</b> = zararlı. Ortaki rakam yüzde. Müşteri anlamaz.<br>
+                        <em>K<b>1</b>50 → %50 kâr &nbsp;|&nbsp; K<b>0</b>8 → %8 zarar</em>
+                    </div>
                 </div>
+
                 <div class="help-section">
-                    <h4>3. Sepet ve PDF Teklif</h4>
-                    <p>Hesapladığınız ürünü <strong>"Sepete Ekle"</strong> butonu ile listeye atabilirsiniz. Kod kısmına model numarasını (örn: SINA-1200) girmeyi unutmayın.</p>
-                    <p><strong>PDF TEKLİF:</strong> Sepetteki tüm ürünleri profesyonel bir çıktı formatına dönüştürür.</p>
+                    <h4>3. Altın Fiyatı Hesapla</h4>
+                    <p>Üstten <strong>✨ Altın</strong> sekmesini seç (ya da sağa kaydır). <em>Sina Has (SHG)</em> ve <em>Gram</em> değerlerini gir. SHG alanına da birden fazla ürünü topla: <em>45.2+38.7</em></p>
+                    <div class="help-card">
+                        <b>İ kodu:</b> Has maliyetine göre kâr/zarar. <b>İ1</b>10 → %10 kâr, <b>İ0</b>5 → %5 zarar.
+                    </div>
                 </div>
+
                 <div class="help-section">
-                    <h4>4. Ayarlar (Kur ve Oranlar)</h4>
-                    <p>Ayarlar kısmından güncel Dolar ve Has değerlerini güncelleyiniz. Kaydettiğiniz ayarlar cihazınızın hafızasında tutulur.</p>
+                    <h4>4. Sepete Ekle</h4>
+                    <p>Fiyat hesaplandıktan sonra <em>Model / Stok Kodu</em> alanına ürün kodunu yaz (örn: SINA-1200) ve <strong>+ Ekle</strong>'ye bas. Birden fazla ürünü + ile girdiysen hepsini tek kod altında sepete atabilirsin, ya da her birini ayrı ayrı ekleyebilirsin.</p>
+                    <div class="help-card">Sepetteki ürünün yanındaki <b>✎</b> ikonuna basarak kodu, değeri veya açıklamayı düzenleyebilirsin. Açıklama alanına "1.2 ct, G renk, VS1" gibi notlar ekle — hem sepette hem PDF'de görünür.</div>
                 </div>
+
+                <div class="help-section">
+                    <h4>5. PDF Teklif Al</h4>
+                    <p>Sepet doluyken <strong>📄 PDF Teklif</strong>'e bas. Müşteri adı ve telefonu gir, <strong>Yazdır</strong>'a bas. PDF'de ürünler önce pırlanta sonra altın olarak gruplanır, her grubun altında <b>grup toplamı ve adeti</b> yazar — hesap makinesi gerekmez. Her yazdırmada teklif otomatik geçmişe kaydedilir.</p>
+                </div>
+
+                <div class="help-section">
+                    <h4>6. Geçmiş Teklifler</h4>
+                    <p><strong>🕐 Geçmiş</strong> butonuyla önceki tekliflere ulaş. Ad veya telefon ile ara. Bir teklife tıklayınca o günkü ürün detayları ve fiyatlar önizleme panelinde görünür. <strong>↩ Güncel Kurla Aktar</strong>'a basınca sepete yüklenir, fiyatlar o anki kura göre yeniden hesaplanır.</p>
+                </div>
+
                 <button class="btn-primary" style="width:100%; margin-top:8px; border-radius:var(--r-sm);" onclick="closeModal('helpModal')">Anladım, Kapat</button>
             </div>
         </div>
@@ -1026,17 +1089,7 @@
         </div>
     </div>
 
-    <!-- KOD MODAL -->
-    <div id="kodModal" class="modal-overlay">
-        <div class="modal" style="max-width:380px;">
-            <div class="simple-modal-body">
-                <h3>Ürün Kodu</h3>
-                <label class="field-label">Model / Stok Kodu</label>
-                <input type="text" id="iKod" placeholder="SINA-100" style="font-size:18px;">
-                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" onclick="addBasket()">Sepete Ekle</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- MÜŞTERİ / PDF MODAL -->
     <div id="cusModal" class="modal-overlay">
@@ -1047,7 +1100,58 @@
                 <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px;">
                 <label class="field-label" style="margin-top:12px;">Telefon</label>
                 <input type="text" id="iPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
-                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" onclick="generatePDF()">Teklifi Yazdır</button>
+                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" onclick="generatePDF()">📄 Yazdır</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DÜZENLE MODAL -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal" style="max-width:380px;">
+            <div class="modal-header">
+                <h3>Ürünü Düzenle</h3>
+                <span class="modal-close" onclick="closeModal('editModal')">×</span>
+            </div>
+            <div class="simple-modal-body">
+                <input type="hidden" id="editId">
+                <label class="field-label">Model / Stok Kodu</label>
+                <input type="text" id="editKod" style="font-size:16px;">
+                <label class="field-label" style="margin-top:12px;">Açıklama (opsiyonel)</label>
+                <input type="text" id="editNote" placeholder="Örn: 1.2 ct, G renk, VS1 berraklık" style="font-size:14px; text-align:left; padding:10px 14px;">
+                <label class="field-label" style="margin-top:12px;" id="editLabel">Değer</label>
+                <input type="text" id="editVal" class="big-input" style="font-size:22px;" oninput="previewEdit()">
+                <div id="editVal2Wrap" style="display:none; margin-top:12px;">
+                    <label class="field-label" id="editLabel2">Gram</label>
+                    <input type="text" id="editVal2" class="big-input" style="font-size:22px;" oninput="previewEdit()">
+                </div>
+                <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="saveEdit()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GEÇMİŞ MODAL -->
+    <div id="historyModal" class="modal-overlay">
+        <div class="modal" style="max-width:500px;">
+            <div class="modal-header">
+                <h3>Teklif Geçmişi</h3>
+                <span class="modal-close" onclick="closeModal('historyModal')">×</span>
+            </div>
+            <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; gap:8px;">
+                <input type="text" id="histSearch" placeholder="Ad, soyad veya numara ara..." style="font-size:13px; padding:8px 12px; flex:1; text-align:left;" oninput="renderHistory()">
+                <button onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
+            </div>
+            <div id="history-list" style="padding:0; max-height:40vh; overflow-y:auto; border-bottom:1px solid var(--border);">
+            </div>
+            <!-- Önizleme Paneli -->
+            <div id="history-preview" style="display:none; padding:16px 20px; background:var(--bg);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="font-size:12px; font-weight:700; color:var(--ink);" id="prev-title">—</div>
+                    <div style="display:flex; gap:6px;">
+                        <button onclick="document.getElementById('history-preview').style.display='none'; _previewIdx=-1;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕ Kapat</button>
+                        <button onclick="confirmLoadHistory()" style="background:var(--rose); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:11px; font-weight:700; cursor:pointer;">↩ Güncel Kurla Aktar</button>
+                    </div>
+                </div>
+                <div id="prev-items" style="font-size:11px; color:var(--ink-mid); line-height:1.8;"></div>
             </div>
         </div>
     </div>
@@ -1263,6 +1367,23 @@
         document.getElementById('tech-time').innerHTML = `${timeStr} &nbsp;<span class="live">● ${agoStr}</span>`;
     }
 
+    function getCodes(u, xU, h, xH) {
+        return {
+            getPCode: function(v, costTl) {
+                const pct = Math.round(((v - costTl)/costTl)*100);
+                const sign = pct >= 0 ? '1' : '0';
+                const abs = Math.abs(pct);
+                return `K<b>${sign}</b><span style="font-weight:300">${abs}</span>`;
+            },
+            getACode: function(v, hasMaliyet) {
+                const pct = Math.round(((v - hasMaliyet)/hasMaliyet)*100);
+                const sign = pct >= 0 ? '1' : '0';
+                const abs = Math.abs(pct);
+                return `İ<b>${sign}</b><span style="font-weight:300">${abs}</span>`;
+            }
+        };
+    }
+
     function runCalc() {
         const u  = smartEval(document.getElementById('cfgU').value),
               up = smartEval(document.getElementById('cfgU_plus').value),
@@ -1273,13 +1394,21 @@
             `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)}&nbsp;&nbsp; H: ${h.toFixed(0)} | xH: ${xH.toFixed(0)}`;
 
         let res = {v3:0, v2:0, v1:0, vN:0, old:0, m3:'', m2:'', m1:'', mN:''}, details = '';
+        const codes = getCodes(u, xU, h, xH);
 
         if(currentMode === 'pirlanta') {
-            let labelVal = smartEval(document.getElementById('inpP').value);
+            let rawInpP = document.getElementById('inpP').value;
+            let labelVal = smartEval(rawInpP);
+            // Çoklu giriş özeti
+            const partsElP = document.getElementById('inpP-parts');
+            const partsP = rawInpP ? rawInpP.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
+            if(partsP.length > 1) {
+                partsElP.style.display = 'block';
+                partsElP.innerHTML = partsP.map((p,i)=>'<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:0 2px;">'+(i+1)+'. '+p.toLocaleString('tr-TR')+'</span>').join(' + ') + ' = <b>'+partsP.length+' ürün</b>';
+            } else { partsElP.style.display = 'none'; }
             if(labelVal > 0) {
                 let listTl = labelVal * xU;
-                let costTl = (labelVal / 3) * xU;
-                const getPCode = (v) => 'K' + (Math.round(((v - costTl)/costTl)*100) >= 0 ? '+' : '') + Math.round(((v - costTl)/costTl)*100);
+                let costTl = (labelVal / 3) * u;
                 res = {
                     v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
                     v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
@@ -1287,16 +1416,26 @@
                     vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
                     old: listTl
                 };
-                res.m3 = getPCode(res.v3); res.m2 = getPCode(res.v2); res.m1 = getPCode(res.v1); res.mN = getPCode(res.vN);
+                res.m3 = codes.getPCode(res.v3, costTl);
+                res.m2 = codes.getPCode(res.v2, costTl);
+                res.m1 = codes.getPCode(res.v1, costTl);
+                res.mN = codes.getPCode(res.vN, costTl);
                 details = 'Pırlanta';
             }
         } else {
-            let shgVal  = smartEval(document.getElementById('inpA').value);
+            let rawInpA = document.getElementById('inpA').value;
+            let shgVal  = smartEval(rawInpA);
             let gramVal = smartEval(document.getElementById('inpAG').value);
+            // Çoklu giriş özeti
+            const partsElA = document.getElementById('inpA-parts');
+            const partsA = rawInpA ? rawInpA.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
+            if(partsA.length > 1) {
+                partsElA.style.display = 'block';
+                partsElA.innerHTML = partsA.map((p,i)=>'<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:0 2px;">'+(i+1)+'. '+p.toLocaleString('tr-TR')+'</span>').join(' + ') + ' = <b>'+partsA.length+' ürün</b>';
+            } else { partsElA.style.display = 'none'; }
             if(shgVal > 0) {
                 let listTl = shgVal * xH;
                 let hasMaliyet = shgVal * h;
-                const getACode = (v) => 'İ' + (Math.round(((v - hasMaliyet)/hasMaliyet)*100) >= 0 ? '+' : '') + Math.round(((v - hasMaliyet)/hasMaliyet)*100);
                 res = {
                     v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100),
                     v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100),
@@ -1304,7 +1443,10 @@
                     vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100),
                     old: listTl
                 };
-                res.m3 = getACode(res.v3); res.m2 = getACode(res.v2); res.m1 = getACode(res.v1); res.mN = getACode(res.vN);
+                res.m3 = codes.getACode(res.v3, hasMaliyet);
+                res.m2 = codes.getACode(res.v2, hasMaliyet);
+                res.m1 = codes.getACode(res.v1, hasMaliyet);
+                res.mN = codes.getACode(res.vN, hasMaliyet);
                 details = `Altın (SHG: ${shgVal.toFixed(2)} | Gram: ${gramVal.toFixed(2)}g)`;
             }
         }
@@ -1320,20 +1462,23 @@
         document.getElementById('old'+id).innerText = old > 0 ? Math.round(old).toLocaleString('tr-TR') + ' ₺' : '—';
         document.getElementById('v'+id).innerText   = Math.round(v).toLocaleString('tr-TR') + ' ₺';
         if(div > 1) document.getElementById('sub'+id).innerText = `${div} × ${Math.round(v/div).toLocaleString('tr-TR')} ₺`;
-        document.getElementById('sm'+id).innerText  = old > 0 ? mCode : '';
+        document.getElementById('sm'+id).innerHTML  = old > 0 ? mCode : '';
         const diff = old > 0 ? Math.round(((v - old) / old) * 100) : 0;
         document.getElementById('stk'+id).innerText = (diff > 0 ? '+' : '') + diff + '%';
     }
 
     function addBasket() {
-        const k = document.getElementById('iKod').value; if(!k) return;
+        const k = document.getElementById('iKod').value.trim();
+        if(!k) { document.getElementById('iKod').focus(); return; }
         const calc = runCalc();
-        basket.push({ id: Date.now(), k: k.toUpperCase(), v: calc.res, d: calc.details, mode: calc.mode });
+        const rawP  = document.getElementById('inpP').value;
+        const rawA  = document.getElementById('inpA').value;
+        const rawAG = document.getElementById('inpAG').value;
+        basket.push({ id: Date.now(), k: k.toUpperCase(), v: calc.res, d: calc.details, mode: calc.mode, _rawP: rawP, _rawA: rawA, _rawAG: rawAG, note: '' });
         document.getElementById('iKod').value  = '';
         document.getElementById('inpP').value  = '';
         document.getElementById('inpA').value  = '';
         document.getElementById('inpAG').value = '';
-        closeModal('kodModal');
         runCalc();
         renderBasket();
         setTimeout(() => { const c = document.getElementById('basket-container'); c.scrollTop = c.scrollHeight; }, 100);
@@ -1377,8 +1522,9 @@
                 ${items.map(i => `
                 <div class="basket-item">
                     <span class="item-remove" onclick="removeItem(${i.id})">×</span>
-                    <div class="basket-item-title">${i.k}</div>
+                    <div class="basket-item-title">${i.k} <span onclick="openEdit(${i.id})" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;margin-left:4px;">✎</span></div>
                     <span class="basket-item-detail">${i.d}</span>
+                    ${i.note ? '<span style="font-size:10px;color:var(--ink-mid);display:block;margin-top:2px;font-style:italic;">'+i.note+'</span>' : ''}
                     <div class="mini-grid">
                         <div class="mini-grid-item">3T <b>${f(i.v.v3)} ₺</b><span style="font-size:9px;color:var(--ink-dim);font-family:monospace;display:block;">${i.v.m3}</span></div>
                         <div class="mini-grid-item cash">Nakit <b>${f(i.v.vN)} ₺</b><span style="font-size:9px;color:var(--ink-dim);font-family:monospace;display:block;">${i.v.mN}</span></div>
@@ -1399,32 +1545,58 @@
         const ts  = now.toLocaleString('tr-TR');
         const dateShort = now.toLocaleDateString('tr-TR');
         const ref = `${dateShort.replace(/\./g,'')}/${Math.floor(Math.random()*9000)+1000}`;
+        const cusName  = document.getElementById('iCus').value  || 'Müşterimiz';
+        const cusPhone = document.getElementById('iPhone').value || '—';
+
+        // Geçmişe kaydet
+        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
+        hist.unshift({ ref, ts, cusName, cusPhone, basket: JSON.parse(JSON.stringify(basket)) });
+        if(hist.length > 50) hist.pop();
+        localStorage.setItem('s_history', JSON.stringify(hist));
 
         document.getElementById('p-date').innerText = ts;
         document.getElementById('p-ref-line').innerText = ref;
         document.getElementById('p-ref-tech').innerText =
             `U:${document.getElementById('cfgU').value} H:${document.getElementById('cfgA').value} — ${ts}`;
-
         document.getElementById('p-store-name').innerText = document.getElementById('cfgStore').value;
         document.getElementById('p-store-addr-block').innerHTML =
             `${document.getElementById('cfgAddr').value}<br>Tel: ${document.getElementById('cfgTel').value}`;
-
-        const cusName = document.getElementById('iCus').value || 'Müşterimiz';
-        const cusPhone = document.getElementById('iPhone').value || '—';
         document.getElementById('p-cus-info').innerHTML =
             `<div class="p-customer-label">Müşteri</div>
              <div class="p-customer-name">${cusName}</div>
              <div class="p-customer-phone">${cusPhone}</div>`;
 
         const b = document.getElementById('p-body'); b.innerHTML = '';
-        basket.forEach(i => {
-            b.innerHTML += `<tr>
-                <td>${i.k}</td>
-                <td>${i.d}</td>
-                <td class="p-old">${Math.round(i.v.old).toLocaleString('tr-TR')} ₺</td>
-                <td>${Math.round(i.v.v3).toLocaleString('tr-TR')} ₺</td>
-                <td>${Math.round(i.v.v1).toLocaleString('tr-TR')} ₺</td>
-                <td class="p-cash">${Math.round(i.v.vN).toLocaleString('tr-TR')} ₺</td>
+        const sortedBasket = [
+            ...basket.filter(i => i.mode === 'pirlanta').sort((a,b) => a.v.vN - b.v.vN),
+            ...basket.filter(i => i.mode === 'altin').sort((a,b) => a.v.vN - b.v.vN)
+        ];
+        const pdfGroups = [
+            { mode: 'pirlanta', label: '💎 Pırlanta', items: sortedBasket.filter(i => i.mode === 'pirlanta') },
+            { mode: 'altin',    label: '✨ Altın',    items: sortedBasket.filter(i => i.mode === 'altin') }
+        ];
+        pdfGroups.forEach(g => {
+            if(!g.items.length) return;
+            b.innerHTML += `<tr style="background:#f7f5f8;"><td colspan="6" style="padding:8px 10px; font-size:9px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#9090a0;">${g.label} — ${g.items.length} ürün</td></tr>`;
+            g.items.forEach(i => {
+                b.innerHTML += `<tr>
+                    <td>${i.k}</td>
+                    <td>${i.d}${i.note ? '<br><span style="font-size:10px;color:#9090a0;font-style:italic;">'+i.note+'</span>' : ''}</td>
+                    <td class="p-old">${Math.round(i.v.old).toLocaleString('tr-TR')} ₺</td>
+                    <td>${Math.round(i.v.v3).toLocaleString('tr-TR')} ₺</td>
+                    <td>${Math.round(i.v.v1).toLocaleString('tr-TR')} ₺</td>
+                    <td class="p-cash">${Math.round(i.v.vN).toLocaleString('tr-TR')} ₺</td>
+                </tr>`;
+            });
+            const gS3 = Math.round(g.items.reduce((a,x)=>a+x.v.v3,0));
+            const gS1 = Math.round(g.items.reduce((a,x)=>a+x.v.v1,0));
+            const gSN = Math.round(g.items.reduce((a,x)=>a+x.v.vN,0));
+            b.innerHTML += `<tr style="background:#fff0f4;">
+                <td colspan="2" style="padding:8px 10px; font-size:10px; font-weight:800; color:#9c1a38; text-align:left;">${g.label} TOPLAM (${g.items.length} ürün)</td>
+                <td></td>
+                <td style="font-weight:800; color:#1a1a24; font-size:11px;">${gS3.toLocaleString('tr-TR')} ₺</td>
+                <td style="font-weight:800; color:#1a1a24; font-size:11px;">${gS1.toLocaleString('tr-TR')} ₺</td>
+                <td style="font-weight:900; color:#9c1a38; font-size:12px; background:linear-gradient(135deg,#fde8ef,#f8c8d2);">${gSN.toLocaleString('tr-TR')} ₺</td>
             </tr>`;
         });
 
@@ -1445,16 +1617,246 @@
                 <div class="p-total-val">${sN.toLocaleString('tr-TR')} ₺</div>
             </div>`;
 
+        closeModal('cusModal');
+        // Tüm modalleri kapat
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
         document.getElementById('print-area').style.display = 'block';
         setTimeout(() => {
             window.print();
-            document.getElementById('print-area').style.display = 'none';
-            closeModal('cusModal');
-        }, 500);
+            setTimeout(() => {
+                document.getElementById('print-area').style.display = 'none';
+            }, 500);
+        }, 400);
+    }
+
+    function sendWhatsApp() {
+        const cusName  = document.getElementById('iCus').value.trim()  || 'Müşterimiz';
+        const cusPhone = document.getElementById('iPhone').value.trim().replace(/\D/g,'');
+        const storeName = document.getElementById('cfgStore').value;
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        const now = new Date().toLocaleString('tr-TR');
+        let msg = 'Merhaba ' + cusName + ',\n\nSina Pırlanta fiyat teklifiniz (' + now + '):\n\n';
+        basket.forEach(i => {
+            msg += '• ' + i.k + ' — ' + i.d + '\n';
+            msg += '  3T: ' + f(i.v.v3) + ' ₺ | Nakit: ' + f(i.v.vN) + ' ₺\n\n';
+        });
+        const s3 = Math.round(basket.reduce((a,b)=>a+b.v.v3,0));
+        const sN = Math.round(basket.reduce((a,b)=>a+b.v.vN,0));
+        msg += 'TOPLAM\n3 Taksit: ' + f(s3) + ' ₺\nNakit: ' + f(sN) + ' ₺\n\nSaygılarımızla,\n' + storeName;
+        const phone = cusPhone ? '90' + cusPhone.replace(/^0/,'') : '';
+        const url = phone
+            ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
+            : 'https://wa.me/?text=' + encodeURIComponent(msg);
+        window.open(url, '_blank');
+    }
+
+    function openEdit(id) {
+        const item = basket.find(i => i.id === id); if(!item) return;
+        document.getElementById('editId').value  = id;
+        document.getElementById('editKod').value = item.k;
+        document.getElementById('editNote').value = item.note || '';
+        if(item.mode === 'pirlanta') {
+            document.getElementById('editLabel').innerText = 'Pırlanta Etiket';
+            document.getElementById('editVal').value = item._rawP || '';
+            document.getElementById('editVal2Wrap').style.display = 'none';
+        } else {
+            document.getElementById('editLabel').innerText = 'Sina Has (SHG)';
+            document.getElementById('editVal').value  = item._rawA  || '';
+            document.getElementById('editLabel2').innerText = 'Gram';
+            document.getElementById('editVal2').value = item._rawAG || '';
+            document.getElementById('editVal2Wrap').style.display = 'block';
+        }
+        openModal('editModal');
+    }
+
+    function saveEdit() {
+        const id  = parseInt(document.getElementById('editId').value);
+        const idx = basket.findIndex(i => i.id === id); if(idx === -1) return;
+        const item = basket[idx];
+        item.k = document.getElementById('editKod').value.toUpperCase();
+        const u  = smartEval(document.getElementById('cfgU').value),
+              up = smartEval(document.getElementById('cfgU_plus').value),
+              h  = smartEval(document.getElementById('cfgA').value),
+              hp = smartEval(document.getElementById('cfgA_plus').value);
+        const xU = u * (1 + up/100), xH = h * (1 + hp/100);
+        const codes = getCodes(u, xU, h, xH);
+        if(item.mode === 'pirlanta') {
+            const labelVal = smartEval(document.getElementById('editVal').value);
+            item._rawP = document.getElementById('editVal').value;
+            const costTl = (labelVal / 3) * u;
+            const listTl = labelVal * xU;
+            item.v = {
+                v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
+                v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
+                v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
+                vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
+                old: listTl
+            };
+            item.v.m3 = codes.getPCode(item.v.v3, costTl);
+            item.v.m2 = codes.getPCode(item.v.v2, costTl);
+            item.v.m1 = codes.getPCode(item.v.v1, costTl);
+            item.v.mN = codes.getPCode(item.v.vN, costTl);
+            item.d = 'Pırlanta';
+            item.note = document.getElementById('editNote').value.trim();
+        } else {
+            const shgVal  = smartEval(document.getElementById('editVal').value);
+            const gramVal = smartEval(document.getElementById('editVal2').value);
+            item._rawA  = document.getElementById('editVal').value;
+            item._rawAG = document.getElementById('editVal2').value;
+            const hasMaliyet = shgVal * h;
+            const listTl = shgVal * xH;
+            item.v = {
+                v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100),
+                v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100),
+                v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100),
+                vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100),
+                old: listTl
+            };
+            item.v.m3 = codes.getACode(item.v.v3, hasMaliyet);
+            item.v.m2 = codes.getACode(item.v.v2, hasMaliyet);
+            item.v.m1 = codes.getACode(item.v.v1, hasMaliyet);
+            item.v.mN = codes.getACode(item.v.vN, hasMaliyet);
+            item.d = 'Altın (SHG: ' + shgVal.toFixed(2) + ' | Gram: ' + gramVal.toFixed(2) + 'g)';
+            item.note = document.getElementById('editNote').value.trim();
+        }
+        closeModal('editModal');
+        renderBasket();
+    }
+
+    function openHistory() {
+        document.getElementById('histSearch').value = '';
+        document.getElementById('history-preview').style.display = 'none';
+        _previewIdx = -1;
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const q = (document.getElementById('histSearch').value || '').toLowerCase().trim();
+        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
+        const el = document.getElementById('history-list');
+        const filtered = q ? hist.filter(function(h, idx) {
+            return (h.cusName + ' ' + h.cusPhone).toLowerCase().indexOf(q) !== -1;
+        }) : hist;
+        if(!filtered.length) {
+            el.innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-dim); font-size:13px;">' + (q ? 'Eşleşen kayıt bulunamadı.' : 'Henüz kayıtlı teklif yok.') + '</div>';
+            return;
+        }
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        el.innerHTML = filtered.map(function(h, filtIdx) {
+            const realIdx = hist.indexOf(h);
+            const sN = Math.round(h.basket.reduce(function(a,b){return a+b.v.vN;},0));
+            const s3 = Math.round(h.basket.reduce(function(a,b){return a+b.v.v3;},0));
+            return '<div style="padding:14px 16px; border-bottom:1px solid var(--border);">' +
+                '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                '<div style="flex:1; cursor:pointer;" onclick="previewHistory(' + realIdx + ')">' +
+                '<div style="font-weight:700; font-size:14px; color:var(--ink);">' + h.cusName + ' <span style="font-size:11px; color:var(--ink-dim); font-weight:400;">' + h.cusPhone + '</span></div>' +
+                '<div style="font-size:11px; color:var(--ink-dim); margin-top:2px;">' + h.ts + ' · ' + h.basket.length + ' ürün</div>' +
+                '</div>' +
+                '<div style="text-align:right; margin-left:12px;">' +
+                '<div style="font-size:13px; font-weight:700; color:var(--rose); cursor:pointer;" onclick="previewHistory(' + realIdx + ')">' + f(sN) + ' ₺</div>' +
+                '<div style="font-size:10px; color:var(--ink-dim);">3T: ' + f(s3) + ' ₺</div>' +
+                '<button onclick="deleteHistory(' + realIdx + ')" style="background:none; border:none; color:var(--ink-dim); font-size:11px; cursor:pointer; margin-top:4px; padding:0;">🗑 Sil</button>' +
+                '</div></div>' +
+                '<div style="font-size:11px; color:var(--ink-dim); margin-top:6px;">' +
+                h.basket.map(function(i){ return '<span style="display:inline-block; background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:2px 6px; margin:2px 2px 0 0; font-size:10px;">' + i.k + (i.note ? ' · ' + i.note : '') + '</span>'; }).join('') +
+                '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    let _previewIdx = -1;
+
+    function previewHistory(idx) {
+        _previewIdx = idx;
+        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
+        if(!hist[idx]) return;
+        const h = hist[idx];
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        document.getElementById('prev-title').innerHTML =
+            '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>';
+        document.getElementById('prev-items').innerHTML = h.basket.map(function(i) {
+            return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">' +
+                '<span><b>' + i.k + '</b>' + (i.note ? ' <em style="opacity:.6;">— ' + i.note + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + i.d + '</span></span>' +
+                '<span style="text-align:right;flex-shrink:0;margin-left:12px;">' +
+                '<span style="color:var(--rose);font-weight:700;">' + f(i.v.vN) + ' ₺</span><br>' +
+                '<span style="opacity:.6;font-size:10px;">3T: ' + f(i.v.v3) + ' ₺</span>' +
+                '</span></div>';
+        }).join('');
+        document.getElementById('history-preview').style.display = 'block';
+    }
+
+    function confirmLoadHistory() {
+        if(_previewIdx === -1) return;
+        loadHistory(_previewIdx);
+    }
+
+    function loadHistory(idx) {
+        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
+        if(!hist[idx]) return;
+        // Güncel kurlarla yeniden hesapla
+        const u  = smartEval(document.getElementById('cfgU').value),
+              up = smartEval(document.getElementById('cfgU_plus').value),
+              h  = smartEval(document.getElementById('cfgA').value),
+              hp = smartEval(document.getElementById('cfgA_plus').value);
+        const xU = u * (1 + up/100), xH = h * (1 + hp/100);
+        const codes = getCodes(u, xU, h, xH);
+        const oldBasket = hist[idx].basket;
+        basket = oldBasket.map(function(item) {
+            const ni = JSON.parse(JSON.stringify(item));
+            if(ni.mode === 'pirlanta' && ni._rawP) {
+                const labelVal = smartEval(ni._rawP);
+                const costTl = (labelVal / 3) * u;
+                const listTl = labelVal * xU;
+                ni.v = {
+                    v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
+                    v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
+                    v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
+                    vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
+                    old: listTl
+                };
+                ni.v.m3 = codes.getPCode(ni.v.v3, costTl);
+                ni.v.m2 = codes.getPCode(ni.v.v2, costTl);
+                ni.v.m1 = codes.getPCode(ni.v.v1, costTl);
+                ni.v.mN = codes.getPCode(ni.v.vN, costTl);
+            } else if(ni.mode === 'altin' && ni._rawA) {
+                const shgVal = smartEval(ni._rawA);
+                const gramVal = smartEval(ni._rawAG || '0');
+                const hasMaliyet = shgVal * h;
+                const listTl = shgVal * xH;
+                ni.v = {
+                    v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100),
+                    v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100),
+                    v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100),
+                    vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100),
+                    old: listTl
+                };
+                ni.v.m3 = codes.getACode(ni.v.v3, hasMaliyet);
+                ni.v.m2 = codes.getACode(ni.v.v2, hasMaliyet);
+                ni.v.m1 = codes.getACode(ni.v.v1, hasMaliyet);
+                ni.v.mN = codes.getACode(ni.v.vN, hasMaliyet);
+            }
+            return ni;
+        });
+        document.getElementById('iCus').value   = hist[idx].cusName !== 'Müşterimiz' ? hist[idx].cusName : '';
+        document.getElementById('iPhone').value = hist[idx].cusPhone !== '—' ? hist[idx].cusPhone : '';
+        closeModal('historyModal');
+        renderBasket();
+    }
+
+    function deleteHistory(idx) {
+        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
+        hist.splice(idx, 1);
+        localStorage.setItem('s_history', JSON.stringify(hist));
+        renderHistory();
+    }
+
+    function clearHistory() {
+        if(!confirm('Tüm geçmiş silinsin mi?')) return;
+        localStorage.removeItem('s_history');
+        renderHistory();
     }
 
     function adjustPadding() {
-        // Masaüstünde top-bar absolute olduğundan, sol paneli tam o kadar aşağı iter
         if(window.innerWidth >= 951) {
             const h = document.querySelector('.top-bar').offsetHeight;
             document.querySelector('.left-panel').style.paddingTop = (h + 16) + 'px';
@@ -1464,7 +1866,8 @@
     }
 
     function toggleGroup(m)  { document.getElementById('group-'+m).classList.toggle('hidden'); }
-    function switchTab(m)    {
+
+    function switchTab(m) {
         currentMode = m;
         document.getElementById('btnP').classList.toggle('active', m === 'pirlanta');
         document.getElementById('btnA').classList.toggle('active', m === 'altin');
@@ -1472,13 +1875,36 @@
         document.getElementById('formA').style.display = m === 'altin'    ? 'grid'  : 'none';
         runCalc();
     }
-    function setSTab(i)      { document.querySelectorAll('.s-tab').forEach((t,idx) => t.classList.toggle('active', idx===i)); document.querySelectorAll('.pane').forEach((p,idx) => p.classList.toggle('active', idx===i)); }
+
+    // Swipe ile sekme geçişi
+    (function() {
+        let startX = 0, startY = 0;
+        document.addEventListener('DOMContentLoaded', function() {
+            const el = document.querySelector('.left-panel');
+            if(!el) return;
+            el.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
+            el.addEventListener('touchend', function(e) {
+                const dx = e.changedTouches[0].clientX - startX;
+                const dy = e.changedTouches[0].clientY - startY;
+                if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                    if(dx < 0 && currentMode === 'pirlanta') switchTab('altin');
+                    if(dx > 0 && currentMode === 'altin')    switchTab('pirlanta');
+                }
+            }, { passive: true });
+        });
+    })();
+
+    function setSTab(i) {
+        document.querySelectorAll('.s-tab').forEach(function(t,idx) { t.classList.toggle('active', idx===i); });
+        document.querySelectorAll('.pane').forEach(function(p,idx) { p.classList.toggle('active', idx===i); });
+    }
+
     function removeItem(id)  { basket = basket.filter(i=>i.id!==id); renderBasket(); }
     function clearBasket()   { basket = []; renderBasket(); }
-    function openModal(id)   { document.getElementById(id).style.display='flex'; }
+    function openModal(id)   { document.getElementById(id).style.display='flex'; if(id==='historyModal') openHistory(); }
     function closeModal(id)  { document.getElementById(id).style.display='none'; }
-    window.onload = () => { loadCfg(); adjustPadding(); };
+    window.onload = function() { loadCfg(); adjustPadding(); };
     window.addEventListener('resize', adjustPadding);
 </script>
 </body>
-</html>
+                    </html>
