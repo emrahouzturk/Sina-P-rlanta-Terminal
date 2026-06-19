@@ -7,6 +7,23 @@
     <link rel="icon" type="image/svg+xml" href="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Firebase (Realtime Database) — ortak ayarlar ve geçmiş senkronizasyonu için -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDOKp-t0XKgrnn15wQWQT2VrIpaXIhdn7E",
+            authDomain: "urfa-sina-terminal.firebaseapp.com",
+            databaseURL: "https://urfa-sina-terminal-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "urfa-sina-terminal",
+            storageBucket: "urfa-sina-terminal.firebasestorage.app",
+            messagingSenderId: "913493390147",
+            appId: "1:913493390147:web:57ae68a49ab87b4987b5f6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const fbDb = firebase.database();
+    </script>
+
     <style>
         :root {
             --rose:      #c8244c;
@@ -790,11 +807,6 @@
         .empty-basket svg { opacity: .25; margin-bottom: 12px; }
         .empty-basket p { font-size: 12px; font-weight: 500; margin: 0; }
 
-        /* ── GİZLE MODU ── */
-        body.kodlar-gizli .price-code { visibility: hidden !important; }
-        body.kodlar-gizli .basket-item .price-code,
-        body.kodlar-gizli span[id^="sm"] { visibility: hidden !important; }
-
         /* ── PRINT ── */
         #print-area { display: none; }
         @media print {
@@ -850,14 +862,10 @@
         <!-- TOP BAR -->
         <div class="top-bar">
             <div class="rates-chip">
-                <div id="tech-rates">U: — | xU: —&nbsp;&nbsp; H: — | xH: —</div>
-                <div id="tech-time" class="tech-time">—</div>
+                <div id="tech-rates">U: — | xU: —</div>
+                <div id="tech-time" class="tech-time">— &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span></div>
             </div>
             <div class="top-actions">
-                <button class="btn-ghost" id="btnGizle" onclick="toggleKodlar()" title="Sade / Detaylı görünüm">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                    <span id="btnGizleLabel">Sade</span>
-                </button>
                 <button class="btn-solid" onclick="openModal('settingsModal')">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     Ayarlar
@@ -878,27 +886,11 @@
                 <div id="h-tel-display" class="brand-sub"></div>
             </div>
 
-            <div class="segment">
-                <button class="seg-btn active" id="btnP" onclick="switchTab('pirlanta')">💎 Pırlanta</button>
-                <button class="seg-btn" id="btnA" onclick="switchTab('altin')">✨ Altın</button>
-            </div>
-
             <div class="input-card">
                 <div id="formP">
                     <label class="field-label">Pırlanta Etiket</label>
                     <input type="text" id="inpP" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
                     <div id="inpP-parts" style="display:none; margin-top:6px; font-size:10px; color:var(--ink-dim); text-align:center; line-height:1.8;"></div>
-                </div>
-                <div id="formA" style="display:none;" class="dual-fields">
-                    <div>
-                        <label class="field-label">Sina Has (SHG)</label>
-                        <input type="text" id="inpA" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
-                        <div id="inpA-parts" style="display:none; margin-top:6px; font-size:10px; color:var(--ink-dim); text-align:center; line-height:1.8;"></div>
-                    </div>
-                    <div>
-                        <label class="field-label">Ürün Gram (G)</label>
-                        <input type="text" id="inpAG" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
-                    </div>
                 </div>
             </div>
 
@@ -1000,70 +992,43 @@
 
                 <div class="help-section">
                     <h4>1. İlk Kurulum — Ayarlar</h4>
-                    <p>Sağ üstteki <strong>Ayarlar</strong> butonuna bas. Dört sekme var:</p>
+                    <p>Sağ üstteki <strong>Ayarlar</strong> butonuna bas. Üç sekme var:</p>
                     <div class="help-card">
-                        <b>Kur / Katsayı:</b> U = güncel dolar kuru. xU = liste fiyatı için kur üstü pay % (müşteriye şişirilmiş fiyat gösterir). H = güncel has altın TL fiyatı. xH = altın liste payı. Değerleri girdikten sonra <b>Ayarları Kaydet</b>'e bas — üst bardaki rakamlar anında güncellenir.<br><br>
-                        <b>Pırlanta Kâr %:</b> Maliyet üzerine eklenecek kâr. 3T, 2T, Tek Çekim, Nakit için ayrı ayrı.<br><br>
-                        <b>Altın İskonto %:</b> Altın liste fiyatından düşülecek iskonto. Her ödeme tipi için ayrı.<br><br>
+                        <b>Kur / Katsayı:</b> <em>U</em> = güncel dolar kuru (örn: 38.50). <em>xU</em> = liste fiyatını şişirmek için kur üstü pay yüzdesi (örn: 8 → kur 38.50 × 1.08 = 41.58 olur, müşteri bu fiyattan görür). Kuru değiştirince <b>Kaydet</b>'e bas — üst bardaki U/xU rakamları anında güncellenir.<br><br>
+                        <b>Pırlanta Kâr %:</b> Maliyet üzerine eklenecek kâr. 3T, 2T, Tek Çekim, Nakit için ayrı ayrı ayarla.<br><br>
                         <b>Mağaza:</b> PDF'e basılacak mağaza adı, telefon, adres.
                     </div>
                 </div>
 
                 <div class="help-section">
-                    <h4>2. Ayar Profilleri</h4>
-                    <p>Ayarlar panelinin üstündeki profil şeridinden farklı kur ve oran setlerini kaydedip aralarında geçiş yapabilirsin.</p>
+                    <h4>2. Pırlanta Fiyatı Hesapla</h4>
+                    <p>Sertifika etiket değerini gir.</p>
                     <div class="help-card">
-                        <b>+ Yeni</b> ile profil oluştur, isim ver (örn: "Normal", "Kampanya", "VIP"). Profile tıklayınca tüm değerler o sete geçer. Aktif olmayan profillerin yanındaki <b>×</b> ile sil. Kaydet'e basınca aktif profil güncellenir.
+                        <b>Tek ürün:</b> Sadece rakamı yaz → <em>1500</em><br>
+                        <b>Birden fazla ürün tek seferde:</b> Artı ile yaz → <em>1000+2000+500</em> — sistem otomatik toplar, kaç ürün olduğunu input alanının altında gösterir (1. 1000, 2. 2000, 3. 500 = 3 ürün).<br><br>
+                        4 fiyat kartı anında hesaplanır: <em>3 Taksit, 2 Taksit, Tek Çekim, Nakit.</em><br><br>
+                        <b>K kodu:</b> Her kartın köşesindeki gizli kod sadece senin için. Baştaki <b>1</b> = kârlı, <b>0</b> = zararlı. Ortaki rakam yüzde. Müşteri anlamaz.<br>
+                        <em>K<b>1</b>50 → %50 kâr &nbsp;|&nbsp; K<b>0</b>8 → %8 zarar</em>
                     </div>
                 </div>
 
                 <div class="help-section">
-                    <h4>3. Pırlanta Fiyatı Hesapla</h4>
-                    <p>Üstten <strong>💎 Pırlanta</strong> sekmesini seç (ya da ekranda sola kaydır). Sertifika etiket değerini gir.</p>
-                    <div class="help-card">
-                        <b>Tek ürün:</b> Sadece rakamı yaz → 1500<br>
-                        <b>Birden fazla ürün:</b> Artı ile yaz → 1000+2000+500 — input altında kaç ürün olduğu gösterilir.<br><br>
-                        4 fiyat kartı anında hesaplanır. Her kartın köşesindeki <b>K kodu</b> sadece senin için: baştaki <b>1</b> = kârlı, <b>0</b> = zararlı, ortaki rakam yüzde.<br>
-                        <em>K150 → %50 kâr &nbsp;|&nbsp; K08 → %8 zarar</em>
-                    </div>
+                    <h4>3. Sepete Ekle</h4>
+                    <p>Fiyat hesaplandıktan sonra <em>Model / Stok Kodu</em> alanına ürün kodunu yaz (örn: SINA-1200) ve <strong>+ Ekle</strong>'ye bas. Birden fazla ürünü + ile girdiysen hepsini tek kod altında sepete atabilirsin, ya da her birini ayrı ayrı ekleyebilirsin.</p>
+                    <div class="help-card">Sepetteki ürünün yanındaki <b>✎</b> ikonuna basarak kodu, değeri veya açıklamayı düzenleyebilirsin. Açıklama alanına "1.2 ct, G renk, VS1" gibi notlar ekle — hem sepette hem PDF'de görünür.</div>
                 </div>
 
                 <div class="help-section">
-                    <h4>4. Altın Fiyatı Hesapla</h4>
-                    <p>Üstten <strong>✨ Altın</strong> sekmesini seç (ya da sağa kaydır). Sina Has (SHG) ve Gram değerlerini gir. SHG alanına da birden fazla değer toplanabilir: 45.2+38.7</p>
-                    <div class="help-card">
-                        <b>İ kodu:</b> Has maliyetine göre kâr/zarar. İ110 → %10 kâr, İ05 → %5 zarar.
-                    </div>
+                    <h4>4. PDF Teklif Al</h4>
+                    <p>Sepet doluyken <strong>📄 PDF Teklif</strong>'e bas. Müşteri adı ve telefonu gir, <strong>Yazdır</strong>'a bas. Her yazdırmada teklif otomatik geçmişe kaydedilir.</p>
                 </div>
 
                 <div class="help-section">
-                    <h4>5. Sepete Ekle</h4>
-                    <p>Fiyat hesaplandıktan sonra Model / Stok Kodu alanına ürün kodunu yaz ve <strong>+ Ekle</strong>'ye bas. Kodu boş bırakırsan sistem otomatik sıra numarası verir: "1. Pırlanta", "2. Pırlanta", "1. Altın" — her grup kendi içinde numaralanır.</p>
-                    <p>+ ile birden fazla değer girdiysen Ekle'ye basınca her biri ayrı ürün olarak gelir. Her ürünün detay satırında etiket değeri görünür — müşteri "bu ne kadardı" derse bakarsın.</p>
-                    <div class="help-card">Sepetteki ürünün yanındaki <b>✎</b> ikonuyla kodu, değeri veya açıklamayı düzenle. Açıklama alanına "1.2 ct, G renk, VS1" gibi notlar ekle — PDF'e de yansır.</div>
+                    <h4>5. Geçmiş Teklifler</h4>
+                    <p><strong>🕐 Geçmiş</strong> butonuyla önceki tekliflere ulaş. Ad veya telefon ile ara. Bir teklife tıklayınca o günkü ürün detayları ve fiyatlar önizleme panelinde görünür. <strong>↩ Güncel Kurla Aktar</strong>'a basınca sepete yüklenir, fiyatlar o anki kura göre yeniden hesaplanır.</p>
                 </div>
 
-                <div class="help-section">
-                    <h4>6. PDF Teklif Al</h4>
-                    <p>Sepet doluyken <strong>📄 PDF Teklif</strong>'e bas. Müşteri adı ve telefonu gir, <strong>Yazdır</strong>'a bas. PDF'de ürünler önce pırlanta sonra altın olarak gruplanır, her grubun altında adet ve toplam yazar — hesap makinesi gerekmez. Her yazdırmada teklif otomatik geçmişe kaydedilir.</p>
-                </div>
-
-                <div class="help-section">
-                    <h4>7. Geçmiş Teklifler</h4>
-                    <p><strong>🕐 Geçmiş</strong> butonuyla önceki tekliflere ulaş. Ad veya telefon ile ara. Bir teklife tıklayınca o günkü ürün detayları önizleme panelinde görünür. <strong>↩ Güncel Kurla Aktar</strong>'a basınca sepete yüklenir, fiyatlar o anki kura göre güncellenir. Tek kayıt için 🗑, tümü için "Tümünü Sil".</p>
-                </div>
-
-                <div class="help-section">
-                    <h4>8. Sade / Detaylı Görünüm</h4>
-                    <p>Üst bardaki <strong>Sade</strong> butonuna basınca fiyat kartlarındaki ve sepetteki K/İ kodları kaybolur. Telefonu müşteriye uzatırken kullan. Tekrar <strong>Detaylı</strong>'ya basınca kodlar geri gelir.</p>
-                </div>
-
-                <div style="text-align:center; padding-top:12px; border-top:1px solid var(--border); margin-top:4px;">
-                    <div style="font-size:10px; color:var(--ink-dim); font-weight:600;">© 2026 Emrah ÖZTÜRK — Tüm hakları saklıdır</div>
-                    <div style="font-size:9px; color:var(--ink-dim); opacity:.5; margin-top:2px;">Sina Terminal v3</div>
-                </div>
-
-                <button class="btn-primary" style="width:100%; margin-top:12px; border-radius:var(--r-sm);" onclick="closeModal('helpModal')">Anladım, Kapat</button>
+                <button class="btn-primary" style="width:100%; margin-top:8px; border-radius:var(--r-sm);" onclick="closeModal('helpModal')">Anladım, Kapat</button>
             </div>
         </div>
     </div>
@@ -1075,23 +1040,15 @@
                 <h3>Ayarlar</h3>
                 <span class="modal-close" onclick="closeModal('settingsModal')">×</span>
             </div>
-            <div style="padding:10px 16px; background:var(--bg); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                <span style="font-size:10px; font-weight:700; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.08em; flex-shrink:0;">Profil:</span>
-                <div id="profile-tabs" style="display:flex; gap:4px; flex:1; flex-wrap:wrap;"></div>
-                <button onclick="saveNewProfile()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:5px 10px; font-size:10px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap; flex-shrink:0;">+ Yeni</button>
-            </div>
             <div class="s-tab-bar">
                 <button class="s-tab active" onclick="setSTab(0)">Kur / Katsayı</button>
                 <button class="s-tab" onclick="setSTab(1)">Pırlanta Kâr</button>
-                <button class="s-tab" onclick="setSTab(2)">Altın İskonto</button>
-                <button class="s-tab" onclick="setSTab(3)">Mağaza</button>
+                <button class="s-tab" onclick="setSTab(2)">Mağaza</button>
             </div>
             <div id="pane0" class="pane active">
                 <div class="settings-grid">
                     <div><label class="field-label">U (USD)</label><input type="text" id="cfgU" value="34.20" inputmode="decimal"></div>
                     <div><label class="field-label">xU (%)</label><input type="text" id="cfgU_plus" value="3" inputmode="decimal"></div>
-                    <div><label class="field-label">H (Has)</label><input type="text" id="cfgA" value="3150" inputmode="decimal"></div>
-                    <div><label class="field-label">xH (%)</label><input type="text" id="cfgA_plus" value="20" inputmode="decimal"></div>
                 </div>
             </div>
             <div id="pane1" class="pane">
@@ -1103,14 +1060,6 @@
                 </div>
             </div>
             <div id="pane2" class="pane">
-                <div class="settings-grid">
-                    <div><label class="field-label">3T İsk %</label><input type="text" id="ak3" value="28"></div>
-                    <div><label class="field-label">2T İsk %</label><input type="text" id="ak2" value="28"></div>
-                    <div><label class="field-label">1T İsk %</label><input type="text" id="ak1" value="28"></div>
-                    <div><label class="field-label">Nakit İsk %</label><input type="text" id="akN" value="35"></div>
-                </div>
-            </div>
-            <div id="pane3" class="pane">
                 <div class="settings-single">
                     <label class="field-label">Mağaza Adı</label><input type="text" id="cfgStore" value="Sina Pırlanta Maltepe Piazza" style="font-size:14px;">
                     <label class="field-label mt-10" style="margin-top:12px;">Telefon</label><input type="text" id="cfgTel" value="0216 XXX XX XX" style="font-size:14px;">
@@ -1152,10 +1101,6 @@
                 <input type="text" id="editNote" placeholder="Örn: 1.2 ct, G renk, VS1 berraklık" style="font-size:14px; text-align:left; padding:10px 14px;">
                 <label class="field-label" style="margin-top:12px;" id="editLabel">Değer</label>
                 <input type="text" id="editVal" class="big-input" style="font-size:22px;" oninput="previewEdit()">
-                <div id="editVal2Wrap" style="display:none; margin-top:12px;">
-                    <label class="field-label" id="editLabel2">Gram</label>
-                    <input type="text" id="editVal2" class="big-input" style="font-size:22px;" oninput="previewEdit()">
-                </div>
                 <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="saveEdit()">Kaydet</button>
             </div>
         </div>
@@ -1169,7 +1114,7 @@
                 <span class="modal-close" onclick="closeModal('historyModal')">×</span>
             </div>
             <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; gap:8px;">
-                <input type="text" id="histSearch" placeholder="Ad, soyad veya numara ara..." style="font-size:13px; padding:8px 12px; flex:1; text-align:left;" oninput="renderHistory()">
+                <input type="text" id="histSearch" placeholder="Ad, soyad, numara veya mağaza ara..." style="font-size:13px; padding:8px 12px; flex:1; text-align:left;" oninput="renderHistory()">
                 <button onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
             </div>
             <div id="history-list" style="padding:0; max-height:40vh; overflow-y:auto; border-bottom:1px solid var(--border);">
@@ -1179,7 +1124,7 @@
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="font-size:12px; font-weight:700; color:var(--ink);" id="prev-title">—</div>
                     <div style="display:flex; gap:6px;">
-                        <button onclick="document.getElementById('history-preview').style.display='none'; _previewIdx=-1;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕ Kapat</button>
+                        <button onclick="document.getElementById('history-preview').style.display='none'; _previewKey=null;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕ Kapat</button>
                         <button onclick="confirmLoadHistory()" style="background:var(--rose); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:11px; font-weight:700; cursor:pointer;">↩ Güncel Kurla Aktar</button>
                     </div>
                 </div>
@@ -1373,103 +1318,46 @@
         return total;
     }
 
-    const CFG_IDS = ['cfgU', 'cfgU_plus', 'cfgA', 'cfgA_plus', 'pk3', 'pk2', 'pk1', 'pkN', 'ak3', 'ak2', 'ak1', 'akN', 'cfgStore', 'cfgTel', 'cfgAddr'];
-
-    function getProfiles() { return JSON.parse(localStorage.getItem('s_profiles') || 'null') || [{ name: 'Varsayılan', data: {} }]; }
-    function getActiveIdx() { return parseInt(localStorage.getItem('s_active_profile') || '0'); }
-
-    function renderProfileTabs() {
-        const profiles = getProfiles();
-        const active = getActiveIdx();
-        const el = document.getElementById('profile-tabs');
-        if(!el) return;
-        el.innerHTML = profiles.map(function(p, i) {
-            const isActive = i === active;
-            return '<div style="display:flex;align-items:center;gap:2px;">' +
-                '<button onclick="switchProfile(' + i + ')" style="background:' + (isActive ? 'var(--rose)' : 'var(--surface)') + ';color:' + (isActive ? '#fff' : 'var(--ink-mid)') + ';border:1.5px solid ' + (isActive ? 'var(--rose)' : 'var(--border)') + ';border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;">' + p.name + '</button>' +
-                (profiles.length > 1 && !isActive ? '<button onclick="deleteProfile(' + i + ')" style="background:none;border:none;color:var(--ink-dim);font-size:11px;cursor:pointer;padding:0 2px;" title="Sil">×</button>' : '') +
-                '</div>';
-        }).join('');
-    }
-
-    function readCurrentFields() {
-        const data = {};
-        CFG_IDS.forEach(id => { data[id] = document.getElementById(id).value; });
-        return data;
-    }
-
-    function applyProfileData(data) {
-        CFG_IDS.forEach(id => { if(data[id] !== undefined) document.getElementById(id).value = data[id]; });
-    }
-
-    function switchProfile(idx) {
-        // Önce mevcut aktif profili kaydet
-        const profiles = getProfiles();
-        const active = getActiveIdx();
-        profiles[active].data = readCurrentFields();
-        profiles[idx].data = profiles[idx].data || {};
-        localStorage.setItem('s_profiles', JSON.stringify(profiles));
-        localStorage.setItem('s_active_profile', String(idx));
-        applyProfileData(profiles[idx].data);
-        document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
-        document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
-        renderProfileTabs();
-        runCalc();
-    }
-
-    function saveNewProfile() {
-        const name = prompt('Profil adı:', 'Yeni Profil');
-        if(!name || !name.trim()) return;
-        const profiles = getProfiles();
-        const active = getActiveIdx();
-        profiles[active].data = readCurrentFields();
-        profiles.push({ name: name.trim(), data: readCurrentFields() });
-        localStorage.setItem('s_profiles', JSON.stringify(profiles));
-        localStorage.setItem('s_active_profile', String(profiles.length - 1));
-        renderProfileTabs();
-    }
-
-    function deleteProfile(idx) {
-        const profiles = getProfiles();
-        if(profiles.length <= 1) return;
-        if(!confirm('"' + profiles[idx].name + '" profili silinsin mi?')) return;
-        profiles.splice(idx, 1);
-        const newActive = Math.min(getActiveIdx(), profiles.length - 1);
-        localStorage.setItem('s_profiles', JSON.stringify(profiles));
-        localStorage.setItem('s_active_profile', String(newActive));
-        applyProfileData(profiles[newActive].data || {});
-        renderProfileTabs();
-        runCalc();
-    }
+    // Ortak (tüm mağazalarda aynı) ayarlar Firebase'de, mağazaya özel bilgiler cihazda kalır
+    const SHARED_IDS = ['cfgU', 'cfgU_plus', 'pk3', 'pk2', 'pk1', 'pkN'];
+    const LOCAL_IDS  = ['cfgStore', 'cfgTel', 'cfgAddr'];
+    let _applyingRemote = false; // Firebase'den gelen veriyi uygularken saveCfg tetiklenmesin
 
     function saveCfg() {
-        const profiles = getProfiles();
-        const active = getActiveIdx();
-        profiles[active].data = readCurrentFields();
-        localStorage.setItem('s_profiles', JSON.stringify(profiles));
-        // Geriye dönük uyumluluk için ayrıca kaydet
-        CFG_IDS.forEach(id => localStorage.setItem('s_' + id, document.getElementById(id).value));
+        if(_applyingRemote) return;
+        const sharedData = {};
+        SHARED_IDS.forEach(id => { sharedData[id] = document.getElementById(id).value; });
+        sharedData.lastTime = new Date().toISOString();
+        fbDb.ref('sharedConfig').set(sharedData);
+
+        LOCAL_IDS.forEach(id => localStorage.setItem('s_' + id, document.getElementById(id).value));
         document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
         document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
-        lastUpdate = new Date(); localStorage.setItem('s_last_time', lastUpdate.toISOString());
         runCalc();
     }
 
     function loadCfg() {
-        const profiles = getProfiles();
-        const active = getActiveIdx();
-        const profileData = profiles[active].data || {};
-        // Profil verisi varsa onu kullan, yoksa eski localStorage'a bak
-        CFG_IDS.forEach(id => {
-            if(profileData[id] !== undefined && profileData[id] !== '') {
-                document.getElementById(id).value = profileData[id];
-            } else if(localStorage.getItem('s_' + id)) {
-                document.getElementById(id).value = localStorage.getItem('s_' + id);
-            }
-        });
+        // Mağazaya özel ayarlar cihazdan
+        LOCAL_IDS.forEach(id => { if(localStorage.getItem('s_' + id)) document.getElementById(id).value = localStorage.getItem('s_' + id); });
         document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
         document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
-        const st = localStorage.getItem('s_last_time'); if(st) lastUpdate = new Date(st);
+
+        // Ortak ayarlar (kur, kâr oranları) Firebase'den — canlı dinleme
+        fbDb.ref('sharedConfig').on('value', function(snap) {
+            const data = snap.val();
+            document.getElementById('sync-status').innerHTML = '<span style="color:var(--success);">● senkron</span>';
+            if(data) {
+                _applyingRemote = true;
+                SHARED_IDS.forEach(id => { if(data[id] !== undefined) document.getElementById(id).value = data[id]; });
+                if(data.lastTime) lastUpdate = new Date(data.lastTime);
+                _applyingRemote = false;
+                runCalc();
+            }
+        }, function(err) {
+            document.getElementById('sync-status').innerHTML = '<span style="color:var(--rose);">● bağlantı hatası</span>';
+            console.error('Firebase sharedConfig hata:', err);
+        });
+
         runCalc(); setInterval(updateTech, 1000);
     }
 
@@ -1481,88 +1369,51 @@
         document.getElementById('tech-time').innerHTML = `${timeStr} &nbsp;<span class="live">● ${agoStr}</span>`;
     }
 
-    function getCodes(u, xU, h, xH) {
+    function getCodes(u, xU) {
         return {
             getPCode: function(v, costTl) {
                 const pct = Math.round(((v - costTl)/costTl)*100);
                 const sign = pct >= 0 ? '1' : '0';
                 const abs = Math.abs(pct);
                 return `K<b>${sign}</b><span style="font-weight:300">${abs}</span>`;
-            },
-            getACode: function(v, hasMaliyet) {
-                const pct = Math.round(((v - hasMaliyet)/hasMaliyet)*100);
-                const sign = pct >= 0 ? '1' : '0';
-                const abs = Math.abs(pct);
-                return `İ<b>${sign}</b><span style="font-weight:300">${abs}</span>`;
             }
         };
     }
 
     function runCalc() {
         const u  = smartEval(document.getElementById('cfgU').value),
-              up = smartEval(document.getElementById('cfgU_plus').value),
-              h  = smartEval(document.getElementById('cfgA').value),
-              hp = smartEval(document.getElementById('cfgA_plus').value);
-        const xU = u * (1 + up/100), xH = h * (1 + hp/100);
+              up = smartEval(document.getElementById('cfgU_plus').value);
+        const xU = u * (1 + up/100);
         document.getElementById('tech-rates').innerHTML =
-            `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)}&nbsp;&nbsp; H: ${h.toFixed(0)} | xH: ${xH.toFixed(0)}`;
+            `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)}`;
 
         let res = {v3:0, v2:0, v1:0, vN:0, old:0, m3:'', m2:'', m1:'', mN:''}, details = '';
-        const codes = getCodes(u, xU, h, xH);
+        const codes = getCodes(u, xU);
 
-        if(currentMode === 'pirlanta') {
-            let rawInpP = document.getElementById('inpP').value;
-            let labelVal = smartEval(rawInpP);
-            // Çoklu giriş özeti
-            const partsElP = document.getElementById('inpP-parts');
-            const partsP = rawInpP ? rawInpP.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
-            if(partsP.length > 1) {
-                partsElP.style.display = 'block';
-                partsElP.innerHTML = partsP.map((p,i)=>'<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:0 2px;">'+(i+1)+'. '+p.toLocaleString('tr-TR')+'</span>').join(' + ') + ' = <b>'+partsP.length+' ürün</b>';
-            } else { partsElP.style.display = 'none'; }
-            if(labelVal > 0) {
-                let listTl = labelVal * xU;
-                let costTl = (labelVal / 3) * u;
-                res = {
-                    v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
-                    v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
-                    v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
-                    vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
-                    old: listTl
-                };
-                res.m3 = codes.getPCode(res.v3, costTl);
-                res.m2 = codes.getPCode(res.v2, costTl);
-                res.m1 = codes.getPCode(res.v1, costTl);
-                res.mN = codes.getPCode(res.vN, costTl);
-                details = 'Pırlanta';
-            }
-        } else {
-            let rawInpA = document.getElementById('inpA').value;
-            let shgVal  = smartEval(rawInpA);
-            let gramVal = smartEval(document.getElementById('inpAG').value);
-            // Çoklu giriş özeti
-            const partsElA = document.getElementById('inpA-parts');
-            const partsA = rawInpA ? rawInpA.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
-            if(partsA.length > 1) {
-                partsElA.style.display = 'block';
-                partsElA.innerHTML = partsA.map((p,i)=>'<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:0 2px;">'+(i+1)+'. '+p.toLocaleString('tr-TR')+'</span>').join(' + ') + ' = <b>'+partsA.length+' ürün</b>';
-            } else { partsElA.style.display = 'none'; }
-            if(shgVal > 0) {
-                let listTl = shgVal * xH;
-                let hasMaliyet = shgVal * h;
-                res = {
-                    v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100),
-                    v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100),
-                    v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100),
-                    vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100),
-                    old: listTl
-                };
-                res.m3 = codes.getACode(res.v3, hasMaliyet);
-                res.m2 = codes.getACode(res.v2, hasMaliyet);
-                res.m1 = codes.getACode(res.v1, hasMaliyet);
-                res.mN = codes.getACode(res.vN, hasMaliyet);
-                details = `Altın (SHG: ${shgVal.toFixed(2)} | Gram: ${gramVal.toFixed(2)}g)`;
-            }
+        let rawInpP = document.getElementById('inpP').value;
+        let labelVal = smartEval(rawInpP);
+        // Çoklu giriş özeti
+        const partsElP = document.getElementById('inpP-parts');
+        const partsP = rawInpP ? rawInpP.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
+        if(partsP.length > 1) {
+            partsElP.style.display = 'block';
+            partsElP.innerHTML = partsP.map((p,i)=>'<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:0 2px;">'+(i+1)+'. '+p.toLocaleString('tr-TR')+'</span>').join(' + ') + ' = <b>'+partsP.length+' ürün</b>';
+        } else { partsElP.style.display = 'none'; }
+        if(labelVal > 0) {
+            let listTl = labelVal * xU;
+            let costTl = (labelVal / 3) * u;
+            res = {
+                v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
+                v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
+                v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
+                vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
+                old: listTl
+            };
+            res.m3 = codes.getPCode(res.v3, costTl);
+            res.m2 = codes.getPCode(res.v2, costTl);
+            res.m1 = codes.getPCode(res.v1, costTl);
+            res.mN = codes.getPCode(res.vN, costTl);
+            details = 'Pırlanta';
         }
 
         updateBox('3', res.old, res.v3, 3, res.m3);
@@ -1581,73 +1432,14 @@
         document.getElementById('stk'+id).innerText = (diff > 0 ? '+' : '') + diff + '%';
     }
 
-    function getNextNum(mode) {
-        const count = basket.filter(i => i.mode === mode).length;
-        return count + 1;
-    }
-
     function addBasket() {
-        const u  = smartEval(document.getElementById('cfgU').value),
-              up = smartEval(document.getElementById('cfgU_plus').value),
-              h  = smartEval(document.getElementById('cfgA').value),
-              hp = smartEval(document.getElementById('cfgA_plus').value);
-        const xU = u * (1 + up/100), xH = h * (1 + hp/100);
-        const codes = getCodes(u, xU, h, xH);
-        const kodInput = document.getElementById('iKod').value.trim();
-        const mode = currentMode;
-        const modeLabel = mode === 'pirlanta' ? 'Pırlanta' : 'Altın';
-        const rawAG = document.getElementById('inpAG').value;
-
-        if(mode === 'pirlanta') {
-            const rawP = document.getElementById('inpP').value;
-            const parts = rawP.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0);
-            if(!parts.length) return;
-            parts.forEach(labelVal => {
-                const num = getNextNum(mode);
-                const k = kodInput || (num + '. ' + modeLabel);
-                const costTl = (labelVal / 3) * u;
-                const listTl = labelVal * xU;
-                const v = {
-                    v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
-                    v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
-                    v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
-                    vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
-                    old: listTl
-                };
-                v.m3 = codes.getPCode(v.v3, costTl); v.m2 = codes.getPCode(v.v2, costTl);
-                v.m1 = codes.getPCode(v.v1, costTl); v.mN = codes.getPCode(v.vN, costTl);
-                basket.push({ id: Date.now() + Math.floor(Math.random()*1000), k: k.toUpperCase(), v, d: 'Pırlanta / ' + labelVal.toLocaleString('tr-TR'), mode, _rawP: String(labelVal), _rawA: '', _rawAG: '', note: '' });
-            });
-        } else {
-            const rawA = document.getElementById('inpA').value;
-            const partsA = rawA.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0);
-            const partsG = rawAG.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0);
-            if(!partsA.length) return;
-            partsA.forEach((shgVal, idx) => {
-                const num = getNextNum(mode);
-                const k = kodInput || (num + '. ' + modeLabel);
-                const gramVal = partsG[idx] || 0;
-                const hasMaliyet = shgVal * h;
-                const listTl = shgVal * xH;
-                const v = {
-                    v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100),
-                    v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100),
-                    v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100),
-                    vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100),
-                    old: listTl
-                };
-                v.m3 = codes.getACode(v.v3, hasMaliyet); v.m2 = codes.getACode(v.v2, hasMaliyet);
-                v.m1 = codes.getACode(v.v1, hasMaliyet); v.mN = codes.getACode(v.vN, hasMaliyet);
-                basket.push({ id: Date.now() + Math.floor(Math.random()*1000), k: k.toUpperCase(), v, d: 'Altın (SHG: '+shgVal.toFixed(2)+' | Gram: '+gramVal.toFixed(2)+'g)', mode, _rawP: '', _rawA: String(shgVal), _rawAG: String(gramVal), note: '' });
-            });
-        }
-
+        const k = document.getElementById('iKod').value.trim();
+        if(!k) { document.getElementById('iKod').focus(); return; }
+        const calc = runCalc();
+        const rawP  = document.getElementById('inpP').value;
+        basket.push({ id: Date.now(), k: k.toUpperCase(), v: calc.res, d: calc.details, mode: calc.mode, _rawP: rawP, note: '' });
         document.getElementById('iKod').value  = '';
         document.getElementById('inpP').value  = '';
-        document.getElementById('inpA').value  = '';
-        document.getElementById('inpAG').value = '';
-        document.getElementById('inpP-parts').style.display = 'none';
-        document.getElementById('inpA-parts').style.display = 'none';
         runCalc();
         renderBasket();
         setTimeout(() => { const c = document.getElementById('basket-container'); c.scrollTop = c.scrollHeight; }, 100);
@@ -1664,11 +1456,7 @@
         }
         document.getElementById('sum-box').style.display = 'block';
         if(countEl) countEl.innerText = basket.length;
-        const pItems = basket.filter(i => i.mode === 'pirlanta'),
-              aItems = basket.filter(i => i.mode === 'altin');
-        container.innerHTML =
-            (pItems.length ? createGroupHtml('💎 Pırlanta', 'pirlanta', pItems) : '') +
-            (aItems.length ? createGroupHtml('✨ Altın', 'altin', aItems) : '');
+        container.innerHTML = createGroupHtml('💎 Pırlanta', 'pirlanta', basket);
         document.getElementById('sum3').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v3, 0)).toLocaleString('tr-TR');
         document.getElementById('sum2').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v2, 0)).toLocaleString('tr-TR');
         document.getElementById('sum1').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v1, 0)).toLocaleString('tr-TR');
@@ -1689,7 +1477,7 @@
             </div>
             <div id="group-${mode}" class="group-content">
                 ${items.map(i => `
-                <div class="basket-item" >
+                <div class="basket-item">
                     <span class="item-remove" onclick="removeItem(${i.id})">×</span>
                     <div class="basket-item-title">${i.k} <span onclick="openEdit(${i.id})" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;margin-left:4px;">✎</span></div>
                     <span class="basket-item-detail">${i.d}</span>
@@ -1716,17 +1504,16 @@
         const ref = `${dateShort.replace(/\./g,'')}/${Math.floor(Math.random()*9000)+1000}`;
         const cusName  = document.getElementById('iCus').value  || 'Müşterimiz';
         const cusPhone = document.getElementById('iPhone').value || '—';
+        const storeName = document.getElementById('cfgStore').value || 'Mağaza';
 
-        // Geçmişe kaydet
-        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
-        hist.unshift({ ref, ts, cusName, cusPhone, basket: JSON.parse(JSON.stringify(basket)) });
-        if(hist.length > 50) hist.pop();
-        localStorage.setItem('s_history', JSON.stringify(hist));
+        // Geçmişe kaydet (ortak — Firebase)
+        fbDb.ref('history').push({ ref, ts, cusName, cusPhone, storeName, basket: JSON.parse(JSON.stringify(basket)) })
+            .catch(err => console.error('Geçmiş kaydedilemedi:', err));
 
         document.getElementById('p-date').innerText = ts;
         document.getElementById('p-ref-line').innerText = ref;
         document.getElementById('p-ref-tech').innerText =
-            `U:${document.getElementById('cfgU').value} H:${document.getElementById('cfgA').value} — ${ts}`;
+            `U:${document.getElementById('cfgU').value} — ${ts}`;
         document.getElementById('p-store-name').innerText = document.getElementById('cfgStore').value;
         document.getElementById('p-store-addr-block').innerHTML =
             `${document.getElementById('cfgAddr').value}<br>Tel: ${document.getElementById('cfgTel').value}`;
@@ -1736,13 +1523,9 @@
              <div class="p-customer-phone">${cusPhone}</div>`;
 
         const b = document.getElementById('p-body'); b.innerHTML = '';
-        const sortedBasket = [
-            ...basket.filter(i => i.mode === 'pirlanta').sort((a,b) => a.v.vN - b.v.vN),
-            ...basket.filter(i => i.mode === 'altin').sort((a,b) => a.v.vN - b.v.vN)
-        ];
+        const sortedBasket = basket.slice().sort((a,b) => a.v.vN - b.v.vN);
         const pdfGroups = [
-            { mode: 'pirlanta', label: '💎 Pırlanta', items: sortedBasket.filter(i => i.mode === 'pirlanta') },
-            { mode: 'altin',    label: '✨ Altın',    items: sortedBasket.filter(i => i.mode === 'altin') }
+            { mode: 'pirlanta', label: '💎 Pırlanta', items: sortedBasket }
         ];
         pdfGroups.forEach(g => {
             if(!g.items.length) return;
@@ -1787,6 +1570,7 @@
             </div>`;
 
         closeModal('cusModal');
+        // Tüm modalleri kapat
         document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
         document.getElementById('print-area').style.display = 'block';
         setTimeout(() => {
@@ -1819,111 +1603,97 @@
     }
 
     function openEdit(id) {
-        const item = basket.find(i => String(i.id) === String(id)); if(!item) return;
+        const item = basket.find(i => i.id === id); if(!item) return;
         document.getElementById('editId').value  = id;
         document.getElementById('editKod').value = item.k;
         document.getElementById('editNote').value = item.note || '';
-        if(item.mode === 'pirlanta') {
-            document.getElementById('editLabel').innerText = 'Pırlanta Etiket';
-            document.getElementById('editVal').value = item._rawP || '';
-            document.getElementById('editVal2Wrap').style.display = 'none';
-        } else {
-            document.getElementById('editLabel').innerText = 'Sina Has (SHG)';
-            document.getElementById('editVal').value  = item._rawA  || '';
-            document.getElementById('editLabel2').innerText = 'Gram';
-            document.getElementById('editVal2').value = item._rawAG || '';
-            document.getElementById('editVal2Wrap').style.display = 'block';
-        }
+        document.getElementById('editLabel').innerText = 'Pırlanta Etiket';
+        document.getElementById('editVal').value = item._rawP || '';
         openModal('editModal');
     }
 
     function saveEdit() {
-        const id  = document.getElementById('editId').value;
-        const idx = basket.findIndex(i => String(i.id) === String(id)); if(idx === -1) return;
+        const id  = parseInt(document.getElementById('editId').value);
+        const idx = basket.findIndex(i => i.id === id); if(idx === -1) return;
         const item = basket[idx];
         item.k = document.getElementById('editKod').value.toUpperCase();
         const u  = smartEval(document.getElementById('cfgU').value),
-              up = smartEval(document.getElementById('cfgU_plus').value),
-              h  = smartEval(document.getElementById('cfgA').value),
-              hp = smartEval(document.getElementById('cfgA_plus').value);
-        const xU = u * (1 + up/100), xH = h * (1 + hp/100);
-        const codes = getCodes(u, xU, h, xH);
-        if(item.mode === 'pirlanta') {
-            const labelVal = smartEval(document.getElementById('editVal').value);
-            item._rawP = document.getElementById('editVal').value;
-            const costTl = (labelVal / 3) * u;
-            const listTl = labelVal * xU;
-            item.v = {
-                v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
-                v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
-                v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
-                vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
-                old: listTl
-            };
-            item.v.m3 = codes.getPCode(item.v.v3, costTl);
-            item.v.m2 = codes.getPCode(item.v.v2, costTl);
-            item.v.m1 = codes.getPCode(item.v.v1, costTl);
-            item.v.mN = codes.getPCode(item.v.vN, costTl);
-            item.d = 'Pırlanta / ' + labelVal.toLocaleString('tr-TR');
-            item.note = document.getElementById('editNote').value.trim();
-        } else {
-            const shgVal  = smartEval(document.getElementById('editVal').value);
-            const gramVal = smartEval(document.getElementById('editVal2').value);
-            item._rawA  = document.getElementById('editVal').value;
-            item._rawAG = document.getElementById('editVal2').value;
-            const hasMaliyet = shgVal * h;
-            const listTl = shgVal * xH;
-            item.v = {
-                v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100),
-                v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100),
-                v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100),
-                vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100),
-                old: listTl
-            };
-            item.v.m3 = codes.getACode(item.v.v3, hasMaliyet);
-            item.v.m2 = codes.getACode(item.v.v2, hasMaliyet);
-            item.v.m1 = codes.getACode(item.v.v1, hasMaliyet);
-            item.v.mN = codes.getACode(item.v.vN, hasMaliyet);
-            item.d = 'Altın (SHG: ' + shgVal.toFixed(2) + ' | Gram: ' + gramVal.toFixed(2) + 'g)';
-            item.note = document.getElementById('editNote').value.trim();
-        }
+              up = smartEval(document.getElementById('cfgU_plus').value);
+        const xU = u * (1 + up/100);
+        const codes = getCodes(u, xU);
+        const labelVal = smartEval(document.getElementById('editVal').value);
+        item._rawP = document.getElementById('editVal').value;
+        const costTl = (labelVal / 3) * u;
+        const listTl = labelVal * xU;
+        item.v = {
+            v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
+            v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
+            v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
+            vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
+            old: listTl
+        };
+        item.v.m3 = codes.getPCode(item.v.v3, costTl);
+        item.v.m2 = codes.getPCode(item.v.v2, costTl);
+        item.v.m1 = codes.getPCode(item.v.v1, costTl);
+        item.v.mN = codes.getPCode(item.v.vN, costTl);
+        item.d = 'Pırlanta';
+        item.note = document.getElementById('editNote').value.trim();
         closeModal('editModal');
         renderBasket();
+    }
+
+    let _historyCache = []; // [{key, ref, ts, cusName, cusPhone, storeName, basket}]
+    let _historyListenerAttached = false;
+
+    function attachHistoryListener() {
+        if(_historyListenerAttached) return;
+        _historyListenerAttached = true;
+        fbDb.ref('history').limitToLast(200).on('value', function(snap) {
+            const data = snap.val() || {};
+            _historyCache = Object.keys(data).map(function(key) {
+                return Object.assign({ key }, data[key]);
+            }).sort(function(a, b) { return (b.tsMillis||0) - (a.tsMillis||0); });
+            renderHistory();
+        }, function(err) {
+            console.error('Geçmiş okunamadı:', err);
+        });
     }
 
     function openHistory() {
         document.getElementById('histSearch').value = '';
         document.getElementById('history-preview').style.display = 'none';
-        _previewIdx = -1;
+        _previewKey = null;
+        attachHistoryListener();
         renderHistory();
     }
 
     function renderHistory() {
         const q = (document.getElementById('histSearch').value || '').toLowerCase().trim();
-        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
+        const hist = _historyCache;
         const el = document.getElementById('history-list');
-        const filtered = q ? hist.filter(function(h, idx) {
-            return (h.cusName + ' ' + h.cusPhone).toLowerCase().indexOf(q) !== -1;
+        const filtered = q ? hist.filter(function(h) {
+            return (h.cusName + ' ' + h.cusPhone + ' ' + (h.storeName||'')).toLowerCase().indexOf(q) !== -1;
         }) : hist;
         if(!filtered.length) {
             el.innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-dim); font-size:13px;">' + (q ? 'Eşleşen kayıt bulunamadı.' : 'Henüz kayıtlı teklif yok.') + '</div>';
             return;
         }
         const f = n => Math.round(n).toLocaleString('tr-TR');
-        el.innerHTML = filtered.map(function(h, filtIdx) {
-            const realIdx = hist.indexOf(h);
+        el.innerHTML = filtered.map(function(h) {
+            const realKey = h.key;
             const sN = Math.round(h.basket.reduce(function(a,b){return a+b.v.vN;},0));
             const s3 = Math.round(h.basket.reduce(function(a,b){return a+b.v.v3;},0));
             return '<div style="padding:14px 16px; border-bottom:1px solid var(--border);">' +
                 '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-                '<div style="flex:1; cursor:pointer;" onclick="previewHistory(' + realIdx + ')">' +
+                '<div style="flex:1; cursor:pointer;" onclick="previewHistory(\'' + realKey + '\')">' +
                 '<div style="font-weight:700; font-size:14px; color:var(--ink);">' + h.cusName + ' <span style="font-size:11px; color:var(--ink-dim); font-weight:400;">' + h.cusPhone + '</span></div>' +
                 '<div style="font-size:11px; color:var(--ink-dim); margin-top:2px;">' + h.ts + ' · ' + h.basket.length + ' ürün</div>' +
+                '<div style="font-size:10px; color:var(--rose); font-weight:700; margin-top:2px;">🏪 ' + (h.storeName || 'Mağaza') + '</div>' +
                 '</div>' +
                 '<div style="text-align:right; margin-left:12px;">' +
-                '<div style="font-size:13px; font-weight:700; color:var(--rose); cursor:pointer;" onclick="previewHistory(' + realIdx + ')">' + f(sN) + ' ₺</div>' +
+                '<div style="font-size:13px; font-weight:700; color:var(--rose); cursor:pointer;" onclick="previewHistory(\'' + realKey + '\')">' + f(sN) + ' ₺</div>' +
                 '<div style="font-size:10px; color:var(--ink-dim);">3T: ' + f(s3) + ' ₺</div>' +
-                '<button onclick="deleteHistory(' + realIdx + ')" style="background:none; border:none; color:var(--ink-dim); font-size:11px; cursor:pointer; margin-top:4px; padding:0;">🗑 Sil</button>' +
+                '<button onclick="deleteHistory(\'' + realKey + '\')" style="background:none; border:none; color:var(--ink-dim); font-size:11px; cursor:pointer; margin-top:4px; padding:0;">🗑 Sil</button>' +
                 '</div></div>' +
                 '<div style="font-size:11px; color:var(--ink-dim); margin-top:6px;">' +
                 h.basket.map(function(i){ return '<span style="display:inline-block; background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:2px 6px; margin:2px 2px 0 0; font-size:10px;">' + i.k + (i.note ? ' · ' + i.note : '') + '</span>'; }).join('') +
@@ -1932,16 +1702,16 @@
         }).join('');
     }
 
-    let _previewIdx = -1;
+    let _previewKey = null;
 
-    function previewHistory(idx) {
-        _previewIdx = idx;
-        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
-        if(!hist[idx]) return;
-        const h = hist[idx];
+    function previewHistory(key) {
+        _previewKey = key;
+        const h = _historyCache.find(function(x) { return x.key === key; });
+        if(!h) return;
         const f = n => Math.round(n).toLocaleString('tr-TR');
         document.getElementById('prev-title').innerHTML =
-            '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>';
+            '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>' +
+            '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + (h.storeName || 'Mağaza') + '</span>';
         document.getElementById('prev-items').innerHTML = h.basket.map(function(i) {
             return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">' +
                 '<span><b>' + i.k + '</b>' + (i.note ? ' <em style="opacity:.6;">— ' + i.note + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + i.d + '</span></span>' +
@@ -1954,22 +1724,19 @@
     }
 
     function confirmLoadHistory() {
-        if(_previewIdx === -1) return;
-        loadHistory(_previewIdx);
+        if(_previewKey === null) return;
+        loadHistory(_previewKey);
     }
 
-    function loadHistory(idx) {
-        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
-        if(!hist[idx]) return;
+    function loadHistory(key) {
+        const h = _historyCache.find(function(x) { return x.key === key; });
+        if(!h) return;
         // Güncel kurlarla yeniden hesapla
         const u  = smartEval(document.getElementById('cfgU').value),
-              up = smartEval(document.getElementById('cfgU_plus').value),
-              h  = smartEval(document.getElementById('cfgA').value),
-              hp = smartEval(document.getElementById('cfgA_plus').value);
-        const xU = u * (1 + up/100), xH = h * (1 + hp/100);
-        const codes = getCodes(u, xU, h, xH);
-        const oldBasket = hist[idx].basket;
-        basket = oldBasket.map(function(item) {
+              up = smartEval(document.getElementById('cfgU_plus').value);
+        const xU = u * (1 + up/100);
+        const codes = getCodes(u, xU);
+        basket = h.basket.map(function(item) {
             const ni = JSON.parse(JSON.stringify(item));
             if(ni.mode === 'pirlanta' && ni._rawP) {
                 const labelVal = smartEval(ni._rawP);
@@ -1986,42 +1753,23 @@
                 ni.v.m2 = codes.getPCode(ni.v.v2, costTl);
                 ni.v.m1 = codes.getPCode(ni.v.v1, costTl);
                 ni.v.mN = codes.getPCode(ni.v.vN, costTl);
-            } else if(ni.mode === 'altin' && ni._rawA) {
-                const shgVal = smartEval(ni._rawA);
-                const gramVal = smartEval(ni._rawAG || '0');
-                const hasMaliyet = shgVal * h;
-                const listTl = shgVal * xH;
-                ni.v = {
-                    v3: listTl * (1 - smartEval(document.getElementById('ak3').value)/100),
-                    v2: listTl * (1 - smartEval(document.getElementById('ak2').value)/100),
-                    v1: listTl * (1 - smartEval(document.getElementById('ak1').value)/100),
-                    vN: listTl * (1 - smartEval(document.getElementById('akN').value)/100),
-                    old: listTl
-                };
-                ni.v.m3 = codes.getACode(ni.v.v3, hasMaliyet);
-                ni.v.m2 = codes.getACode(ni.v.v2, hasMaliyet);
-                ni.v.m1 = codes.getACode(ni.v.v1, hasMaliyet);
-                ni.v.mN = codes.getACode(ni.v.vN, hasMaliyet);
             }
             return ni;
         });
-        document.getElementById('iCus').value   = hist[idx].cusName !== 'Müşterimiz' ? hist[idx].cusName : '';
-        document.getElementById('iPhone').value = hist[idx].cusPhone !== '—' ? hist[idx].cusPhone : '';
+        document.getElementById('iCus').value   = h.cusName !== 'Müşterimiz' ? h.cusName : '';
+        document.getElementById('iPhone').value = h.cusPhone !== '—' ? h.cusPhone : '';
         closeModal('historyModal');
         renderBasket();
     }
 
-    function deleteHistory(idx) {
-        const hist = JSON.parse(localStorage.getItem('s_history') || '[]');
-        hist.splice(idx, 1);
-        localStorage.setItem('s_history', JSON.stringify(hist));
-        renderHistory();
+    function deleteHistory(key) {
+        if(!confirm('Bu teklif silinsin mi?')) return;
+        fbDb.ref('history/' + key).remove().catch(err => console.error('Silinemedi:', err));
     }
 
     function clearHistory() {
-        if(!confirm('Tüm geçmiş silinsin mi?')) return;
-        localStorage.removeItem('s_history');
-        renderHistory();
+        if(!confirm('Tüm geçmiş silinsin mi? Bu işlem tüm mağazalardaki geçmişi siler.')) return;
+        fbDb.ref('history').remove().catch(err => console.error('Temizlenemedi:', err));
     }
 
     function adjustPadding() {
@@ -2035,52 +1783,6 @@
 
     function toggleGroup(m)  { document.getElementById('group-'+m).classList.toggle('hidden'); }
 
-    function switchTab(m) {
-        currentMode = m;
-        document.getElementById('btnP').classList.toggle('active', m === 'pirlanta');
-        document.getElementById('btnA').classList.toggle('active', m === 'altin');
-        document.getElementById('formP').style.display = m === 'pirlanta' ? 'block' : 'none';
-        document.getElementById('formA').style.display = m === 'altin'    ? 'grid'  : 'none';
-        runCalc();
-    }
-
-    // Swipe ile sekme geçişi
-    (function() {
-        let startX = 0, startY = 0;
-        document.addEventListener('DOMContentLoaded', function() {
-            const el = document.querySelector('.left-panel');
-            if(!el) return;
-            el.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, { passive: true });
-            el.addEventListener('touchend', function(e) {
-                const dx = e.changedTouches[0].clientX - startX;
-                const dy = e.changedTouches[0].clientY - startY;
-                if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-                    if(dx < 0 && currentMode === 'pirlanta') switchTab('altin');
-                    if(dx > 0 && currentMode === 'altin')    switchTab('pirlanta');
-                }
-            }, { passive: true });
-        });
-    })();
-
-    let kodlarGizli = false;
-    function toggleKodlar() {
-        kodlarGizli = !kodlarGizli;
-        document.body.classList.toggle('kodlar-gizli', kodlarGizli);
-        const btn = document.getElementById('btnGizle');
-        const lbl = document.getElementById('btnGizleLabel');
-        if(kodlarGizli) {
-            btn.style.background = 'var(--rose-soft)';
-            btn.style.borderColor = 'var(--rose)';
-            btn.style.color = 'var(--rose)';
-            lbl.innerText = 'Detaylı';
-        } else {
-            btn.style.background = '';
-            btn.style.borderColor = '';
-            btn.style.color = '';
-            lbl.innerText = 'Sade';
-        }
-    }
-
     function setSTab(i) {
         document.querySelectorAll('.s-tab').forEach(function(t,idx) { t.classList.toggle('active', idx===i); });
         document.querySelectorAll('.pane').forEach(function(p,idx) { p.classList.toggle('active', idx===i); });
@@ -2088,9 +1790,9 @@
 
     function removeItem(id)  { basket = basket.filter(i=>i.id!==id); renderBasket(); }
     function clearBasket()   { basket = []; renderBasket(); }
-    function openModal(id)   { document.getElementById(id).style.display='flex'; if(id==='historyModal') openHistory(); if(id==='settingsModal') renderProfileTabs(); }
+    function openModal(id)   { document.getElementById(id).style.display='flex'; if(id==='historyModal') openHistory(); }
     function closeModal(id)  { document.getElementById(id).style.display='none'; }
-    window.onload = function() { loadCfg(); adjustPadding(); renderProfileTabs(); };
+    window.onload = function() { loadCfg(); adjustPadding(); };
     window.addEventListener('resize', adjustPadding);
 </script>
 </body>
