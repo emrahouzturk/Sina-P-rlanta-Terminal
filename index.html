@@ -2633,8 +2633,16 @@
     function deleteStore(storeId, storeName) {
         sysPrompt('Bu işlem geri alınamaz. "' + storeName + '" mağazasının TÜM verisini (ayarlar + geçmiş + satışlar) silmek için mağaza adını tam olarak yazıp onaylayın:\n\n' + storeName, { title: 'Mağazayı Sil', placeholder: storeName, tone: 'danger' }).then(function(typed) {
             if(typed === null) return;
-            if(typed.trim() !== storeName) {
-                sysAlert('Girilen ad eşleşmedi, mağaza silinmedi.', { tone: 'warn' });
+            // Karşılaştırmayı görünmez karakter farklarına (boşluk, NBSP, vs.) karşı toleranslı yap
+            const normalize = s => s.normalize('NFC').replace(/\s+/g, ' ').trim();
+            if(normalize(typed) !== normalize(storeName)) {
+                // Hata ayıklama: tam olarak nerede fark var, görünür hale getir
+                const a = normalize(typed), b = normalize(storeName);
+                let debugInfo = 'Girilen: "' + a + '" (uzunluk: ' + a.length + ')\nBeklenen: "' + b + '" (uzunluk: ' + b.length + ')';
+                if(a.toLowerCase() === b.toLowerCase()) {
+                    debugInfo += '\n\nNot: Sadece büyük/küçük harf farkı var.';
+                }
+                sysAlert('Girilen ad eşleşmedi, mağaza silinmedi.\n\n' + debugInfo, { tone: 'warn', title: 'Eşleşmedi' });
                 return;
             }
             fbDb.ref('stores/' + storeId).remove()
