@@ -1440,10 +1440,11 @@
             </div>
             <!-- Önizleme Paneli -->
             <div id="history-preview" style="display:none; padding:16px 20px; background:var(--bg);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
                     <div style="font-size:12px; font-weight:700; color:var(--ink);" id="prev-title">—</div>
-                    <div style="display:flex; gap:6px;">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
                         <button onclick="document.getElementById('history-preview').style.display='none'; _previewKey=null;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕ Kapat</button>
+                        <button id="btnPrintHistoryPdf" onclick="printHistoryAsIs()" style="background:none; border:1.5px solid var(--rose-soft); color:var(--rose); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; cursor:pointer;">📄 O Günkü Fiyatla PDF</button>
                         <button id="btnLoadHistory" onclick="confirmLoadHistory()" style="background:var(--rose); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:11px; font-weight:700; cursor:pointer;">↩ Güncel Kurla Aktar</button>
                     </div>
                 </div>
@@ -2217,11 +2218,12 @@
     }
 
     // Sadece yazdırma ekranını hazırlar ve yazdırır (geçmişe ayrıca yazmaz — bu, çağıran fonksiyonun işidir)
-    function printCurrentBasketPdf(cusName, cusPhone) {
+    // overrideTs/overrideRef verilirse (geçmişten "o günkü" yazdırmada), bugünün tarihi yerine onlar kullanılır.
+    function printCurrentBasketPdf(cusName, cusPhone, overrideTs, overrideRef) {
         const now = new Date();
-        const ts  = now.toLocaleString('tr-TR');
+        const ts  = overrideTs || now.toLocaleString('tr-TR');
         const dateShort = now.toLocaleDateString('tr-TR');
-        const ref = `${dateShort.replace(/\./g,'')}/${Math.floor(Math.random()*9000)+1000}`;
+        const ref = overrideRef || `${dateShort.replace(/\./g,'')}/${Math.floor(Math.random()*9000)+1000}`;
 
         document.getElementById('p-date').innerText = ts;
         document.getElementById('p-ref-line').innerText = ref;
@@ -2493,6 +2495,7 @@
         const h = _historyCache.find(function(x) { return x.key === key; });
         if(!h) return;
         document.getElementById('btnLoadHistory').style.display = isAdmin ? 'none' : 'inline-block';
+        document.getElementById('btnPrintHistoryPdf').style.display = isAdmin ? 'none' : 'inline-block';
         const f = n => Math.round(n).toLocaleString('tr-TR');
         const isSold = h.status === 'sold';
         document.getElementById('prev-title').innerHTML =
@@ -2508,6 +2511,19 @@
                 '</span></div>';
         }).join('');
         document.getElementById('history-preview').style.display = 'block';
+    }
+
+    // Geçmişteki bir kaydı, o anda kaydedildiği fiyatlarla (hiç yeniden hesaplamadan) yazdırır.
+    // Mevcut çalışılan sepete dokunmaz — yazdırma bitince eski sepet aynen geri yüklenir.
+    function printHistoryAsIs() {
+        const h = _historyCache.find(function(x) { return x.key === _previewKey; });
+        if(!h) return;
+        const savedBasket = basket;
+        basket = JSON.parse(JSON.stringify(h.basket));
+        printCurrentBasketPdf(h.cusName, h.cusPhone, h.ts, h.ref);
+        // printCurrentBasketPdf içindeki window.print() asenkron olduğu için
+        // sepeti yazdırma diyaloğu kapanana kadar bekletip sonra eski haline döndürüyoruz.
+        setTimeout(function() { basket = savedBasket; renderBasket(); }, 1200);
     }
 
     function confirmLoadHistory() {
