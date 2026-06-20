@@ -53,6 +53,16 @@
             --r-sm: 8px;
             --r-md: 14px;
             --r-lg: 22px;
+
+            /* Dashboard (Admin) tonu — kasıtlı olarak ayrı bir "komuta merkezi" hissi */
+            --dash-bg:        #12121b;
+            --dash-surface:   #1b1b27;
+            --dash-surface-2: #22222f;
+            --dash-border:    #2e2e3d;
+            --dash-ink:       #f2f0f5;
+            --dash-ink-dim:   #8d8b9c;
+            --dash-gold:      #d4af78;
+            --dash-rose:      #e8537a;
         }
 
         *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -848,6 +858,138 @@
         .empty-basket svg { opacity: .25; margin-bottom: 12px; }
         .empty-basket p { font-size: 12px; font-weight: 500; margin: 0; }
 
+        /* ── ADMIN DASHBOARD ── */
+        #dashboard-screen {
+            position: fixed; inset: 0;
+            background: var(--dash-bg);
+            color: var(--dash-ink);
+            z-index: 500;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .dash-topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 22px 40px;
+            border-bottom: 1px solid var(--dash-border);
+            flex-shrink: 0;
+        }
+        .dash-brand { display: flex; align-items: center; gap: 14px; }
+        .dash-brand img { height: 30px; filter: brightness(0) invert(1); opacity: .92; }
+        .dash-brand-text { display: flex; flex-direction: column; }
+        .dash-brand-text .title { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; letter-spacing: .01em; }
+        .dash-brand-text .subtitle { font-family: 'DM Sans', sans-serif; font-size: 9.5px; color: var(--dash-gold); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-top: 1px; }
+        .dash-logout {
+            background: none; border: 1.5px solid var(--dash-border); color: var(--dash-ink-dim);
+            padding: 9px 16px; border-radius: 100px; cursor: pointer;
+            font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 11px;
+            display: flex; align-items: center; gap: 6px; transition: border-color .18s, color .18s;
+        }
+        .dash-logout:hover { border-color: var(--dash-rose); color: var(--dash-rose); }
+
+        .dash-tabbar {
+            display: flex; gap: 4px;
+            padding: 0 40px;
+            border-bottom: 1px solid var(--dash-border);
+            flex-shrink: 0;
+        }
+        .dash-tab {
+            background: none; border: none; cursor: pointer;
+            color: var(--dash-ink-dim);
+            font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 12.5px;
+            letter-spacing: .02em;
+            padding: 16px 18px 14px;
+            border-bottom: 2px solid transparent;
+            transition: color .18s, border-color .18s;
+        }
+        .dash-tab:hover { color: var(--dash-ink); }
+        .dash-tab.active { color: var(--dash-ink); border-bottom-color: var(--dash-rose); }
+
+        .dash-body { padding: 32px 40px 60px; flex: 1; }
+        .dash-pane { display: none; }
+        .dash-pane.active { display: block; }
+
+        .dash-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 30px; }
+        .dash-stat-card {
+            background: var(--dash-surface);
+            border: 1px solid var(--dash-border);
+            border-radius: 16px;
+            padding: 20px 22px;
+            position: relative;
+            overflow: hidden;
+        }
+        .dash-stat-card .eyebrow { font-size: 9.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--dash-ink-dim); }
+        .dash-stat-card .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 700; margin-top: 8px; line-height: 1; }
+        .dash-stat-card .stat-sub { font-size: 10.5px; color: var(--dash-ink-dim); margin-top: 6px; }
+        .dash-stat-card.accent-rose .stat-value { color: var(--dash-rose); }
+        .dash-stat-card.accent-gold .stat-value { color: var(--dash-gold); }
+        .dash-stat-card.accent-success .stat-value { color: #5fd99a; }
+
+        .dash-section-title { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--dash-ink-dim); margin-bottom: 14px; }
+
+        .dash-panel {
+            background: var(--dash-surface);
+            border: 1px solid var(--dash-border);
+            border-radius: 16px;
+            padding: 22px 24px;
+        }
+
+        .dash-store-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 13px 4px;
+            border-bottom: 1px solid var(--dash-border);
+            font-size: 13px;
+        }
+        .dash-store-row:last-child { border-bottom: none; }
+        .dash-rank-num { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--dash-gold); width: 28px; flex-shrink: 0; }
+
+        .dash-input, .dash-select {
+            background: var(--dash-surface-2);
+            border: 1.5px solid var(--dash-border);
+            color: var(--dash-ink);
+            border-radius: 9px;
+            padding: 10px 13px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+        }
+        input[type="date"].dash-input, input[type="text"].dash-input, input[type="password"].dash-input {
+            text-align: left;
+            width: auto;
+        }
+        .dash-input::placeholder { color: var(--dash-ink-dim); font-weight: 500; }
+        .dash-input:focus, .dash-select:focus { border-color: var(--dash-rose); }
+        .dash-label { font-size: 10px; font-weight: 700; color: var(--dash-ink-dim); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; display: block; }
+
+        .dash-btn-primary {
+            background: linear-gradient(135deg, var(--dash-rose), #b8385c);
+            color: #fff; border: none; border-radius: 10px;
+            padding: 11px 20px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 12.5px;
+            cursor: pointer; transition: opacity .18s;
+        }
+        .dash-btn-primary:hover { opacity: .88; }
+        .dash-btn-ghost {
+            background: none; border: 1.5px solid var(--dash-border); color: var(--dash-ink-dim);
+            border-radius: 9px; padding: 9px 14px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 11.5px;
+            cursor: pointer; transition: border-color .18s, color .18s;
+        }
+        .dash-btn-ghost:hover { border-color: var(--dash-gold); color: var(--dash-gold); }
+        .dash-btn-danger {
+            background: none; border: 1.5px solid rgba(232,83,122,.35); color: var(--dash-rose);
+            border-radius: 9px; padding: 7px 12px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 10.5px;
+            cursor: pointer;
+        }
+
+        .dash-badge { display: inline-block; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 100px; letter-spacing: .04em; }
+        .dash-badge.sold { background: rgba(95,217,154,.14); color: #5fd99a; }
+        .dash-badge.teklif { background: var(--dash-surface-2); color: var(--dash-ink-dim); border: 1px solid var(--dash-border); }
+
+        @media (max-width: 900px) {
+            .dash-stat-grid { grid-template-columns: repeat(2, 1fr); }
+            .dash-topbar, .dash-tabbar, .dash-body { padding-left: 18px; padding-right: 18px; }
+        }
+
         /* ── PRINT ── */
         #print-area { display: none; }
         #admin-print-area { display: none; }
@@ -932,14 +1074,11 @@
         <!-- TOP BAR -->
         <div class="top-bar">
             <div class="rates-chip">
+                <div id="user-chip" style="font-weight:800; color:var(--rose); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
                 <div id="tech-rates">U: — | xU: —</div>
                 <div id="tech-time" class="tech-time">— &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span></div>
             </div>
             <div class="top-actions">
-                <button class="btn-ghost" id="adminPanelBtn" style="display:none;" onclick="openAdminPanel()">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-                    Admin Panel
-                </button>
                 <button class="btn-solid" onclick="openModal('settingsModal')">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     Ayarlar
@@ -1215,62 +1354,106 @@
         </div>
     </div>
 
-    <!-- ADMIN PANEL MODAL -->
-    <div id="adminModal" class="modal-overlay">
-        <div class="modal" style="max-width:760px;">
-            <div class="modal-header">
-                <h3>Admin Panel</h3>
-                <span class="modal-close" onclick="closeModal('adminModal')">×</span>
-            </div>
-
-            <div class="s-tab-bar">
-                <button class="s-tab admin-tab active" onclick="setAdminTab(0)">Mağazalar</button>
-                <button class="s-tab admin-tab" onclick="setAdminTab(1)">Satış Raporu</button>
-            </div>
-
-            <!-- TAB 0: Mağaza Yönetimi -->
-            <div id="admin-pane0" class="admin-pane" style="padding:18px 20px;">
-                <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px;">
-                    <div style="font-size:12px; font-weight:800; margin-bottom:10px;">+ Yeni Mağaza Ekle</div>
-                    <div class="settings-grid">
-                        <div><label class="field-label">Mağaza Adı</label><input type="text" id="newStoreName" placeholder="Örn: Kadıköy Şubesi" style="font-size:13px;"></div>
-                        <div><label class="field-label">Kullanıcı Adı</label><input type="text" id="newStoreUser" placeholder="örn: kadikoy" style="font-size:13px;"></div>
-                        <div><label class="field-label">Şifre</label><input type="text" id="newStorePass" placeholder="en az 6 karakter" style="font-size:13px;"></div>
-                        <div><label class="field-label">Telefon</label><input type="text" id="newStoreTel" placeholder="0216 XXX XX XX" style="font-size:13px;"></div>
-                    </div>
-                    <div id="newStoreError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
-                    <button class="btn-save" style="margin-top:12px;" onclick="createStore()">Mağaza Oluştur</button>
+    <!-- ADMIN DASHBOARD (tam ekran) -->
+    <div id="dashboard-screen">
+        <div class="dash-topbar">
+            <div class="dash-brand">
+                <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" alt="Sina Pırlanta">
+                <div class="dash-brand-text">
+                    <div class="title">Sina Terminal</div>
+                    <div class="subtitle">Komuta Merkezi</div>
                 </div>
-                <div style="margin-top:18px;">
-                    <div style="font-size:12px; font-weight:800; margin-bottom:10px;">Mevcut Mağazalar</div>
+            </div>
+            <button class="dash-logout" onclick="doLogout()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Çıkış Yap
+            </button>
+        </div>
+
+        <div class="dash-tabbar">
+            <button class="dash-tab active" onclick="setDashTab(0)">Genel Bakış</button>
+            <button class="dash-tab" onclick="setDashTab(1)">Mağazalar</button>
+            <button class="dash-tab" onclick="setDashTab(2)">Satış Raporu</button>
+        </div>
+
+        <div class="dash-body">
+            <!-- TAB 0: GENEL BAKIŞ -->
+            <div id="dash-pane0" class="dash-pane active">
+                <div class="dash-stat-grid">
+                    <div class="dash-stat-card accent-gold">
+                        <div class="eyebrow">Toplam Mağaza</div>
+                        <div class="stat-value" id="dash-total-stores">—</div>
+                        <div class="stat-sub">aktif kullanıcı</div>
+                    </div>
+                    <div class="dash-stat-card accent-success">
+                        <div class="eyebrow">Bu Ay Satış Adedi</div>
+                        <div class="stat-value" id="dash-month-count">—</div>
+                        <div class="stat-sub" id="dash-month-label">—</div>
+                    </div>
+                    <div class="dash-stat-card accent-rose">
+                        <div class="eyebrow">Bu Ay Nakit Toplam</div>
+                        <div class="stat-value" id="dash-month-cash" style="font-size:26px;">—</div>
+                        <div class="stat-sub">₺</div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="eyebrow">Bu Ay Etiket Toplamı (÷3)</div>
+                        <div class="stat-value" id="dash-month-etiket" style="font-size:26px; color:var(--dash-gold);">—</div>
+                        <div class="stat-sub">prim hesap tabanı</div>
+                    </div>
+                </div>
+
+                <div class="dash-section-title">Mağaza Performansı — Bu Ay</div>
+                <div class="dash-panel">
+                    <div id="dash-store-rank">
+                        <div style="color:var(--dash-ink-dim); font-size:12.5px; padding:8px 4px;">Yükleniyor…</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: MAĞAZALAR -->
+            <div id="dash-pane1" class="dash-pane">
+                <div class="dash-section-title">Yeni Mağaza Ekle</div>
+                <div class="dash-panel" style="margin-bottom:28px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                        <div><label class="dash-label">Mağaza Adı</label><input type="text" id="newStoreName" class="dash-input" style="width:100%;" placeholder="Örn: Kadıköy Şubesi"></div>
+                        <div><label class="dash-label">Kullanıcı Adı</label><input type="text" id="newStoreUser" class="dash-input" style="width:100%;" placeholder="örn: kadikoy"></div>
+                        <div><label class="dash-label">Şifre</label><input type="text" id="newStorePass" class="dash-input" style="width:100%;" placeholder="en az 6 karakter"></div>
+                        <div><label class="dash-label">Telefon</label><input type="text" id="newStoreTel" class="dash-input" style="width:100%;" placeholder="0216 XXX XX XX"></div>
+                    </div>
+                    <div id="newStoreError" style="display:none; margin-top:10px; font-size:11.5px; color:var(--dash-rose); font-weight:600;"></div>
+                    <button class="dash-btn-primary" style="margin-top:14px;" onclick="createStore()">Mağaza Oluştur</button>
+                </div>
+
+                <div class="dash-section-title">Mevcut Mağazalar</div>
+                <div class="dash-panel">
                     <div id="admin-store-list"></div>
                 </div>
             </div>
 
-            <!-- TAB 1: Satış Raporu -->
-            <div id="admin-pane1" class="admin-pane" style="display:none; padding:18px 20px;">
-                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
-                    <select id="repStore" style="font-size:12px; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; flex:1; min-width:140px;" onchange="renderAdminPanel()">
+            <!-- TAB 2: SATIŞ RAPORU -->
+            <div id="dash-pane2" class="dash-pane">
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+                    <select id="repStore" class="dash-select" style="flex:1; min-width:160px;" onchange="renderAdminPanel()">
                         <option value="">Tüm Mağazalar</option>
                     </select>
-                    <select id="repStatus" style="font-size:12px; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px;" onchange="renderAdminPanel()">
+                    <select id="repStatus" class="dash-select" onchange="renderAdminPanel()">
                         <option value="">Tümü (Teklif + Satış)</option>
                         <option value="sold">Sadece Satış Olanlar</option>
                         <option value="teklif">Sadece Teklifler</option>
                     </select>
-                </div>
-                <div style="display:flex; gap:8px; margin-bottom:14px;">
-                    <div style="flex:1;"><label class="field-label">Başlangıç</label><input type="date" id="repStart" style="font-size:12px; padding:9px 10px;" onchange="renderAdminPanel()"></div>
-                    <div style="flex:1;"><label class="field-label">Bitiş</label><input type="date" id="repEnd" style="font-size:12px; padding:9px 10px;" onchange="renderAdminPanel()"></div>
+                    <div><input type="date" id="repStart" class="dash-input" onchange="renderAdminPanel()"></div>
+                    <div><input type="date" id="repEnd" class="dash-input" onchange="renderAdminPanel()"></div>
                 </div>
 
-                <div id="rep-summary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px;"></div>
+                <div id="rep-summary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:22px;"></div>
 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <div style="font-size:12px; font-weight:800;">Kayıtlar</div>
-                    <button class="btn-ghost" style="font-size:11px; padding:7px 12px;" onclick="generateAdminReportPDF()">📄 PDF Rapor Al</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div class="dash-section-title" style="margin-bottom:0;">Kayıtlar</div>
+                    <button class="dash-btn-ghost" onclick="generateAdminReportPDF()">📄 PDF Rapor Al</button>
                 </div>
-                <div id="rep-list" style="max-height:38vh; overflow-y:auto; border:1px solid var(--border); border-radius:10px;"></div>
+                <div class="dash-panel" style="padding:6px 18px;">
+                    <div id="rep-list" style="max-height:50vh; overflow-y:auto;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1541,21 +1724,28 @@
             isAdmin = (uname === ADMIN_USERNAME);
             currentStoreId = isAdmin ? null : uname;
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-wrapper').style.display = 'flex';
             document.getElementById('login-loading').style.display = 'none';
             document.getElementById('loginPass').value = '';
-            document.getElementById('adminPanelBtn').style.display = isAdmin ? 'flex' : 'none';
+
             if(isAdmin) {
-                // Admin kendi çalışma alanına da sahip olsun (test/gösterim için), kendi storeId'si 'admin' olabilir
+                // Admin: hesap makinesi/sepet yok, doğrudan tam ekran dashboard
                 currentStoreId = 'admin';
+                document.getElementById('main-wrapper').style.display = 'none';
+                attachHistoryListener();
+                showDashboard();
+            } else {
+                document.getElementById('dashboard-screen').style.display = 'none';
+                document.getElementById('main-wrapper').style.display = 'flex';
+                document.getElementById('user-chip').innerText = '🏪 ' + uname;
+                loadCfg();
+                attachHistoryListener();
             }
-            loadCfg();
-            attachHistoryListener();
         } else {
             currentUser = null;
             currentStoreId = null;
             isAdmin = false;
             document.getElementById('main-wrapper').style.display = 'none';
+            document.getElementById('dashboard-screen').style.display = 'none';
             document.getElementById('login-screen').style.display = 'flex';
         }
     });
@@ -1605,6 +1795,9 @@
                 _applyingRemote = false;
                 document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
                 document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
+                if(!isAdmin && data.cfgStore) {
+                    document.getElementById('user-chip').innerText = '🏪 ' + data.cfgStore + ' (' + currentStoreId + ')';
+                }
                 runCalc();
             }
         }, function(err) {
@@ -1956,6 +2149,7 @@
                         _historyCache.sort(function(a, b) { return (b.tsMillis||0) - (a.tsMillis||0); });
                         renderHistory();
                         if(typeof renderAdminPanel === 'function') renderAdminPanel();
+                        if(typeof renderDashOverview === 'function') renderDashOverview();
                     });
                 });
             });
@@ -2106,17 +2300,21 @@
     }
 
     // ── ADMIN PANEL ──
-    function openAdminPanel() {
-        if(!isAdmin) return;
-        setAdminTab(0);
+    function showDashboard() {
+        document.getElementById('main-wrapper').style.display = 'none';
+        document.getElementById('dashboard-screen').style.display = 'flex';
+        setDashTab(0);
         renderAdminStoreList();
         renderAdminPanel();
-        openModal('adminModal');
+        renderDashOverview();
     }
 
-    function setAdminTab(i) {
-        document.querySelectorAll('.admin-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
-        document.querySelectorAll('.admin-pane').forEach((p, idx) => p.style.display = (idx === i ? 'block' : 'none'));
+    function setDashTab(i) {
+        document.querySelectorAll('.dash-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+        document.querySelectorAll('.dash-pane').forEach((p, idx) => p.classList.toggle('active', idx === i));
+        if(i === 0) renderDashOverview();
+        if(i === 1) renderAdminStoreList();
+        if(i === 2) renderAdminPanel();
     }
 
     function sanitizeStoreId(name) {
@@ -2171,7 +2369,7 @@
                 document.getElementById('newStorePass').value = '';
                 document.getElementById('newStoreTel').value = '';
                 renderAdminStoreList();
-                alert('Mağaza oluşturuldu: ' + storeName + ' (kullanıcı adı: ' + storeId + ')');
+                alert('Mağaza oluşturuldu: ' + storeName + ' (kullanıcı adı: ' + storeId + ')\n\nNot: Bazı durumlarda yeni hesabın başka bir cihazdan giriş yapabilmesi için 1-2 dakika beklemek gerekebilir (Firebase senkronizasyon gecikmesi). Hemen giriş yapılamazsa kısa bir süre sonra tekrar denenmeli.');
             })
             .catch(function(err) {
                 console.error('Mağaza oluşturulamadı:', err);
@@ -2182,16 +2380,35 @@
 
     function renderAdminStoreList() {
         const el = document.getElementById('admin-store-list');
+        if(!el) return;
         fbDb.ref('stores').once('value').then(function(snap) {
             const stores = snap.val() || {};
             const ids = Object.keys(stores);
-            if(!ids.length) { el.innerHTML = '<div style="font-size:12px; color:var(--ink-dim);">Henüz mağaza yok.</div>'; return; }
+            if(!ids.length) { el.innerHTML = '<div style="font-size:12.5px; color:var(--dash-ink-dim); padding:6px 4px;">Henüz mağaza yok.</div>'; return; }
             el.innerHTML = ids.map(function(sid) {
                 const cfg = stores[sid].config || {};
                 const histCount = stores[sid].history ? Object.keys(stores[sid].history).length : 0;
-                return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border:1px solid var(--border); border-radius:10px; margin-bottom:6px;">' +
-                    '<div><b style="font-size:13px;">' + (cfg.cfgStore || sid) + '</b> <span style="font-size:11px; color:var(--ink-dim);">@' + sid + '</span></div>' +
-                    '<div style="font-size:11px; color:var(--ink-dim);">' + histCount + ' kayıt</div>' +
+                const safeName = (cfg.cfgStore || sid).replace(/'/g,"\\'");
+                return '<div style="border-bottom:1px solid var(--dash-border);">' +
+                    '<div style="display:flex; justify-content:space-between; align-items:center; padding:13px 4px; cursor:pointer;" onclick="toggleStoreDetail(\'' + sid + '\')">' +
+                    '<div><b style="font-size:13.5px; color:var(--dash-ink);">' + (cfg.cfgStore || sid) + '</b> <span style="font-size:11px; color:var(--dash-ink-dim);">@' + sid + '</span></div>' +
+                    '<div style="display:flex; align-items:center; gap:10px;">' +
+                    '<div style="font-size:11px; color:var(--dash-ink-dim);">' + histCount + ' kayıt</div>' +
+                    '<span style="font-size:10px; color:var(--dash-ink-dim);">▾</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div id="store-detail-' + sid + '" style="display:none; padding:2px 4px 16px;">' +
+                    '<div style="font-size:11.5px; color:var(--dash-ink-dim); line-height:2; background:var(--dash-surface-2); border-radius:10px; padding:12px 14px;">' +
+                    '<span style="color:var(--dash-ink);"><b>Kullanıcı Adı:</b> ' + sid + '</span><br>' +
+                    '<span style="color:var(--dash-ink);"><b>Mağaza Adı:</b> ' + (cfg.cfgStore || '—') + '</span><br>' +
+                    '<span style="color:var(--dash-ink);"><b>Telefon:</b> ' + (cfg.cfgTel || '—') + '</span><br>' +
+                    '<span style="color:var(--dash-ink);"><b>Adres:</b> ' + (cfg.cfgAddr || '—') + '</span>' +
+                    '</div>' +
+                    '<div style="display:flex; gap:8px; margin-top:10px;">' +
+                    '<button onclick="event.stopPropagation(); resetStorePassword(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-ghost" style="flex:1;">🔑 Şifre Sıfırla</button>' +
+                    '<button onclick="event.stopPropagation(); deleteStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-danger" style="flex:1;">🗑 Mağazayı Sil</button>' +
+                    '</div>' +
+                    '</div>' +
                     '</div>';
             }).join('');
             // rapor filtresindeki mağaza listesini de güncelle
@@ -2203,6 +2420,126 @@
             }).join('');
             sel.value = current;
         });
+    }
+
+    function toggleStoreDetail(storeId) {
+        const el = document.getElementById('store-detail-' + storeId);
+        if(el) el.style.display = (el.style.display === 'none' ? 'block' : 'none');
+    }
+
+    function resetStorePassword(storeId, storeName) {
+        const newPass = prompt('"' + storeName + '" (@' + storeId + ') için yeni şifre belirle (en az 6 karakter):');
+        if(newPass === null) return;
+        if(newPass.length < 6) { alert('Şifre en az 6 karakter olmalı.'); return; }
+
+        const proceed = confirm(
+            'Şifre sıfırlamak için tek bir ek adım gerekiyor (güvenlik nedeniyle, tarayıcıdan başka birinin şifresi direkt değiştirilemiyor):\n\n' +
+            '1) ŞİMDİ Firebase Console → Authentication → Users ekranına git\n' +
+            '2) "' + storeId + '@sina-terminal.local" kullanıcısını bul, sağdaki ⋮ menüden "Delete account" seç\n' +
+            '3) Sildikten sonra buraya dön ve "Tamam"a bas\n\n' +
+            'NOT: Bu işlem sadece giriş bilgisini siler. "' + storeName + '" mağazasının ayarları, sepeti ve geçmişi HİÇ etkilenmez — birazdan aynı kullanıcı adıyla yeni şifre otomatik oluşturulacak.\n\n' +
+            'Firebase\'de kullanıcıyı sildin mi? Devam etmek için Tamam\'a bas.'
+        );
+        if(!proceed) return;
+
+        secondaryAuth.createUserWithEmailAndPassword(usernameToEmail(storeId), newPass)
+            .then(function() {
+                return secondaryAuth.signOut();
+            })
+            .then(function() {
+                alert('Başarılı: "' + storeName + '" mağazasının yeni şifresi ayarlandı.\n\nMağaza, kullanıcı adı: ' + storeId + ' ve yeni şifre ile giriş yapabilir.');
+            })
+            .catch(function(err) {
+                console.error('Şifre sıfırlanamadı:', err);
+                if(err.code === 'auth/email-already-in-use') {
+                    alert('Hata: Bu kullanıcı Firebase\'de hâlâ mevcut görünüyor.\n\nLütfen Firebase Console → Authentication → Users ekranından "' + storeId + '@sina-terminal.local" kullanıcısının gerçekten silindiğinden emin ol, sonra tekrar dene.');
+                } else {
+                    alert('Hata oluştu: ' + err.message);
+                }
+            });
+    }
+
+    function deleteStore(storeId, storeName) {
+        const typed = prompt('Bu işlem geri alınamaz. "' + storeName + '" mağazasının TÜM verisini (ayarlar + geçmiş + satışlar) silmek için mağaza adını tam olarak yazıp onaylayın:\n\n' + storeName);
+        if(typed === null) return;
+        if(typed.trim() !== storeName) {
+            alert('Girilen ad eşleşmedi, mağaza silinmedi.');
+            return;
+        }
+        fbDb.ref('stores/' + storeId).remove()
+            .then(function() {
+                // Bu mağazanın admin history-cache'inden de temizlenmesi için dinleyici referansını bırak
+                delete _storeHistoryRefs[storeId];
+                _historyCache = _historyCache.filter(function(h) { return h.storeId !== storeId; });
+                renderAdminStoreList();
+                renderAdminPanel();
+                alert(
+                    'Mağaza verisi silindi.\n\n' +
+                    'ÖNEMLİ: Bu kullanıcının giriş yapabilme yetkisini de kapatmak için Firebase konsolunda şu adımı uygulaman gerekiyor:\n\n' +
+                    '1. Firebase Console → Authentication → Users\n' +
+                    '2. "' + storeId + '@sina-terminal.local" kullanıcısını bul\n' +
+                    '3. Sağdaki ⋮ menüsünden "Delete account" seç\n\n' +
+                    'Bu adımı atlarsan, mağaza verisi silinmiş olsa da o kullanıcı adı/şifre ile giriş yapılabilir (ama içeri girince hiçbir veri görmez).'
+                );
+            })
+            .catch(function(err) {
+                console.error('Mağaza silinemedi:', err);
+                alert('Mağaza silinirken hata oluştu: ' + err.message);
+            });
+    }
+
+    function renderDashOverview() {
+        if(!isAdmin || !document.getElementById('dash-total-stores')) return;
+
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const monthLabel = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+        document.getElementById('dash-month-label').innerText = monthLabel;
+
+        fbDb.ref('stores').once('value').then(function(snap) {
+            const stores = snap.val() || {};
+            const storeIds = Object.keys(stores);
+            document.getElementById('dash-total-stores').innerText = storeIds.length;
+        });
+
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        const monthRows = _historyCache.filter(function(h) { return (h.tsMillis||0) >= monthStart && h.status === 'sold'; });
+
+        let totalCash = 0, totalEtiket = 0;
+        const byStore = {}; // storeId -> { name, count, cash, etiket }
+        monthRows.forEach(function(h) {
+            const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
+            const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            totalCash += sN; totalEtiket += et;
+            if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, cash: 0, etiket: 0 };
+            byStore[h.storeId].count++;
+            byStore[h.storeId].cash += sN;
+            byStore[h.storeId].etiket += et;
+        });
+
+        document.getElementById('dash-month-count').innerText = monthRows.length;
+        document.getElementById('dash-month-cash').innerText = f(totalCash);
+        document.getElementById('dash-month-etiket').innerText = f(totalEtiket/3);
+
+        const ranked = Object.keys(byStore).map(function(sid) { return Object.assign({ storeId: sid }, byStore[sid]); })
+            .sort(function(a,b) { return b.cash - a.cash; });
+
+        const rankEl = document.getElementById('dash-store-rank');
+        if(!ranked.length) {
+            rankEl.innerHTML = '<div style="color:var(--dash-ink-dim); font-size:12.5px; padding:8px 4px;">Bu ay henüz satış kaydı yok.</div>';
+            return;
+        }
+        rankEl.innerHTML = ranked.map(function(s, idx) {
+            return '<div class="dash-store-row">' +
+                '<div style="display:flex; align-items:center; gap:12px;">' +
+                '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
+                '<div><b style="color:var(--dash-ink);">' + s.name + '</b><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' satış</span></div>' +
+                '</div>' +
+                '<div style="text-align:right;">' +
+                '<div style="font-weight:700; color:var(--dash-ink);">' + f(s.cash) + ' ₺</div>' +
+                '<div style="font-size:10.5px; color:var(--dash-gold);">Etiket÷3: ' + f(s.etiket/3) + '</div>' +
+                '</div></div>';
+        }).join('');
     }
 
     function renderAdminPanel() {
@@ -2230,13 +2567,13 @@
         });
 
         document.getElementById('rep-summary').innerHTML =
-            '<div style="background:var(--success-bg); border-radius:10px; padding:12px; text-align:center;"><div style="font-size:9px; color:var(--success); font-weight:800; letter-spacing:.05em;">SATIŞ ADEDİ</div><div style="font-size:18px; font-weight:800; color:var(--success); margin-top:4px;">' + soldCount + '</div></div>' +
-            '<div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; letter-spacing:.05em;">TOPLAM NAKİT TUTAR</div><div style="font-size:16px; font-weight:800; margin-top:4px;">' + f(totalCash) + ' ₺</div></div>' +
-            '<div style="background:var(--rose-pale); border-radius:10px; padding:12px; text-align:center;"><div style="font-size:9px; color:var(--rose); font-weight:800; letter-spacing:.05em;">ETİKET TOPLAMI (÷3)</div><div style="font-size:16px; font-weight:800; color:var(--rose); margin-top:4px;">' + f(totalEtiket/3) + '</div></div>';
+            '<div class="dash-stat-card accent-success" style="padding:14px 16px;"><div class="eyebrow">Satış Adedi</div><div class="stat-value" style="font-size:24px;">' + soldCount + '</div></div>' +
+            '<div class="dash-stat-card" style="padding:14px 16px;"><div class="eyebrow">Toplam Nakit Tutar</div><div class="stat-value" style="font-size:20px;">' + f(totalCash) + ' ₺</div></div>' +
+            '<div class="dash-stat-card accent-rose" style="padding:14px 16px;"><div class="eyebrow">Etiket Toplamı (÷3)</div><div class="stat-value" style="font-size:20px;">' + f(totalEtiket/3) + '</div></div>';
 
         const listEl = document.getElementById('rep-list');
         if(!rows.length) {
-            listEl.innerHTML = '<div style="padding:20px; text-align:center; color:var(--ink-dim); font-size:13px;">Kayıt bulunamadı.</div>';
+            listEl.innerHTML = '<div style="padding:24px 4px; text-align:center; color:var(--dash-ink-dim); font-size:13px;">Kayıt bulunamadı.</div>';
             return;
         }
         rows.sort((a,b) => (b.tsMillis||0) - (a.tsMillis||0));
@@ -2244,15 +2581,15 @@
             const sN = Math.round(h.basket.reduce((a,b)=>a+b.v.vN, 0));
             const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
             const isSold = h.status === 'sold';
-            return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:12px;">' +
+            return '<div class="dash-store-row" style="align-items:flex-start;">' +
                 '<div>' +
-                '<b>' + (h.storeName||h.storeId) + '</b> <span style="color:var(--ink-dim);">· ' + h.cusName + '</span><br>' +
-                '<span style="font-size:10px; color:var(--ink-dim);">' + h.ts + '</span> ' +
-                (isSold ? '<span style="font-size:9px; background:var(--success-bg); color:var(--success); font-weight:800; padding:1px 6px; border-radius:100px; margin-left:4px;">SATIŞ' + (h.soldAt ? ' '+h.soldAt : '') + '</span>' : '<span style="font-size:9px; background:var(--bg); border:1px solid var(--border); color:var(--ink-dim); font-weight:700; padding:1px 6px; border-radius:100px; margin-left:4px;">TEKLİF</span>') +
+                '<b style="color:var(--dash-ink);">' + (h.storeName||h.storeId) + '</b> <span style="color:var(--dash-ink-dim);">· ' + h.cusName + '</span><br>' +
+                '<span style="font-size:10.5px; color:var(--dash-ink-dim);">' + h.ts + '</span> ' +
+                (isSold ? '<span class="dash-badge sold">SATIŞ' + (h.soldAt ? ' '+h.soldAt : '') + '</span>' : '<span class="dash-badge teklif">TEKLİF</span>') +
                 '</div>' +
                 '<div style="text-align:right;">' +
-                '<div style="font-weight:700;">' + f(sN) + ' ₺</div>' +
-                '<div style="font-size:10px; color:var(--rose);">Etiket÷3: ' + f(et/3) + '</div>' +
+                '<div style="font-weight:700; color:var(--dash-ink);">' + f(sN) + ' ₺</div>' +
+                '<div style="font-size:10.5px; color:var(--dash-rose);">Etiket÷3: ' + f(et/3) + '</div>' +
                 '</div></div>';
         }).join('');
     }
