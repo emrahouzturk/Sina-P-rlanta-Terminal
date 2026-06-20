@@ -7,8 +7,9 @@
     <link rel="icon" type="image/svg+xml" href="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase (Realtime Database) — ortak ayarlar ve geçmiş senkronizasyonu için -->
+    <!-- Firebase (Realtime Database + Auth) — çoklu mağaza senkronizasyonu ve giriş için -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
         const firebaseConfig = {
@@ -21,7 +22,13 @@
             appId: "1:913493390147:web:57ae68a49ab87b4987b5f6"
         };
         firebase.initializeApp(firebaseConfig);
-        const fbDb = firebase.database();
+        const fbDb   = firebase.database();
+        const fbAuth = firebase.auth();
+        const AUTH_DOMAIN_SUFFIX = '@sina-terminal.local'; // kullanıcı adını e-posta formatına çevirmek için
+
+        // İkincil app instance'ı: admin yeni mağaza/kullanıcı oluştururken kendi oturumu bozulmasın
+        const secondaryApp  = firebase.initializeApp(firebaseConfig, 'Secondary');
+        const secondaryAuth = secondaryApp.auth();
     </script>
 
     <style>
@@ -252,7 +259,7 @@
             margin-bottom: 6px;
         }
 
-        input[type="text"] {
+        input[type="text"], input[type="password"], input[type="date"] {
             width: 100%;
             padding: 12px 16px;
             border-radius: var(--r-sm);
@@ -266,13 +273,47 @@
             background: var(--bg);
             transition: border-color .18s, box-shadow .18s;
             margin-top: 0;
+            box-sizing: border-box;
         }
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus {
             border-color: var(--rose);
             box-shadow: 0 0 0 3px rgba(200,36,76,.12);
             background: var(--surface);
         }
         .big-input { font-size: 26px !important; color: var(--rose); }
+
+        /* Şifre alanı: göz ikonu için sağda yer aç, ortalı değil sola yaslı yazılsın */
+        .pw-field-wrap { position: relative; }
+        .pw-field-wrap input[type="password"], .pw-field-wrap input[type="text"].pw-as-text {
+            text-align: left;
+            padding-right: 44px;
+        }
+        .pw-toggle-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            color: var(--ink-dim);
+        }
+        .pw-toggle-btn:hover { color: var(--ink); }
+        .capslock-warning {
+            display: none;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #a06a00;
+            background: #fff6e0;
+            border: 1px solid #f0d99a;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-weight: 600;
+        }
+        .capslock-warning.show { display: block; }
 
         .dual-fields {
             display: grid;
@@ -809,11 +850,14 @@
 
         /* ── PRINT ── */
         #print-area { display: none; }
+        #admin-print-area { display: none; }
         @media print {
             @page { margin: 0; size: A4; }
             body > * { display: none !important; }
             #print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; z-index: 99999; page-break-after: avoid; }
             #print-area * { page-break-inside: avoid; }
+            body.admin-print-mode #print-area { display: none !important; }
+            body.admin-print-mode #admin-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; z-index: 99999; }
         }
 
         /* ── MOBILE ── */
@@ -855,8 +899,34 @@
 </head>
 <body>
 
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" style="position:fixed; inset:0; background:var(--bg); z-index:9999; display:flex; align-items:center; justify-content:center; padding:24px;">
+        <div style="width:100%; max-width:360px; background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--shadow-lg); padding:36px 28px;">
+            <div style="text-align:center; margin-bottom:24px;">
+                <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" alt="Sina Pırlanta" style="height:38px; margin-bottom:10px;">
+                <div style="font-size:12px; color:var(--ink-dim); font-weight:600; letter-spacing:.05em;">MAĞAZA TERMİNALİ</div>
+            </div>
+            <label class="field-label">Kullanıcı Adı</label>
+            <input type="text" id="loginUser" class="big-input" style="font-size:16px;" autocomplete="username" placeholder="örn: kadikoy">
+            <label class="field-label" style="margin-top:14px;">Şifre</label>
+            <div class="pw-field-wrap">
+                <input type="password" id="loginPass" class="big-input" style="font-size:16px;" autocomplete="current-password" placeholder="••••••••"
+                    onkeydown="if(event.key==='Enter') doLogin(); checkCapsLock(event);"
+                    onkeyup="checkCapsLock(event);">
+                <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility()" aria-label="Şifreyi göster/gizle" tabindex="-1">
+                    <svg id="pw-eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <svg id="pw-eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+            </div>
+            <div id="capslock-warning" class="capslock-warning">⚠ Caps Lock açık</div>
+            <div id="login-error" style="display:none; margin-top:10px; font-size:12px; color:var(--rose); font-weight:600; text-align:center;"></div>
+            <button class="btn-primary" style="width:100%; margin-top:20px; border-radius:var(--r-sm); padding:13px;" onclick="doLogin()">Giriş Yap</button>
+            <div id="login-loading" style="display:none; text-align:center; margin-top:14px; font-size:12px; color:var(--ink-dim);">Giriş yapılıyor…</div>
+        </div>
+    </div>
+
     <!-- MASTER LAYOUT -->
-    <div class="master-wrapper no-print" id="main-wrapper">
+    <div class="master-wrapper no-print" id="main-wrapper" style="display:none;">
         <div class="left-column">
 
         <!-- TOP BAR -->
@@ -866,6 +936,10 @@
                 <div id="tech-time" class="tech-time">— &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span></div>
             </div>
             <div class="top-actions">
+                <button class="btn-ghost" id="adminPanelBtn" style="display:none;" onclick="openAdminPanel()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                    Admin Panel
+                </button>
                 <button class="btn-solid" onclick="openModal('settingsModal')">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     Ayarlar
@@ -873,6 +947,9 @@
                 <button class="btn-ghost" onclick="openModal('helpModal')">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     Yardım
+                </button>
+                <button class="btn-ghost" onclick="doLogout()" title="Çıkış Yap">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </button>
             </div>
         </div>
@@ -1101,6 +1178,11 @@
                 <input type="text" id="editNote" placeholder="Örn: 1.2 ct, G renk, VS1 berraklık" style="font-size:14px; text-align:left; padding:10px 14px;">
                 <label class="field-label" style="margin-top:12px;" id="editLabel">Değer</label>
                 <input type="text" id="editVal" class="big-input" style="font-size:22px;" oninput="previewEdit()">
+                <div style="margin-top:14px; padding:12px; background:var(--bg); border-radius:10px; border:1px solid var(--border);">
+                    <label class="field-label" style="margin:0;">Manuel Fiyat Düzeltme (opsiyonel)</label>
+                    <div style="font-size:10px; color:var(--ink-dim); margin:4px 0 8px;">Boş bırakırsan otomatik hesaplanan fiyat kullanılır. Buraya bir tutar yazarsan, sadece bu üründe TÜM fiyatları (3T/2T/Tek/Nakit) o tutara göre orantılı kaydırır — örn. ekstra indirim için.</div>
+                    <input type="text" id="editManualPrice" placeholder="Örn: 42000 (Nakit fiyatı)" style="font-size:15px; text-align:left; padding:9px 12px;">
+                </div>
                 <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="saveEdit()">Kaydet</button>
             </div>
         </div>
@@ -1115,7 +1197,7 @@
             </div>
             <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; gap:8px;">
                 <input type="text" id="histSearch" placeholder="Ad, soyad, numara veya mağaza ara..." style="font-size:13px; padding:8px 12px; flex:1; text-align:left;" oninput="renderHistory()">
-                <button onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
+                <button id="btnClearHistory" onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
             </div>
             <div id="history-list" style="padding:0; max-height:40vh; overflow-y:auto; border-bottom:1px solid var(--border);">
             </div>
@@ -1125,11 +1207,98 @@
                     <div style="font-size:12px; font-weight:700; color:var(--ink);" id="prev-title">—</div>
                     <div style="display:flex; gap:6px;">
                         <button onclick="document.getElementById('history-preview').style.display='none'; _previewKey=null;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕ Kapat</button>
-                        <button onclick="confirmLoadHistory()" style="background:var(--rose); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:11px; font-weight:700; cursor:pointer;">↩ Güncel Kurla Aktar</button>
+                        <button id="btnLoadHistory" onclick="confirmLoadHistory()" style="background:var(--rose); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:11px; font-weight:700; cursor:pointer;">↩ Güncel Kurla Aktar</button>
                     </div>
                 </div>
                 <div id="prev-items" style="font-size:11px; color:var(--ink-mid); line-height:1.8;"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL MODAL -->
+    <div id="adminModal" class="modal-overlay">
+        <div class="modal" style="max-width:760px;">
+            <div class="modal-header">
+                <h3>Admin Panel</h3>
+                <span class="modal-close" onclick="closeModal('adminModal')">×</span>
+            </div>
+
+            <div class="s-tab-bar">
+                <button class="s-tab admin-tab active" onclick="setAdminTab(0)">Mağazalar</button>
+                <button class="s-tab admin-tab" onclick="setAdminTab(1)">Satış Raporu</button>
+            </div>
+
+            <!-- TAB 0: Mağaza Yönetimi -->
+            <div id="admin-pane0" class="admin-pane" style="padding:18px 20px;">
+                <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:16px;">
+                    <div style="font-size:12px; font-weight:800; margin-bottom:10px;">+ Yeni Mağaza Ekle</div>
+                    <div class="settings-grid">
+                        <div><label class="field-label">Mağaza Adı</label><input type="text" id="newStoreName" placeholder="Örn: Kadıköy Şubesi" style="font-size:13px;"></div>
+                        <div><label class="field-label">Kullanıcı Adı</label><input type="text" id="newStoreUser" placeholder="örn: kadikoy" style="font-size:13px;"></div>
+                        <div><label class="field-label">Şifre</label><input type="text" id="newStorePass" placeholder="en az 6 karakter" style="font-size:13px;"></div>
+                        <div><label class="field-label">Telefon</label><input type="text" id="newStoreTel" placeholder="0216 XXX XX XX" style="font-size:13px;"></div>
+                    </div>
+                    <div id="newStoreError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
+                    <button class="btn-save" style="margin-top:12px;" onclick="createStore()">Mağaza Oluştur</button>
+                </div>
+                <div style="margin-top:18px;">
+                    <div style="font-size:12px; font-weight:800; margin-bottom:10px;">Mevcut Mağazalar</div>
+                    <div id="admin-store-list"></div>
+                </div>
+            </div>
+
+            <!-- TAB 1: Satış Raporu -->
+            <div id="admin-pane1" class="admin-pane" style="display:none; padding:18px 20px;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+                    <select id="repStore" style="font-size:12px; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; flex:1; min-width:140px;" onchange="renderAdminPanel()">
+                        <option value="">Tüm Mağazalar</option>
+                    </select>
+                    <select id="repStatus" style="font-size:12px; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px;" onchange="renderAdminPanel()">
+                        <option value="">Tümü (Teklif + Satış)</option>
+                        <option value="sold">Sadece Satış Olanlar</option>
+                        <option value="teklif">Sadece Teklifler</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:8px; margin-bottom:14px;">
+                    <div style="flex:1;"><label class="field-label">Başlangıç</label><input type="date" id="repStart" style="font-size:12px; padding:9px 10px;" onchange="renderAdminPanel()"></div>
+                    <div style="flex:1;"><label class="field-label">Bitiş</label><input type="date" id="repEnd" style="font-size:12px; padding:9px 10px;" onchange="renderAdminPanel()"></div>
+                </div>
+
+                <div id="rep-summary" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px;"></div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div style="font-size:12px; font-weight:800;">Kayıtlar</div>
+                    <button class="btn-ghost" style="font-size:11px; padding:7px 12px;" onclick="generateAdminReportPDF()">📄 PDF Rapor Al</button>
+                </div>
+                <div id="rep-list" style="max-height:38vh; overflow-y:auto; border:1px solid var(--border); border-radius:10px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PDF RAPOR PRINT AREA -->
+    <div id="admin-print-area">
+        <div style="font-family:'DM Sans',sans-serif; padding:40px 48px; max-width:900px; margin:0 auto; color:#1a1a24;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #1a1a24; padding-bottom:20px; margin-bottom:24px;">
+                <div>
+                    <div style="font-size:20px; font-weight:800;">Satış Raporu</div>
+                    <div style="font-size:11px; color:#9090a0; margin-top:4px;" id="rep-pdf-range"></div>
+                </div>
+                <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" style="height:32px;">
+            </div>
+            <div id="rep-pdf-summary" style="margin-bottom:20px;"></div>
+            <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                <thead>
+                    <tr style="border-bottom:2px solid #1a1a24; text-align:left;">
+                        <th style="padding:8px 6px;">Mağaza</th>
+                        <th style="padding:8px 6px;">Tarih</th>
+                        <th style="padding:8px 6px;">Müşteri</th>
+                        <th style="padding:8px 6px;">Durum</th>
+                        <th style="padding:8px 6px; text-align:right;">Nakit Tutar</th>
+                        <th style="padding:8px 6px; text-align:right;">Etiket (÷3)</th>
+                    </tr>
+                </thead>
+                <tbody id="rep-pdf-body"></tbody>
+            </table>
         </div>
     </div>
 
@@ -1310,6 +1479,87 @@
     let currentMode = 'pirlanta';
     let lastUpdate = null;
 
+    // ── AUTH / OTURUM ──
+    let currentUser = null;   // Firebase auth user objesi
+    let currentStoreId = null; // sanitize edilmiş mağaza kimliği (db path için)
+    let isAdmin = false;
+    const ADMIN_USERNAME = 'admin';
+
+    function usernameToEmail(u) { return u.trim().toLowerCase() + AUTH_DOMAIN_SUFFIX; }
+
+    function togglePasswordVisibility() {
+        const input = document.getElementById('loginPass');
+        const eyeOpen = document.getElementById('pw-eye-open');
+        const eyeClosed = document.getElementById('pw-eye-closed');
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        input.classList.toggle('pw-as-text', !showing);
+        eyeOpen.style.display = showing ? 'block' : 'none';
+        eyeClosed.style.display = showing ? 'none' : 'block';
+        input.focus();
+    }
+
+    function checkCapsLock(e) {
+        const warn = document.getElementById('capslock-warning');
+        if(!warn) return;
+        if(e.getModifierState && e.getModifierState('CapsLock')) {
+            warn.classList.add('show');
+        } else {
+            warn.classList.remove('show');
+        }
+    }
+
+    function doLogin() {
+        const uRaw = document.getElementById('loginUser').value.trim();
+        const pass = document.getElementById('loginPass').value;
+        const errEl = document.getElementById('login-error');
+        errEl.style.display = 'none';
+        if(!uRaw || !pass) {
+            errEl.innerText = 'Kullanıcı adı ve şifre gerekli.';
+            errEl.style.display = 'block';
+            return;
+        }
+        document.getElementById('login-loading').style.display = 'block';
+        fbAuth.signInWithEmailAndPassword(usernameToEmail(uRaw), pass)
+            .catch(function(err) {
+                document.getElementById('login-loading').style.display = 'none';
+                errEl.innerText = 'Kullanıcı adı veya şifre hatalı.';
+                errEl.style.display = 'block';
+                console.error('Giriş hatası:', err);
+            });
+    }
+
+    function doLogout() {
+        if(!confirm('Çıkış yapmak istediğine emin misin?')) return;
+        fbAuth.signOut();
+    }
+
+    fbAuth.onAuthStateChanged(function(user) {
+        if(user) {
+            currentUser = user;
+            const uname = (user.email || '').split('@')[0];
+            isAdmin = (uname === ADMIN_USERNAME);
+            currentStoreId = isAdmin ? null : uname;
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-wrapper').style.display = 'flex';
+            document.getElementById('login-loading').style.display = 'none';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('adminPanelBtn').style.display = isAdmin ? 'flex' : 'none';
+            if(isAdmin) {
+                // Admin kendi çalışma alanına da sahip olsun (test/gösterim için), kendi storeId'si 'admin' olabilir
+                currentStoreId = 'admin';
+            }
+            loadCfg();
+            attachHistoryListener();
+        } else {
+            currentUser = null;
+            currentStoreId = null;
+            isAdmin = false;
+            document.getElementById('main-wrapper').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+        }
+    });
+
     function smartEval(s) {
         if(!s) return 0;
         let val = s.toString().replace(/,/g, '.');
@@ -1318,44 +1568,48 @@
         return total;
     }
 
-    // Ortak (tüm mağazalarda aynı) ayarlar Firebase'de, mağazaya özel bilgiler cihazda kalır
-    const SHARED_IDS = ['cfgU', 'cfgU_plus', 'pk3', 'pk2', 'pk1', 'pkN'];
-    const LOCAL_IDS  = ['cfgStore', 'cfgTel', 'cfgAddr'];
+    // Her mağaza tamamen kendi kutusunda çalışır: stores/{storeId}/config, stores/{storeId}/history
+    // Kur/kâr oranları DA mağazaya özel — artık ortak ayar yok.
+    const CFG_IDS = ['cfgU', 'cfgU_plus', 'pk3', 'pk2', 'pk1', 'pkN'];
+    const LOCAL_IDS  = ['cfgStore', 'cfgTel', 'cfgAddr']; // mağaza bilgisi de db'ye yazılır ama cihazda da cache'lenir
     let _applyingRemote = false; // Firebase'den gelen veriyi uygularken saveCfg tetiklenmesin
+    let _cfgListenerAttached = false;
+
+    function storeConfigRef() {
+        if(!currentStoreId) return null;
+        return fbDb.ref('stores/' + currentStoreId + '/config');
+    }
 
     function saveCfg() {
-        if(_applyingRemote) return;
-        const sharedData = {};
-        SHARED_IDS.forEach(id => { sharedData[id] = document.getElementById(id).value; });
-        sharedData.lastTime = new Date().toISOString();
-        fbDb.ref('sharedConfig').set(sharedData);
-
-        LOCAL_IDS.forEach(id => localStorage.setItem('s_' + id, document.getElementById(id).value));
+        if(_applyingRemote || !currentStoreId) return;
+        const data = {};
+        CFG_IDS.concat(LOCAL_IDS).forEach(id => { data[id] = document.getElementById(id).value; });
+        data.lastTime = new Date().toISOString();
+        storeConfigRef().set(data);
         document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
         document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
         runCalc();
     }
 
     function loadCfg() {
-        // Mağazaya özel ayarlar cihazdan
-        LOCAL_IDS.forEach(id => { if(localStorage.getItem('s_' + id)) document.getElementById(id).value = localStorage.getItem('s_' + id); });
-        document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
-        document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
-
-        // Ortak ayarlar (kur, kâr oranları) Firebase'den — canlı dinleme
-        fbDb.ref('sharedConfig').on('value', function(snap) {
+        if(!currentStoreId) return;
+        if(_cfgListenerAttached) return; // farklı kullanıcı girişinde sayfa yeniden yüklenir, bu yeterli
+        _cfgListenerAttached = true;
+        storeConfigRef().on('value', function(snap) {
             const data = snap.val();
             document.getElementById('sync-status').innerHTML = '<span style="color:var(--success);">● senkron</span>';
             if(data) {
                 _applyingRemote = true;
-                SHARED_IDS.forEach(id => { if(data[id] !== undefined) document.getElementById(id).value = data[id]; });
+                CFG_IDS.concat(LOCAL_IDS).forEach(id => { if(data[id] !== undefined) document.getElementById(id).value = data[id]; });
                 if(data.lastTime) lastUpdate = new Date(data.lastTime);
                 _applyingRemote = false;
+                document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
+                document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
                 runCalc();
             }
         }, function(err) {
             document.getElementById('sync-status').innerHTML = '<span style="color:var(--rose);">● bağlantı hatası</span>';
-            console.error('Firebase sharedConfig hata:', err);
+            console.error('Firebase config hata:', err);
         });
 
         runCalc(); setInterval(updateTech, 1000);
@@ -1437,7 +1691,7 @@
         if(!k) { document.getElementById('iKod').focus(); return; }
         const calc = runCalc();
         const rawP  = document.getElementById('inpP').value;
-        basket.push({ id: Date.now(), k: k.toUpperCase(), v: calc.res, d: calc.details, mode: calc.mode, _rawP: rawP, note: '' });
+        basket.push({ id: Date.now(), k: k.toUpperCase(), v: calc.res, d: calc.details, mode: calc.mode, _rawP: rawP, _manualN: false, note: '' });
         document.getElementById('iKod').value  = '';
         document.getElementById('inpP').value  = '';
         runCalc();
@@ -1479,7 +1733,7 @@
                 ${items.map(i => `
                 <div class="basket-item">
                     <span class="item-remove" onclick="removeItem(${i.id})">×</span>
-                    <div class="basket-item-title">${i.k} <span onclick="openEdit(${i.id})" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;margin-left:4px;">✎</span></div>
+                    <div class="basket-item-title">${i.k} <span onclick="openEdit(${i.id})" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;margin-left:4px;">✎</span> ${i._manualN ? '<span style="font-size:9px;background:var(--rose-pale);color:var(--rose);font-weight:800;padding:1px 6px;border-radius:100px;margin-left:4px;">MANUEL</span>' : ''}</div>
                     <span class="basket-item-detail">${i.d}</span>
                     ${i.note ? '<span style="font-size:10px;color:var(--ink-mid);display:block;margin-top:2px;font-style:italic;">'+i.note+'</span>' : ''}
                     <div class="mini-grid">
@@ -1506,9 +1760,14 @@
         const cusPhone = document.getElementById('iPhone').value || '—';
         const storeName = document.getElementById('cfgStore').value || 'Mağaza';
 
-        // Geçmişe kaydet (ortak — Firebase)
-        fbDb.ref('history').push({ ref, ts, cusName, cusPhone, storeName, basket: JSON.parse(JSON.stringify(basket)) })
-            .catch(err => console.error('Geçmiş kaydedilemedi:', err));
+        // Geçmişe kaydet — mağazanın kendi kutusuna
+        if(currentStoreId) {
+            fbDb.ref('stores/' + currentStoreId + '/history').push({
+                ref, ts, tsMillis: now.getTime(), cusName, cusPhone, storeName,
+                status: 'teklif', soldAt: null, soldAtMillis: null,
+                basket: JSON.parse(JSON.stringify(basket))
+            }).catch(err => console.error('Geçmiş kaydedilemedi:', err));
+        }
 
         document.getElementById('p-date').innerText = ts;
         document.getElementById('p-ref-line').innerText = ref;
@@ -1609,6 +1868,7 @@
         document.getElementById('editNote').value = item.note || '';
         document.getElementById('editLabel').innerText = 'Pırlanta Etiket';
         document.getElementById('editVal').value = item._rawP || '';
+        document.getElementById('editManualPrice').value = item._manualN ? Math.round(item.v.vN) : '';
         openModal('editModal');
     }
 
@@ -1632,36 +1892,80 @@
             vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
             old: listTl
         };
+
+        // Manuel fiyat düzeltmesi: girilirse Nakit fiyatı o tutara sabitlenir,
+        // diğer tüm fiyatlar (3T/2T/Tek) aynı orana göre orantılı kaydırılır.
+        const manualRaw = document.getElementById('editManualPrice').value.trim();
+        const manualVal = smartEval(manualRaw);
+        if(manualRaw && manualVal > 0) {
+            const ratio = manualVal / item.v.vN;
+            item.v.v3 = item.v.v3 * ratio;
+            item.v.v2 = item.v.v2 * ratio;
+            item.v.v1 = item.v.v1 * ratio;
+            item.v.vN = manualVal;
+            item._manualN = true;
+        } else {
+            item._manualN = false;
+        }
+
         item.v.m3 = codes.getPCode(item.v.v3, costTl);
         item.v.m2 = codes.getPCode(item.v.v2, costTl);
         item.v.m1 = codes.getPCode(item.v.v1, costTl);
         item.v.mN = codes.getPCode(item.v.vN, costTl);
-        item.d = 'Pırlanta';
+        item.d = 'Pırlanta' + (item._manualN ? ' · Manuel fiyat' : '');
         item.note = document.getElementById('editNote').value.trim();
         closeModal('editModal');
         renderBasket();
     }
 
-    let _historyCache = []; // [{key, ref, ts, cusName, cusPhone, storeName, basket}]
+    let _historyCache = []; // [{key, ref, ts, cusName, cusPhone, storeName, storeId, status, soldAt, basket}]
     let _historyListenerAttached = false;
+    let _storeListUnsub = null;
+    let _storeHistoryRefs = {}; // storeId -> ref (admin çoklu dinleme için)
 
     function attachHistoryListener() {
-        if(_historyListenerAttached) return;
+        if(_historyListenerAttached || !currentStoreId) return;
         _historyListenerAttached = true;
-        fbDb.ref('history').limitToLast(200).on('value', function(snap) {
-            const data = snap.val() || {};
-            _historyCache = Object.keys(data).map(function(key) {
-                return Object.assign({ key }, data[key]);
-            }).sort(function(a, b) { return (b.tsMillis||0) - (a.tsMillis||0); });
-            renderHistory();
-        }, function(err) {
-            console.error('Geçmiş okunamadı:', err);
-        });
+
+        if(!isAdmin) {
+            // Normal mağaza: sadece kendi geçmişini dinler
+            fbDb.ref('stores/' + currentStoreId + '/history').limitToLast(500).on('value', function(snap) {
+                const data = snap.val() || {};
+                _historyCache = Object.keys(data).map(function(key) {
+                    return Object.assign({ key, storeId: currentStoreId }, data[key]);
+                }).sort(function(a, b) { return (b.tsMillis||0) - (a.tsMillis||0); });
+                renderHistory();
+                if(typeof renderAdminPanel === 'function') renderAdminPanel();
+            }, function(err) {
+                console.error('Geçmiş okunamadı:', err);
+            });
+        } else {
+            // Admin: stores altındaki TÜM mağazaların geçmişini dinler
+            fbDb.ref('stores').on('value', function(snap) {
+                const stores = snap.val() || {};
+                Object.keys(stores).forEach(function(sid) {
+                    if(_storeHistoryRefs[sid]) return; // zaten dinleniyor
+                    _storeHistoryRefs[sid] = true;
+                    fbDb.ref('stores/' + sid + '/history').limitToLast(500).on('value', function(hsnap) {
+                        const data = hsnap.val() || {};
+                        // Bu mağazaya ait eski kayıtları cache'den temizle, yenilerini ekle
+                        _historyCache = _historyCache.filter(function(h) { return h.storeId !== sid; });
+                        Object.keys(data).forEach(function(key) {
+                            _historyCache.push(Object.assign({ key, storeId: sid }, data[key]));
+                        });
+                        _historyCache.sort(function(a, b) { return (b.tsMillis||0) - (a.tsMillis||0); });
+                        renderHistory();
+                        if(typeof renderAdminPanel === 'function') renderAdminPanel();
+                    });
+                });
+            });
+        }
     }
 
     function openHistory() {
         document.getElementById('histSearch').value = '';
         document.getElementById('history-preview').style.display = 'none';
+        document.getElementById('btnClearHistory').style.display = isAdmin ? 'none' : 'inline-block';
         _previewKey = null;
         attachHistoryListener();
         renderHistory();
@@ -1683,23 +1987,48 @@
             const realKey = h.key;
             const sN = Math.round(h.basket.reduce(function(a,b){return a+b.v.vN;},0));
             const s3 = Math.round(h.basket.reduce(function(a,b){return a+b.v.v3;},0));
+            const etiketTotal = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0);
+            const isSold = h.status === 'sold';
+            const statusBadge = isSold
+                ? '<span style="display:inline-block; background:var(--success-bg); color:var(--success); font-size:9px; font-weight:800; padding:2px 8px; border-radius:100px; letter-spacing:.04em;">✓ SATIŞ OLDU' + (h.soldAt ? ' · ' + h.soldAt : '') + '</span>'
+                : '<span style="display:inline-block; background:var(--bg); border:1px solid var(--border); color:var(--ink-dim); font-size:9px; font-weight:700; padding:2px 8px; border-radius:100px;">TEKLİF</span>';
             return '<div style="padding:14px 16px; border-bottom:1px solid var(--border);">' +
                 '<div style="display:flex; justify-content:space-between; align-items:center;">' +
                 '<div style="flex:1; cursor:pointer;" onclick="previewHistory(\'' + realKey + '\')">' +
                 '<div style="font-weight:700; font-size:14px; color:var(--ink);">' + h.cusName + ' <span style="font-size:11px; color:var(--ink-dim); font-weight:400;">' + h.cusPhone + '</span></div>' +
                 '<div style="font-size:11px; color:var(--ink-dim); margin-top:2px;">' + h.ts + ' · ' + h.basket.length + ' ürün</div>' +
                 '<div style="font-size:10px; color:var(--rose); font-weight:700; margin-top:2px;">🏪 ' + (h.storeName || 'Mağaza') + '</div>' +
+                '<div style="margin-top:5px;">' + statusBadge + '</div>' +
                 '</div>' +
                 '<div style="text-align:right; margin-left:12px;">' +
                 '<div style="font-size:13px; font-weight:700; color:var(--rose); cursor:pointer;" onclick="previewHistory(\'' + realKey + '\')">' + f(sN) + ' ₺</div>' +
                 '<div style="font-size:10px; color:var(--ink-dim);">3T: ' + f(s3) + ' ₺</div>' +
-                '<button onclick="deleteHistory(\'' + realKey + '\')" style="background:none; border:none; color:var(--ink-dim); font-size:11px; cursor:pointer; margin-top:4px; padding:0;">🗑 Sil</button>' +
+                '<div style="font-size:9px; color:var(--ink-dim); margin-top:2px;">Etiket: ' + f(etiketTotal) + '</div>' +
                 '</div></div>' +
                 '<div style="font-size:11px; color:var(--ink-dim); margin-top:6px;">' +
                 h.basket.map(function(i){ return '<span style="display:inline-block; background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:2px 6px; margin:2px 2px 0 0; font-size:10px;">' + i.k + (i.note ? ' · ' + i.note : '') + '</span>'; }).join('') +
                 '</div>' +
+                '<div style="display:flex; gap:6px; margin-top:8px;">' +
+                (isSold
+                    ? '<button onclick="markHistoryStatus(\'' + realKey + '\', \'' + h.storeId + '\', \'teklif\')" style="flex:1; background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">↩ Teklife Çevir</button>'
+                    : '<button onclick="markHistoryStatus(\'' + realKey + '\', \'' + h.storeId + '\', \'sold\')" style="flex:1; background:var(--success-bg); border:1.5px solid var(--success); color:var(--success); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:800; cursor:pointer;">✓ Satış Oldu İşaretle</button>') +
+                '<button onclick="deleteHistory(\'' + realKey + '\', \'' + h.storeId + '\')" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">🗑 Sil</button>' +
+                '</div>' +
                 '</div>';
         }).join('');
+    }
+
+    function markHistoryStatus(key, storeId, status) {
+        const updates = { status: status };
+        if(status === 'sold') {
+            updates.soldAt = new Date().toLocaleDateString('tr-TR');
+            updates.soldAtMillis = Date.now();
+        } else {
+            updates.soldAt = null;
+            updates.soldAtMillis = null;
+        }
+        fbDb.ref('stores/' + storeId + '/history/' + key).update(updates)
+            .catch(err => console.error('Durum güncellenemedi:', err));
     }
 
     let _previewKey = null;
@@ -1708,10 +2037,13 @@
         _previewKey = key;
         const h = _historyCache.find(function(x) { return x.key === key; });
         if(!h) return;
+        document.getElementById('btnLoadHistory').style.display = isAdmin ? 'none' : 'inline-block';
         const f = n => Math.round(n).toLocaleString('tr-TR');
+        const isSold = h.status === 'sold';
         document.getElementById('prev-title').innerHTML =
             '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>' +
-            '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + (h.storeName || 'Mağaza') + '</span>';
+            '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + (h.storeName || 'Mağaza') + '</span>' +
+            (isSold ? ' <span style="font-size:10px;color:var(--success);font-weight:800;">✓ SATIŞ OLDU' + (h.soldAt ? ' · '+h.soldAt : '') + '</span>' : '');
         document.getElementById('prev-items').innerHTML = h.basket.map(function(i) {
             return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">' +
                 '<span><b>' + i.k + '</b>' + (i.note ? ' <em style="opacity:.6;">— ' + i.note + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + i.d + '</span></span>' +
@@ -1762,14 +2094,222 @@
         renderBasket();
     }
 
-    function deleteHistory(key) {
+    function deleteHistory(key, storeId) {
         if(!confirm('Bu teklif silinsin mi?')) return;
-        fbDb.ref('history/' + key).remove().catch(err => console.error('Silinemedi:', err));
+        fbDb.ref('stores/' + storeId + '/history/' + key).remove().catch(err => console.error('Silinemedi:', err));
     }
 
     function clearHistory() {
-        if(!confirm('Tüm geçmiş silinsin mi? Bu işlem tüm mağazalardaki geçmişi siler.')) return;
-        fbDb.ref('history').remove().catch(err => console.error('Temizlenemedi:', err));
+        if(!currentStoreId || isAdmin) { alert('Bu işlem yalnızca mağaza hesaplarından yapılabilir.'); return; }
+        if(!confirm('Kendi geçmişini tamamen silmek istediğine emin misin?')) return;
+        fbDb.ref('stores/' + currentStoreId + '/history').remove().catch(err => console.error('Temizlenemedi:', err));
+    }
+
+    // ── ADMIN PANEL ──
+    function openAdminPanel() {
+        if(!isAdmin) return;
+        setAdminTab(0);
+        renderAdminStoreList();
+        renderAdminPanel();
+        openModal('adminModal');
+    }
+
+    function setAdminTab(i) {
+        document.querySelectorAll('.admin-tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
+        document.querySelectorAll('.admin-pane').forEach((p, idx) => p.style.display = (idx === i ? 'block' : 'none'));
+    }
+
+    function sanitizeStoreId(name) {
+        return name.trim().toLowerCase()
+            .replace(/ı/g,'i').replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c')
+            .replace(/[^a-z0-9]+/g, '');
+    }
+
+    function createStore() {
+        const storeName = document.getElementById('newStoreName').value.trim();
+        const userRaw   = document.getElementById('newStoreUser').value.trim();
+        const pass      = document.getElementById('newStorePass').value;
+        const tel       = document.getElementById('newStoreTel').value.trim();
+        const errEl = document.getElementById('newStoreError');
+        errEl.style.display = 'none';
+
+        const storeId = sanitizeStoreId(userRaw);
+        if(!storeName || !storeId || !pass) {
+            errEl.innerText = 'Mağaza adı, kullanıcı adı ve şifre gerekli.';
+            errEl.style.display = 'block';
+            return;
+        }
+        if(pass.length < 6) {
+            errEl.innerText = 'Şifre en az 6 karakter olmalı.';
+            errEl.style.display = 'block';
+            return;
+        }
+        if(storeId === ADMIN_USERNAME) {
+            errEl.innerText = '"admin" kullanıcı adı ayrılmıştır, başka bir ad seç.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        secondaryAuth.createUserWithEmailAndPassword(usernameToEmail(storeId), pass)
+            .then(function() {
+                return fbDb.ref('stores/' + storeId + '/config').set({
+                    cfgStore: storeName,
+                    cfgTel: tel,
+                    cfgAddr: '',
+                    cfgU: '34.20',
+                    cfgU_plus: '3',
+                    pk3: '50', pk2: '44', pk1: '38', pkN: '32',
+                    lastTime: new Date().toISOString()
+                });
+            })
+            .then(function() {
+                return secondaryAuth.signOut();
+            })
+            .then(function() {
+                document.getElementById('newStoreName').value = '';
+                document.getElementById('newStoreUser').value = '';
+                document.getElementById('newStorePass').value = '';
+                document.getElementById('newStoreTel').value = '';
+                renderAdminStoreList();
+                alert('Mağaza oluşturuldu: ' + storeName + ' (kullanıcı adı: ' + storeId + ')');
+            })
+            .catch(function(err) {
+                console.error('Mağaza oluşturulamadı:', err);
+                errEl.innerText = err.code === 'auth/email-already-in-use' ? 'Bu kullanıcı adı zaten kullanılıyor.' : 'Hata: ' + err.message;
+                errEl.style.display = 'block';
+            });
+    }
+
+    function renderAdminStoreList() {
+        const el = document.getElementById('admin-store-list');
+        fbDb.ref('stores').once('value').then(function(snap) {
+            const stores = snap.val() || {};
+            const ids = Object.keys(stores);
+            if(!ids.length) { el.innerHTML = '<div style="font-size:12px; color:var(--ink-dim);">Henüz mağaza yok.</div>'; return; }
+            el.innerHTML = ids.map(function(sid) {
+                const cfg = stores[sid].config || {};
+                const histCount = stores[sid].history ? Object.keys(stores[sid].history).length : 0;
+                return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border:1px solid var(--border); border-radius:10px; margin-bottom:6px;">' +
+                    '<div><b style="font-size:13px;">' + (cfg.cfgStore || sid) + '</b> <span style="font-size:11px; color:var(--ink-dim);">@' + sid + '</span></div>' +
+                    '<div style="font-size:11px; color:var(--ink-dim);">' + histCount + ' kayıt</div>' +
+                    '</div>';
+            }).join('');
+            // rapor filtresindeki mağaza listesini de güncelle
+            const sel = document.getElementById('repStore');
+            const current = sel.value;
+            sel.innerHTML = '<option value="">Tüm Mağazalar</option>' + ids.map(function(sid) {
+                const cfg = stores[sid].config || {};
+                return '<option value="' + sid + '">' + (cfg.cfgStore || sid) + '</option>';
+            }).join('');
+            sel.value = current;
+        });
+    }
+
+    function renderAdminPanel() {
+        if(!isAdmin || !document.getElementById('rep-list')) return;
+        const storeFilter  = document.getElementById('repStore').value;
+        const statusFilter = document.getElementById('repStatus').value;
+        const startD = document.getElementById('repStart').value ? new Date(document.getElementById('repStart').value + 'T00:00:00').getTime() : null;
+        const endD   = document.getElementById('repEnd').value   ? new Date(document.getElementById('repEnd').value + 'T23:59:59').getTime() : null;
+
+        let rows = _historyCache.filter(function(h) {
+            if(storeFilter && h.storeId !== storeFilter) return false;
+            if(statusFilter === 'sold' && h.status !== 'sold') return false;
+            if(statusFilter === 'teklif' && h.status === 'sold') return false;
+            if(startD && (h.tsMillis||0) < startD) return false;
+            if(endD && (h.tsMillis||0) > endD) return false;
+            return true;
+        });
+
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        let totalCash = 0, totalEtiket = 0, soldCount = 0;
+        rows.forEach(function(h) {
+            const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
+            const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            if(h.status === 'sold') { totalCash += sN; totalEtiket += et; soldCount++; }
+        });
+
+        document.getElementById('rep-summary').innerHTML =
+            '<div style="background:var(--success-bg); border-radius:10px; padding:12px; text-align:center;"><div style="font-size:9px; color:var(--success); font-weight:800; letter-spacing:.05em;">SATIŞ ADEDİ</div><div style="font-size:18px; font-weight:800; color:var(--success); margin-top:4px;">' + soldCount + '</div></div>' +
+            '<div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; letter-spacing:.05em;">TOPLAM NAKİT TUTAR</div><div style="font-size:16px; font-weight:800; margin-top:4px;">' + f(totalCash) + ' ₺</div></div>' +
+            '<div style="background:var(--rose-pale); border-radius:10px; padding:12px; text-align:center;"><div style="font-size:9px; color:var(--rose); font-weight:800; letter-spacing:.05em;">ETİKET TOPLAMI (÷3)</div><div style="font-size:16px; font-weight:800; color:var(--rose); margin-top:4px;">' + f(totalEtiket/3) + '</div></div>';
+
+        const listEl = document.getElementById('rep-list');
+        if(!rows.length) {
+            listEl.innerHTML = '<div style="padding:20px; text-align:center; color:var(--ink-dim); font-size:13px;">Kayıt bulunamadı.</div>';
+            return;
+        }
+        rows.sort((a,b) => (b.tsMillis||0) - (a.tsMillis||0));
+        listEl.innerHTML = rows.map(function(h) {
+            const sN = Math.round(h.basket.reduce((a,b)=>a+b.v.vN, 0));
+            const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            const isSold = h.status === 'sold';
+            return '<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:12px;">' +
+                '<div>' +
+                '<b>' + (h.storeName||h.storeId) + '</b> <span style="color:var(--ink-dim);">· ' + h.cusName + '</span><br>' +
+                '<span style="font-size:10px; color:var(--ink-dim);">' + h.ts + '</span> ' +
+                (isSold ? '<span style="font-size:9px; background:var(--success-bg); color:var(--success); font-weight:800; padding:1px 6px; border-radius:100px; margin-left:4px;">SATIŞ' + (h.soldAt ? ' '+h.soldAt : '') + '</span>' : '<span style="font-size:9px; background:var(--bg); border:1px solid var(--border); color:var(--ink-dim); font-weight:700; padding:1px 6px; border-radius:100px; margin-left:4px;">TEKLİF</span>') +
+                '</div>' +
+                '<div style="text-align:right;">' +
+                '<div style="font-weight:700;">' + f(sN) + ' ₺</div>' +
+                '<div style="font-size:10px; color:var(--rose);">Etiket÷3: ' + f(et/3) + '</div>' +
+                '</div></div>';
+        }).join('');
+    }
+
+    function generateAdminReportPDF() {
+        const storeFilter  = document.getElementById('repStore').value;
+        const statusFilter = document.getElementById('repStatus').value;
+        const startVal = document.getElementById('repStart').value;
+        const endVal   = document.getElementById('repEnd').value;
+        const startD = startVal ? new Date(startVal + 'T00:00:00').getTime() : null;
+        const endD   = endVal   ? new Date(endVal + 'T23:59:59').getTime() : null;
+
+        let rows = _historyCache.filter(function(h) {
+            if(storeFilter && h.storeId !== storeFilter) return false;
+            if(statusFilter === 'sold' && h.status !== 'sold') return false;
+            if(statusFilter === 'teklif' && h.status === 'sold') return false;
+            if(startD && (h.tsMillis||0) < startD) return false;
+            if(endD && (h.tsMillis||0) > endD) return false;
+            return true;
+        }).sort((a,b) => (b.tsMillis||0) - (a.tsMillis||0));
+
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        let totalCash = 0, totalEtiket = 0, soldCount = 0;
+        rows.forEach(function(h) {
+            const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
+            const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            if(h.status === 'sold') { totalCash += sN; totalEtiket += et; soldCount++; }
+        });
+
+        document.getElementById('rep-pdf-range').innerText =
+            (startVal ? startVal : 'Başlangıç yok') + ' — ' + (endVal ? endVal : 'Bitiş yok') +
+            (storeFilter ? ' · ' + (document.getElementById('repStore').selectedOptions[0].innerText) : ' · Tüm Mağazalar') +
+            ' · Oluşturulma: ' + new Date().toLocaleString('tr-TR');
+
+        document.getElementById('rep-pdf-summary').innerHTML =
+            '<div style="display:flex; gap:16px; border:1px solid #e8e4ec; border-radius:10px; padding:14px 18px;">' +
+            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ ADEDİ</div><div style="font-size:16px; font-weight:800;">' + soldCount + '</div></div>' +
+            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">TOPLAM NAKİT TUTAR</div><div style="font-size:16px; font-weight:800;">' + f(totalCash) + ' ₺</div></div>' +
+            '<div><div style="font-size:9px; color:#c8244c; font-weight:800;">ETİKET TOPLAMI (÷3)</div><div style="font-size:16px; font-weight:800; color:#c8244c;">' + f(totalEtiket/3) + '</div></div>' +
+            '</div>';
+
+        document.getElementById('rep-pdf-body').innerHTML = rows.map(function(h) {
+            const sN = Math.round(h.basket.reduce((a,b)=>a+b.v.vN, 0));
+            const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            return '<tr style="border-bottom:1px solid #e8e4ec;">' +
+                '<td style="padding:7px 6px;">' + (h.storeName||h.storeId) + '</td>' +
+                '<td style="padding:7px 6px;">' + h.ts + '</td>' +
+                '<td style="padding:7px 6px;">' + h.cusName + '</td>' +
+                '<td style="padding:7px 6px;">' + (h.status === 'sold' ? 'Satış' : 'Teklif') + '</td>' +
+                '<td style="padding:7px 6px; text-align:right;">' + f(sN) + ' ₺</td>' +
+                '<td style="padding:7px 6px; text-align:right;">' + f(et/3) + '</td>' +
+                '</tr>';
+        }).join('');
+
+        document.body.classList.add('admin-print-mode');
+        window.print();
+        setTimeout(() => document.body.classList.remove('admin-print-mode'), 500);
     }
 
     function adjustPadding() {
@@ -1792,7 +2332,7 @@
     function clearBasket()   { basket = []; renderBasket(); }
     function openModal(id)   { document.getElementById(id).style.display='flex'; if(id==='historyModal') openHistory(); }
     function closeModal(id)  { document.getElementById(id).style.display='none'; }
-    window.onload = function() { loadCfg(); adjustPadding(); };
+    window.onload = function() { adjustPadding(); };
     window.addEventListener('resize', adjustPadding);
 </script>
 </body>
