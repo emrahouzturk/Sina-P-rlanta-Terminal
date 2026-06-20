@@ -1240,7 +1240,10 @@
                     <button class="btn-primary" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
                 </div>
                 <div style="display:flex; gap:8px; width:100%;">
-                    <button class="btn-dark" style="flex:1;" onclick="openModal('cusModal')">📄 PDF Teklif</button>
+                    <button class="btn-dark" style="flex:1;" onclick="openCusModal('save')">👤 Müşteriye Kaydet</button>
+                    <button class="btn-ghost" style="flex:1;" onclick="openCusModal('pdf')">📄 PDF Teklif</button>
+                </div>
+                <div style="display:flex; gap:8px; width:100%;">
                     <button class="btn-ghost" style="flex:1;" onclick="openModal('historyModal')">🕐 Geçmiş</button>
                 </div>
             </div>
@@ -1324,8 +1327,13 @@
                 </div>
 
                 <div class="help-section">
-                    <h4>4. PDF Teklif Al</h4>
-                    <p>Sepet doluyken <strong>📄 PDF Teklif</strong>'e bas. Müşteri adı ve telefonu gir, <strong>Yazdır</strong>'a bas. Her yazdırmada teklif otomatik geçmişe kaydedilir.</p>
+                    <h4>4. Müşteriye Kaydet / PDF Teklif Al</h4>
+                    <p>Sepet doluyken iki seçenek var:</p>
+                    <div class="help-card">
+                        <b>👤 Müşteriye Kaydet:</b> Müşteri adı ve telefon gir, <b>Kaydet</b>'e bas. Teklif anında geçmişe yazılır — PDF basmana gerek yok. Sonrasında PDF de istersen yazdırabilirsin, istemezsen kayıt yine kalır.<br><br>
+                        <b>📄 PDF Teklif:</b> Aynı şekilde müşteri bilgisi alır, hem geçmişe kaydeder hem yazdırır.
+                    </div>
+                    <p style="margin-top:8px;">İsim ve telefon zorunludur — bu sayede geçmişte "bu müşteriye ne zaman ne fiyat verildiğini" arayıp bulabilirsin.</p>
                 </div>
 
                 <div class="help-section">
@@ -1381,12 +1389,13 @@
     <div id="cusModal" class="modal-overlay">
         <div class="modal" style="max-width:380px;">
             <div class="simple-modal-body">
-                <h3>Müşteri Bilgileri</h3>
+                <h3 id="cusModalTitle">Müşteri Bilgileri</h3>
                 <label class="field-label">Müşteri Adı</label>
                 <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px;">
                 <label class="field-label" style="margin-top:12px;">Telefon</label>
                 <input type="text" id="iPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
-                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" onclick="generatePDF()">📄 Yazdır</button>
+                <div id="cusModalError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
+                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" id="cusModalSubmitBtn" onclick="generatePDF()">📄 Yazdır</button>
             </div>
         </div>
     </div>
@@ -1899,11 +1908,26 @@
                 attachHistoryListener();
                 showDashboard();
             } else {
-                document.getElementById('dashboard-screen').style.display = 'none';
-                document.getElementById('main-wrapper').style.display = 'flex';
-                document.getElementById('user-chip').innerText = '🏪 ' + uname;
-                loadCfg();
-                attachHistoryListener();
+                // Arşivlenmiş mağaza girişini engelle
+                fbDb.ref('stores/' + uname + '/config/archived').once('value').then(function(snap) {
+                    if(snap.val() === true) {
+                        sysAlert('Bu mağaza hesabı arşivlenmiştir ve giriş yapılamaz. Bilgi için yöneticinle iletişime geç.', { title: 'Hesap Arşivlendi', tone: 'danger' }).then(function() {
+                            fbAuth.signOut();
+                        });
+                        return;
+                    }
+                    document.getElementById('dashboard-screen').style.display = 'none';
+                    document.getElementById('main-wrapper').style.display = 'flex';
+                    document.getElementById('user-chip').innerText = '🏪 ' + uname;
+                    loadCfg();
+                    attachHistoryListener();
+                }).catch(function() {
+                    document.getElementById('dashboard-screen').style.display = 'none';
+                    document.getElementById('main-wrapper').style.display = 'flex';
+                    document.getElementById('user-chip').innerText = '🏪 ' + uname;
+                    loadCfg();
+                    attachHistoryListener();
+                });
             }
         } else {
             currentUser = null;
@@ -2109,23 +2133,95 @@
         </div>`;
     }
 
-    function generatePDF() {
+    // Sepeti mağazanın kendi geçmişine kaydeder. Hem PDF akışı hem "Müşteriye Kaydet" akışı bunu kullanır.
+    function saveToHistory(cusName, cusPhone) {
         const now = new Date();
         const ts  = now.toLocaleString('tr-TR');
         const dateShort = now.toLocaleDateString('tr-TR');
         const ref = `${dateShort.replace(/\./g,'')}/${Math.floor(Math.random()*9000)+1000}`;
-        const cusName  = document.getElementById('iCus').value  || 'Müşterimiz';
-        const cusPhone = document.getElementById('iPhone').value || '—';
         const storeName = document.getElementById('cfgStore').value || 'Mağaza';
 
-        // Geçmişe kaydet — mağazanın kendi kutusuna
-        if(currentStoreId) {
-            fbDb.ref('stores/' + currentStoreId + '/history').push({
-                ref, ts, tsMillis: now.getTime(), cusName, cusPhone, storeName,
-                status: 'teklif', soldAt: null, soldAtMillis: null,
-                basket: JSON.parse(JSON.stringify(basket))
-            }).catch(err => console.error('Geçmiş kaydedilemedi:', err));
+        if(!currentStoreId) return Promise.reject(new Error('Mağaza oturumu bulunamadı'));
+
+        return fbDb.ref('stores/' + currentStoreId + '/history').push({
+            ref, ts, tsMillis: now.getTime(), cusName, cusPhone, storeName,
+            status: 'teklif', soldAt: null, soldAtMillis: null,
+            basket: JSON.parse(JSON.stringify(basket))
+        }).then(function() {
+            return { ref, ts };
+        });
+    }
+
+    let _cusModalPurpose = 'pdf'; // 'pdf' | 'save'
+
+    function openCusModal(purpose) {
+        if(!basket.length) {
+            sysAlert('Önce sepete ürün eklemelisin.', { tone: 'warn' });
+            return;
         }
+        _cusModalPurpose = purpose;
+        document.getElementById('cusModalError').style.display = 'none';
+        const titleEl = document.getElementById('cusModalTitle');
+        const btnEl = document.getElementById('cusModalSubmitBtn');
+        if(purpose === 'save') {
+            titleEl.innerText = 'Müşteriye Kaydet';
+            btnEl.innerText = '👤 Kaydet';
+            btnEl.onclick = submitCusModal;
+        } else {
+            titleEl.innerText = 'Müşteri Bilgileri';
+            btnEl.innerText = '📄 Yazdır';
+            btnEl.onclick = submitCusModal;
+        }
+        openModal('cusModal');
+    }
+
+    function submitCusModal() {
+        const cusName  = document.getElementById('iCus').value.trim();
+        const cusPhone = document.getElementById('iPhone').value.trim();
+        const errEl = document.getElementById('cusModalError');
+
+        if(!cusName || !cusPhone) {
+            errEl.innerText = 'Müşteri adı ve telefon, geçmişte aranabilmesi için gerekli.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        if(_cusModalPurpose === 'save') {
+            saveToHistory(cusName, cusPhone).then(function() {
+                closeModal('cusModal');
+                sysConfirm('"' + cusName + '" için fiyat geçmişe kaydedildi.\n\nBu teklifin PDF\'ini de şimdi yazdırmak ister misin?', { title: 'Kaydedildi', okText: 'PDF Yazdır', cancelText: 'Hayır, Bu Kadar' }).then(function(yes) {
+                    if(yes) {
+                        _cusModalPurpose = 'pdf-only-print'; // geçmişe tekrar yazmadan sadece yazdır
+                        printCurrentBasketPdf(cusName, cusPhone);
+                    } else {
+                        document.getElementById('iCus').value = '';
+                        document.getElementById('iPhone').value = '';
+                    }
+                });
+            }).catch(function(err) {
+                console.error('Kaydedilemedi:', err);
+                errEl.innerText = 'Kaydedilirken hata oluştu: ' + err.message;
+                errEl.style.display = 'block';
+            });
+        } else {
+            generatePDF();
+        }
+    }
+
+    function generatePDF() {
+        const cusName  = document.getElementById('iCus').value.trim()  || 'Müşterimiz';
+        const cusPhone = document.getElementById('iPhone').value.trim() || '—';
+
+        saveToHistory(cusName, cusPhone).catch(err => console.error('Geçmiş kaydedilemedi:', err));
+        printCurrentBasketPdf(cusName, cusPhone);
+    }
+
+    // Sadece yazdırma ekranını hazırlar ve yazdırır (geçmişe ayrıca yazmaz — bu, çağıran fonksiyonun işidir)
+    function printCurrentBasketPdf(cusName, cusPhone) {
+        const now = new Date();
+        const ts  = now.toLocaleString('tr-TR');
+        const dateShort = now.toLocaleDateString('tr-TR');
+        const ref = `${dateShort.replace(/\./g,'')}/${Math.floor(Math.random()*9000)+1000}`;
 
         document.getElementById('p-date').innerText = ts;
         document.getElementById('p-ref-line').innerText = ref;
@@ -2550,17 +2646,30 @@
     function renderAdminStoreList() {
         const el = document.getElementById('admin-store-list');
         if(!el) return;
+        cleanupExpiredArchives();
         fbDb.ref('stores').once('value').then(function(snap) {
             const stores = snap.val() || {};
             const ids = Object.keys(stores);
             if(!ids.length) { el.innerHTML = '<div style="font-size:12.5px; color:var(--dash-ink-dim); padding:6px 4px;">Henüz mağaza yok.</div>'; return; }
-            el.innerHTML = ids.map(function(sid) {
+
+            const activeIds = ids.filter(function(sid) { return !(stores[sid].config || {}).archived; });
+            const archivedIds = ids.filter(function(sid) { return (stores[sid].config || {}).archived; });
+
+            function renderRow(sid, isArchived) {
                 const cfg = stores[sid].config || {};
                 const histCount = stores[sid].history ? Object.keys(stores[sid].history).length : 0;
                 const safeName = (cfg.cfgStore || sid).replace(/'/g,"\\'");
-                return '<div style="border-bottom:1px solid var(--dash-border);">' +
+                const daysLeft = isArchived && cfg.archivedAt ? Math.max(0, 30 - Math.floor((Date.now() - new Date(cfg.archivedAt).getTime()) / 86400000)) : null;
+                const actionsHtml = isArchived
+                    ? '<button onclick="event.stopPropagation(); restoreStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-ghost" style="flex:1;">↩ Geri Yükle</button>' +
+                      '<button onclick="event.stopPropagation(); permanentlyDeleteStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-danger" style="flex:1;">🗑 Kalıcı Sil</button>'
+                    : '<button onclick="event.stopPropagation(); resetStorePassword(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-ghost" style="flex:1;">🔑 Şifre Sıfırla</button>' +
+                      '<button onclick="event.stopPropagation(); deleteStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-danger" style="flex:1;">🗑 Arşivle</button>';
+                return '<div style="border-bottom:1px solid var(--dash-border); opacity:' + (isArchived ? '0.65' : '1') + ';">' +
                     '<div style="display:flex; justify-content:space-between; align-items:center; padding:13px 4px; cursor:pointer;" onclick="toggleStoreDetail(\'' + sid + '\')">' +
-                    '<div><b style="font-size:13.5px; color:var(--dash-ink);">' + (cfg.cfgStore || sid) + '</b> <span style="font-size:11px; color:var(--dash-ink-dim);">@' + sid + '</span></div>' +
+                    '<div><b style="font-size:13.5px; color:var(--dash-ink);">' + (cfg.cfgStore || sid) + '</b> <span style="font-size:11px; color:var(--dash-ink-dim);">@' + sid + '</span>' +
+                    (isArchived ? ' <span class="dash-badge teklif" style="margin-left:4px;">ARŞİV · ' + daysLeft + ' gün sonra silinir</span>' : '') +
+                    '</div>' +
                     '<div style="display:flex; align-items:center; gap:10px;">' +
                     '<div style="font-size:11px; color:var(--dash-ink-dim);">' + histCount + ' kayıt</div>' +
                     '<span style="font-size:10px; color:var(--dash-ink-dim);">▾</span>' +
@@ -2573,19 +2682,24 @@
                     '<span style="color:var(--dash-ink);"><b>Telefon:</b> ' + (cfg.cfgTel || '—') + '</span><br>' +
                     '<span style="color:var(--dash-ink);"><b>Adres:</b> ' + (cfg.cfgAddr || '—') + '</span>' +
                     '</div>' +
-                    '<div style="display:flex; gap:8px; margin-top:10px;">' +
-                    '<button onclick="event.stopPropagation(); resetStorePassword(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-ghost" style="flex:1;">🔑 Şifre Sıfırla</button>' +
-                    '<button onclick="event.stopPropagation(); deleteStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-danger" style="flex:1;">🗑 Mağazayı Sil</button>' +
-                    '</div>' +
+                    '<div style="display:flex; gap:8px; margin-top:10px;">' + actionsHtml + '</div>' +
                     '</div>' +
                     '</div>';
-            }).join('');
-            // rapor filtresindeki mağaza listesini de güncelle
+            }
+
+            let html = activeIds.map(function(sid) { return renderRow(sid, false); }).join('');
+            if(archivedIds.length) {
+                html += '<div style="margin-top:18px; margin-bottom:4px; font-size:11px; font-weight:800; color:var(--dash-ink-dim); text-transform:uppercase; letter-spacing:.06em;">Arşivlenmiş Mağazalar (' + archivedIds.length + ')</div>';
+                html += archivedIds.map(function(sid) { return renderRow(sid, true); }).join('');
+            }
+            el.innerHTML = html || '<div style="font-size:12.5px; color:var(--dash-ink-dim); padding:6px 4px;">Henüz mağaza yok.</div>';
+
+            // rapor filtresindeki mağaza listesini de güncelle (sadece aktif mağazalar)
             const sel = document.getElementById('repStore');
             const current = sel.value;
             sel.innerHTML = '<option value="">Tüm Mağazalar</option>' + ids.map(function(sid) {
                 const cfg = stores[sid].config || {};
-                return '<option value="' + sid + '">' + (cfg.cfgStore || sid) + '</option>';
+                return '<option value="' + sid + '">' + (cfg.cfgStore || sid) + (cfg.archived ? ' (arşiv)' : '') + '</option>';
             }).join('');
             sel.value = current;
         });
@@ -2631,41 +2745,102 @@
     }
 
     function deleteStore(storeId, storeName) {
-        sysPrompt('Bu işlem geri alınamaz. "' + storeName + '" mağazasının TÜM verisini (ayarlar + geçmiş + satışlar) silmek için mağaza adını tam olarak yazıp onaylayın:\n\n' + storeName, { title: 'Mağazayı Sil', placeholder: storeName, tone: 'danger' }).then(function(typed) {
+        sysPrompt('"' + storeName + '" mağazasını arşivlemek için mağaza adını tam olarak yazıp onaylayın:\n\n' + storeName + '\n\nArşivlenen mağaza giriş yapamaz, ama verisi 30 gün boyunca saklanır ve istersen geri yükleyebilirsin.', { title: 'Mağazayı Arşivle', placeholder: storeName, tone: 'danger' }).then(function(typed) {
             if(typed === null) return;
             // Karşılaştırmayı görünmez karakter farklarına (boşluk, NBSP, vs.) karşı toleranslı yap
             const normalize = s => s.normalize('NFC').replace(/\s+/g, ' ').trim();
             if(normalize(typed) !== normalize(storeName)) {
-                // Hata ayıklama: tam olarak nerede fark var, görünür hale getir
                 const a = normalize(typed), b = normalize(storeName);
                 let debugInfo = 'Girilen: "' + a + '" (uzunluk: ' + a.length + ')\nBeklenen: "' + b + '" (uzunluk: ' + b.length + ')';
                 if(a.toLowerCase() === b.toLowerCase()) {
                     debugInfo += '\n\nNot: Sadece büyük/küçük harf farkı var.';
                 }
-                sysAlert('Girilen ad eşleşmedi, mağaza silinmedi.\n\n' + debugInfo, { tone: 'warn', title: 'Eşleşmedi' });
+                sysAlert('Girilen ad eşleşmedi, mağaza arşivlenmedi.\n\n' + debugInfo, { tone: 'warn', title: 'Eşleşmedi' });
+                return;
+            }
+            fbDb.ref('stores/' + storeId + '/config').update({
+                archived: true,
+                archivedAt: new Date().toISOString()
+            })
+                .then(function() {
+                    renderAdminStoreList();
+                    sysAlert(
+                        '"' + storeName + '" mağazası arşivlendi.\n\n' +
+                        'Bu mağaza artık giriş yapamaz. Verisi 30 gün boyunca saklanacak ve "Arşivlenmiş Mağazalar" listesinden geri yükleyebilirsin. 30 gün sonra otomatik olarak kalıcı şekilde silinir.',
+                        { title: 'Mağaza Arşivlendi' }
+                    );
+                })
+                .catch(function(err) {
+                    console.error('Mağaza arşivlenemedi:', err);
+                    sysAlert('Mağaza arşivlenirken hata oluştu: ' + err.message, { title: 'Hata', tone: 'danger' });
+                });
+        });
+    }
+
+    function restoreStore(storeId, storeName) {
+        sysConfirm('"' + storeName + '" mağazasını geri yüklemek istediğine emin misin? Mağaza tekrar giriş yapabilir hale gelecek.', { title: 'Mağazayı Geri Yükle', okText: 'Geri Yükle' }).then(function(ok) {
+            if(!ok) return;
+            fbDb.ref('stores/' + storeId + '/config').update({
+                archived: false,
+                archivedAt: null
+            })
+                .then(function() {
+                    renderAdminStoreList();
+                    sysAlert('"' + storeName + '" mağazası geri yüklendi, tekrar giriş yapabilir.', { title: 'Geri Yüklendi' });
+                })
+                .catch(function(err) {
+                    console.error('Mağaza geri yüklenemedi:', err);
+                    sysAlert('Hata oluştu: ' + err.message, { title: 'Hata', tone: 'danger' });
+                });
+        });
+    }
+
+    function permanentlyDeleteStore(storeId, storeName) {
+        sysPrompt('Bu işlem geri alınamaz. "' + storeName + '" mağazasının TÜM verisini (ayarlar + geçmiş + satışlar) kalıcı olarak silmek için mağaza adını tam olarak yazıp onaylayın:\n\n' + storeName, { title: 'Kalıcı Olarak Sil', placeholder: storeName, tone: 'danger' }).then(function(typed) {
+            if(typed === null) return;
+            const normalize = s => s.normalize('NFC').replace(/\s+/g, ' ').trim();
+            if(normalize(typed) !== normalize(storeName)) {
+                sysAlert('Girilen ad eşleşmedi, mağaza silinmedi.', { tone: 'warn', title: 'Eşleşmedi' });
                 return;
             }
             fbDb.ref('stores/' + storeId).remove()
                 .then(function() {
-                    // Bu mağazanın admin history-cache'inden de temizlenmesi için dinleyici referansını bırak
                     delete _storeHistoryRefs[storeId];
                     _historyCache = _historyCache.filter(function(h) { return h.storeId !== storeId; });
                     renderAdminStoreList();
                     renderAdminPanel();
                     sysAlert(
-                        'Mağaza verisi silindi.\n\n' +
+                        'Mağaza verisi kalıcı olarak silindi.\n\n' +
                         'ÖNEMLİ: Bu kullanıcının giriş yapabilme yetkisini de kapatmak için Firebase konsolunda şu adımı uygulaman gerekiyor:\n\n' +
                         '1. Firebase Console → Authentication → Users\n' +
                         '2. "' + storeId + '@sina-terminal.local" kullanıcısını bul\n' +
                         '3. Sağdaki ⋮ menüsünden "Delete account" seç\n\n' +
-                        'Bu adımı atlarsan, mağaza verisi silinmiş olsa da o kullanıcı adı/şifre ile giriş yapılabilir (ama içeri girince hiçbir veri görmez).',
-                        { title: 'Mağaza Silindi' }
+                        '(Mağaza zaten arşivlenmiş olduğu için bu adımı atlasan da giriş yapamaz, ama tam temizlik için önerilir.)',
+                        { title: 'Kalıcı Olarak Silindi' }
                     );
                 })
                 .catch(function(err) {
                     console.error('Mağaza silinemedi:', err);
                     sysAlert('Mağaza silinirken hata oluştu: ' + err.message, { title: 'Hata', tone: 'danger' });
                 });
+        });
+    }
+
+    function cleanupExpiredArchives() {
+        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+        fbDb.ref('stores').once('value').then(function(snap) {
+            const stores = snap.val() || {};
+            Object.keys(stores).forEach(function(sid) {
+                const cfg = stores[sid].config || {};
+                if(cfg.archived && cfg.archivedAt) {
+                    const age = Date.now() - new Date(cfg.archivedAt).getTime();
+                    if(age > THIRTY_DAYS_MS) {
+                        fbDb.ref('stores/' + sid).remove()
+                            .then(function() { console.log('30 günü geçen arşiv otomatik temizlendi:', sid); })
+                            .catch(function(err) { console.error('Otomatik temizlik hatası:', sid, err); });
+                    }
+                }
+            });
         });
     }
 
