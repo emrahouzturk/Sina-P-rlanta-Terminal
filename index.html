@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sina Pırlanta — Terminal</title>
     <link rel="icon" type="image/svg+xml" href="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Firebase (Realtime Database + Auth) — çoklu mağaza senkronizasyonu ve giriş için -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -54,15 +54,15 @@
             --r-md: 14px;
             --r-lg: 22px;
 
-            /* Dashboard (Admin) tonu — kasıtlı olarak ayrı bir "komuta merkezi" hissi */
-            --dash-bg:        #12121b;
-            --dash-surface:   #1b1b27;
-            --dash-surface-2: #22222f;
-            --dash-border:    #2e2e3d;
-            --dash-ink:       #f2f0f5;
-            --dash-ink-dim:   #8d8b9c;
-            --dash-gold:      #d4af78;
-            --dash-rose:      #e8537a;
+            /* Dashboard (Admin) tonu — açık, net bir "yönetim paneli" hissi */
+            --dash-bg:        #f7f5f8;
+            --dash-surface:   #ffffff;
+            --dash-surface-2: #f7f5f8;
+            --dash-border:    #e8e4ec;
+            --dash-ink:       #1a1a24;
+            --dash-ink-dim:   #8a8794;
+            --dash-gold:      #a87d4a;
+            --dash-rose:      #c8244c;
         }
 
         *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -71,7 +71,7 @@
             min-height: 100vh; margin: 0;
             background: var(--bg);
             color: var(--ink);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             overflow-x: hidden;
             font-size: 14px;
         }
@@ -96,7 +96,7 @@
         }
 
         .rates-chip {
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 10px;
             font-weight: 600;
             color: var(--ink-mid);
@@ -139,7 +139,7 @@
             padding: 9px 14px;
             border-radius: 100px;
             cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-weight: 600;
             font-size: 11px;
             display: flex; align-items: center; gap: 5px;
@@ -156,7 +156,7 @@
             padding: 9px 14px;
             border-radius: 100px;
             cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-weight: 700;
             font-size: 11px;
             display: flex; align-items: center; gap: 5px;
@@ -201,7 +201,7 @@
         }
         .brand-block img { height: 36px; }
         .brand-name {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 12px;
             font-weight: 600;
             letter-spacing: .22em;
@@ -274,7 +274,7 @@
             padding: 12px 16px;
             border-radius: var(--r-sm);
             border: 1.5px solid var(--border);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-weight: 600;
             font-size: 20px;
             text-align: center;
@@ -459,7 +459,7 @@
             color: #fff;
             border: none;
             border-radius: var(--r-md);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-weight: 700;
             font-size: 12px;
             letter-spacing: .1em;
@@ -478,7 +478,7 @@
             color: #fff;
             border: none;
             border-radius: var(--r-md);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-weight: 700;
             font-size: 12px;
             letter-spacing: .1em;
@@ -509,14 +509,14 @@
             justify-content: space-between;
         }
         .basket-title {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 20px;
             font-weight: 700;
             color: var(--ink);
             letter-spacing: .02em;
         }
         .basket-title span {
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 11px;
             font-weight: 600;
             color: var(--rose);
@@ -674,7 +674,7 @@
             border: 1px solid var(--border);
             border-radius: var(--r-sm);
             color: var(--ink-dim);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 11px;
             font-weight: 600;
             cursor: pointer;
@@ -720,7 +720,7 @@
         }
         .modal-header h3 {
             margin: 0;
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 20px;
             font-weight: 700;
             color: var(--ink);
@@ -750,7 +750,7 @@
             padding: 13px 8px;
             border: none;
             background: transparent;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
@@ -785,7 +785,7 @@
             background: var(--rose);
             color: #fff;
             border: none;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-weight: 700;
             font-size: 12px;
             letter-spacing: .1em;
@@ -799,7 +799,7 @@
         /* ── HELP CONTENT ── */
         .help-section { margin-bottom: 24px; }
         .help-section h4 {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 18px;
             font-weight: 700;
             color: var(--rose);
@@ -839,7 +839,7 @@
             padding: 26px;
         }
         .simple-modal-body h3 {
-            font-family: 'Cormorant Garamond', serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 22px;
             font-weight: 700;
             color: var(--ink);
@@ -858,6 +858,64 @@
         .empty-basket svg { opacity: .25; margin-bottom: 12px; }
         .empty-basket p { font-size: 12px; font-weight: 500; margin: 0; }
 
+        /* ── SİSTEM MODALI (alert/confirm/prompt yerine) ── */
+        #sys-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(26,26,36,.55);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center; justify-content: center;
+            z-index: 99998;
+            padding: 20px;
+        }
+        #sys-modal-box {
+            background: var(--surface);
+            width: 100%; max-width: 400px;
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            padding: 26px 26px 22px;
+        }
+        #sys-modal-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 14px;
+            font-size: 20px;
+        }
+        #sys-modal-icon.info    { background: var(--rose-pale); color: var(--rose); }
+        #sys-modal-icon.warn    { background: #fff6e0; color: #a06a00; }
+        #sys-modal-icon.danger  { background: var(--rose-pale); color: var(--rose); }
+        #sys-modal-title { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+        #sys-modal-message { font-size: 13px; color: var(--ink-mid); line-height: 1.6; white-space: pre-line; }
+        #sys-modal-input {
+            margin-top: 14px; width: 100%;
+            padding: 11px 14px;
+            border-radius: 9px;
+            border: 1.5px solid var(--border);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            text-align: left;
+            background: var(--bg);
+        }
+        #sys-modal-input:focus { border-color: var(--rose); background: var(--surface); }
+        #sys-modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+        #sys-modal-actions button {
+            flex: 1;
+            border-radius: 9px;
+            padding: 11px 14px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 12.5px;
+            cursor: pointer;
+            border: none;
+        }
+        .sys-btn-cancel { background: var(--bg); color: var(--ink-mid); border: 1.5px solid var(--border) !important; }
+        .sys-btn-ok { background: var(--rose); color: #fff; }
+        .sys-btn-danger { background: var(--rose-dim); color: #fff; }
+
         /* ── ADMIN DASHBOARD ── */
         #dashboard-screen {
             position: fixed; inset: 0;
@@ -875,14 +933,14 @@
             flex-shrink: 0;
         }
         .dash-brand { display: flex; align-items: center; gap: 14px; }
-        .dash-brand img { height: 30px; filter: brightness(0) invert(1); opacity: .92; }
+        .dash-brand img { height: 30px; opacity: .92; }
         .dash-brand-text { display: flex; flex-direction: column; }
-        .dash-brand-text .title { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; letter-spacing: .01em; }
-        .dash-brand-text .subtitle { font-family: 'DM Sans', sans-serif; font-size: 9.5px; color: var(--dash-gold); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-top: 1px; }
+        .dash-brand-text .title { font-family: 'Poppins', sans-serif; font-size: 19px; font-weight: 600; letter-spacing: .01em; }
+        .dash-brand-text .subtitle { font-family: 'Poppins', sans-serif; font-size: 9.5px; color: var(--dash-gold); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin-top: 1px; }
         .dash-logout {
             background: none; border: 1.5px solid var(--dash-border); color: var(--dash-ink-dim);
             padding: 9px 16px; border-radius: 100px; cursor: pointer;
-            font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 11px;
+            font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 11px;
             display: flex; align-items: center; gap: 6px; transition: border-color .18s, color .18s;
         }
         .dash-logout:hover { border-color: var(--dash-rose); color: var(--dash-rose); }
@@ -896,7 +954,7 @@
         .dash-tab {
             background: none; border: none; cursor: pointer;
             color: var(--dash-ink-dim);
-            font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 12.5px;
+            font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 12.5px;
             letter-spacing: .02em;
             padding: 16px 18px 14px;
             border-bottom: 2px solid transparent;
@@ -917,21 +975,23 @@
             padding: 20px 22px;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
         .dash-stat-card .eyebrow { font-size: 9.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--dash-ink-dim); }
-        .dash-stat-card .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 700; margin-top: 8px; line-height: 1; }
+        .dash-stat-card .stat-value { font-family: 'Poppins', sans-serif; font-size: 34px; font-weight: 700; margin-top: 8px; line-height: 1; }
         .dash-stat-card .stat-sub { font-size: 10.5px; color: var(--dash-ink-dim); margin-top: 6px; }
         .dash-stat-card.accent-rose .stat-value { color: var(--dash-rose); }
         .dash-stat-card.accent-gold .stat-value { color: var(--dash-gold); }
-        .dash-stat-card.accent-success .stat-value { color: #5fd99a; }
+        .dash-stat-card.accent-success .stat-value { color: var(--success); }
 
-        .dash-section-title { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--dash-ink-dim); margin-bottom: 14px; }
+        .dash-section-title { font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--dash-ink-dim); margin-bottom: 14px; }
 
         .dash-panel {
             background: var(--dash-surface);
             border: 1px solid var(--dash-border);
             border-radius: 16px;
             padding: 22px 24px;
+            box-shadow: var(--shadow-sm);
         }
 
         .dash-store-row {
@@ -941,7 +1001,22 @@
             font-size: 13px;
         }
         .dash-store-row:last-child { border-bottom: none; }
-        .dash-rank-num { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--dash-gold); width: 28px; flex-shrink: 0; }
+        .dash-rank-num { font-family: 'Poppins', sans-serif; font-size: 17px; color: var(--dash-gold); width: 28px; flex-shrink: 0; }
+
+        .dash-sort-btn {
+            background: var(--dash-surface);
+            border: 1.5px solid var(--dash-border);
+            color: var(--dash-ink-dim);
+            border-radius: 100px;
+            padding: 6px 13px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 10.5px;
+            cursor: pointer;
+            transition: border-color .18s, color .18s, background .18s;
+        }
+        .dash-sort-btn:hover { border-color: var(--gold); color: var(--gold); }
+        .dash-sort-btn.active { background: var(--rose); border-color: var(--rose); color: #fff; }
 
         .dash-input, .dash-select {
             background: var(--dash-surface-2);
@@ -949,7 +1024,7 @@
             color: var(--dash-ink);
             border-radius: 9px;
             padding: 10px 13px;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             font-size: 13px;
             font-weight: 600;
             outline: none;
@@ -965,24 +1040,24 @@
         .dash-btn-primary {
             background: linear-gradient(135deg, var(--dash-rose), #b8385c);
             color: #fff; border: none; border-radius: 10px;
-            padding: 11px 20px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 12.5px;
+            padding: 11px 20px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 12.5px;
             cursor: pointer; transition: opacity .18s;
         }
         .dash-btn-primary:hover { opacity: .88; }
         .dash-btn-ghost {
             background: none; border: 1.5px solid var(--dash-border); color: var(--dash-ink-dim);
-            border-radius: 9px; padding: 9px 14px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 11.5px;
+            border-radius: 9px; padding: 9px 14px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 11.5px;
             cursor: pointer; transition: border-color .18s, color .18s;
         }
         .dash-btn-ghost:hover { border-color: var(--dash-gold); color: var(--dash-gold); }
         .dash-btn-danger {
             background: none; border: 1.5px solid rgba(232,83,122,.35); color: var(--dash-rose);
-            border-radius: 9px; padding: 7px 12px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 10.5px;
+            border-radius: 9px; padding: 7px 12px; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 10.5px;
             cursor: pointer;
         }
 
         .dash-badge { display: inline-block; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 100px; letter-spacing: .04em; }
-        .dash-badge.sold { background: rgba(95,217,154,.14); color: #5fd99a; }
+        .dash-badge.sold { background: var(--success-bg); color: var(--success); }
         .dash-badge.teklif { background: var(--dash-surface-2); color: var(--dash-ink-dim); border: 1px solid var(--dash-border); }
 
         @media (max-width: 900px) {
@@ -1064,6 +1139,20 @@
             <div id="login-error" style="display:none; margin-top:10px; font-size:12px; color:var(--rose); font-weight:600; text-align:center;"></div>
             <button class="btn-primary" style="width:100%; margin-top:20px; border-radius:var(--r-sm); padding:13px;" onclick="doLogin()">Giriş Yap</button>
             <div id="login-loading" style="display:none; text-align:center; margin-top:14px; font-size:12px; color:var(--ink-dim);">Giriş yapılıyor…</div>
+        </div>
+    </div>
+
+    <!-- SİSTEM MODALI (alert/confirm/prompt yerini alır) -->
+    <div id="sys-modal-overlay">
+        <div id="sys-modal-box">
+            <div id="sys-modal-icon" class="info">ℹ️</div>
+            <div id="sys-modal-title">Bilgi</div>
+            <div id="sys-modal-message"></div>
+            <input type="text" id="sys-modal-input" style="display:none;">
+            <div id="sys-modal-actions">
+                <button class="sys-btn-cancel" id="sys-modal-cancel" style="display:none;">Vazgeç</button>
+                <button class="sys-btn-ok" id="sys-modal-ok">Tamam</button>
+            </div>
         </div>
     </div>
 
@@ -1402,7 +1491,10 @@
                     </div>
                 </div>
 
-                <div class="dash-section-title">Mağaza Performansı — Bu Ay</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="dash-section-title" style="margin-bottom:14px;">Mağaza Performansı — Bu Ay</div>
+                    <div id="dash-store-rank-sortbar" style="display:flex; gap:6px; margin-bottom:14px;"></div>
+                </div>
                 <div class="dash-panel">
                     <div id="dash-store-rank">
                         <div style="color:var(--dash-ink-dim); font-size:12.5px; padding:8px 4px;">Yükleniyor…</div>
@@ -1460,7 +1552,7 @@
 
     <!-- ADMIN PDF RAPOR PRINT AREA -->
     <div id="admin-print-area">
-        <div style="font-family:'DM Sans',sans-serif; padding:40px 48px; max-width:900px; margin:0 auto; color:#1a1a24;">
+        <div style="font-family:'Poppins',sans-serif; padding:40px 48px; max-width:900px; margin:0 auto; color:#1a1a24;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #1a1a24; padding-bottom:20px; margin-bottom:24px;">
                 <div>
                     <div style="font-size:20px; font-weight:800;">Satış Raporu</div>
@@ -1489,7 +1581,7 @@
     <div id="print-area">
         <style>
             #print-area {
-                font-family: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+                font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
                 color: #1a1a24;
                 padding: 40px 48px;
                 background: #fff;
@@ -1670,6 +1762,78 @@
 
     function usernameToEmail(u) { return u.trim().toLowerCase() + AUTH_DOMAIN_SUFFIX; }
 
+    // ── SİSTEM MODALI: alert/confirm/prompt'un şık yerine geçer ──
+    function _sysModalClose() {
+        document.getElementById('sys-modal-overlay').style.display = 'none';
+        document.getElementById('sys-modal-input').style.display = 'none';
+        document.getElementById('sys-modal-input').value = '';
+        document.getElementById('sys-modal-cancel').style.display = 'none';
+    }
+
+    function sysAlert(message, opts) {
+        opts = opts || {};
+        return new Promise(function(resolve) {
+            document.getElementById('sys-modal-icon').className = opts.tone || 'info';
+            document.getElementById('sys-modal-icon').innerText = opts.tone === 'danger' ? '⚠️' : (opts.tone === 'warn' ? '⚠️' : 'ℹ️');
+            document.getElementById('sys-modal-title').innerText = opts.title || 'Bilgi';
+            document.getElementById('sys-modal-message').innerText = message;
+            document.getElementById('sys-modal-input').style.display = 'none';
+            document.getElementById('sys-modal-cancel').style.display = 'none';
+            const okBtn = document.getElementById('sys-modal-ok');
+            okBtn.innerText = 'Tamam';
+            okBtn.className = 'sys-btn-ok';
+            okBtn.onclick = function() { _sysModalClose(); resolve(true); };
+            document.getElementById('sys-modal-overlay').style.display = 'flex';
+        });
+    }
+
+    function sysConfirm(message, opts) {
+        opts = opts || {};
+        return new Promise(function(resolve) {
+            document.getElementById('sys-modal-icon').className = opts.tone || 'warn';
+            document.getElementById('sys-modal-icon').innerText = '⚠️';
+            document.getElementById('sys-modal-title').innerText = opts.title || 'Onay Gerekiyor';
+            document.getElementById('sys-modal-message').innerText = message;
+            document.getElementById('sys-modal-input').style.display = 'none';
+            const cancelBtn = document.getElementById('sys-modal-cancel');
+            cancelBtn.style.display = 'block';
+            cancelBtn.innerText = opts.cancelText || 'Vazgeç';
+            cancelBtn.onclick = function() { _sysModalClose(); resolve(false); };
+            const okBtn = document.getElementById('sys-modal-ok');
+            okBtn.innerText = opts.okText || 'Onayla';
+            okBtn.className = opts.danger ? 'sys-btn-danger' : 'sys-btn-ok';
+            okBtn.onclick = function() { _sysModalClose(); resolve(true); };
+            document.getElementById('sys-modal-overlay').style.display = 'flex';
+        });
+    }
+
+    function sysPrompt(message, opts) {
+        opts = opts || {};
+        return new Promise(function(resolve) {
+            document.getElementById('sys-modal-icon').className = opts.tone || 'info';
+            document.getElementById('sys-modal-icon').innerText = 'ℹ️';
+            document.getElementById('sys-modal-title').innerText = opts.title || 'Bilgi Gir';
+            document.getElementById('sys-modal-message').innerText = message;
+            const input = document.getElementById('sys-modal-input');
+            input.style.display = 'block';
+            input.type = opts.inputType || 'text';
+            input.value = opts.defaultValue || '';
+            input.placeholder = opts.placeholder || '';
+            const cancelBtn = document.getElementById('sys-modal-cancel');
+            cancelBtn.style.display = 'block';
+            cancelBtn.innerText = 'Vazgeç';
+            cancelBtn.onclick = function() { _sysModalClose(); resolve(null); };
+            const okBtn = document.getElementById('sys-modal-ok');
+            okBtn.innerText = opts.okText || 'Onayla';
+            okBtn.className = 'sys-btn-ok';
+            const submit = function() { const v = input.value; _sysModalClose(); resolve(v); };
+            okBtn.onclick = submit;
+            input.onkeydown = function(e) { if(e.key === 'Enter') submit(); };
+            document.getElementById('sys-modal-overlay').style.display = 'flex';
+            setTimeout(function() { input.focus(); }, 50);
+        });
+    }
+
     function togglePasswordVisibility() {
         const input = document.getElementById('loginPass');
         const eyeOpen = document.getElementById('pw-eye-open');
@@ -1713,8 +1877,9 @@
     }
 
     function doLogout() {
-        if(!confirm('Çıkış yapmak istediğine emin misin?')) return;
-        fbAuth.signOut();
+        sysConfirm('Çıkış yapmak istediğine emin misin?', { okText: 'Çıkış Yap' }).then(function(ok) {
+            if(ok) fbAuth.signOut();
+        });
     }
 
     fbAuth.onAuthStateChanged(function(user) {
@@ -2289,14 +2454,18 @@
     }
 
     function deleteHistory(key, storeId) {
-        if(!confirm('Bu teklif silinsin mi?')) return;
-        fbDb.ref('stores/' + storeId + '/history/' + key).remove().catch(err => console.error('Silinemedi:', err));
+        sysConfirm('Bu teklif silinsin mi?', { okText: 'Sil', danger: true }).then(function(ok) {
+            if(!ok) return;
+            fbDb.ref('stores/' + storeId + '/history/' + key).remove().catch(err => console.error('Silinemedi:', err));
+        });
     }
 
     function clearHistory() {
-        if(!currentStoreId || isAdmin) { alert('Bu işlem yalnızca mağaza hesaplarından yapılabilir.'); return; }
-        if(!confirm('Kendi geçmişini tamamen silmek istediğine emin misin?')) return;
-        fbDb.ref('stores/' + currentStoreId + '/history').remove().catch(err => console.error('Temizlenemedi:', err));
+        if(!currentStoreId || isAdmin) { sysAlert('Bu işlem yalnızca mağaza hesaplarından yapılabilir.', { tone: 'warn' }); return; }
+        sysConfirm('Kendi geçmişini tamamen silmek istediğine emin misin?', { okText: 'Tümünü Sil', danger: true }).then(function(ok) {
+            if(!ok) return;
+            fbDb.ref('stores/' + currentStoreId + '/history').remove().catch(err => console.error('Temizlenemedi:', err));
+        });
     }
 
     // ── ADMIN PANEL ──
@@ -2369,7 +2538,7 @@
                 document.getElementById('newStorePass').value = '';
                 document.getElementById('newStoreTel').value = '';
                 renderAdminStoreList();
-                alert('Mağaza oluşturuldu: ' + storeName + ' (kullanıcı adı: ' + storeId + ')\n\nNot: Bazı durumlarda yeni hesabın başka bir cihazdan giriş yapabilmesi için 1-2 dakika beklemek gerekebilir (Firebase senkronizasyon gecikmesi). Hemen giriş yapılamazsa kısa bir süre sonra tekrar denenmeli.');
+                sysAlert('Mağaza oluşturuldu: ' + storeName + ' (kullanıcı adı: ' + storeId + ')\n\nNot: Bazı durumlarda yeni hesabın başka bir cihazdan giriş yapabilmesi için 1-2 dakika beklemek gerekebilir (Firebase senkronizasyon gecikmesi). Hemen giriş yapılamazsa kısa bir süre sonra tekrar denenmeli.', { title: 'Mağaza Oluşturuldu' });
             })
             .catch(function(err) {
                 console.error('Mağaza oluşturulamadı:', err);
@@ -2428,64 +2597,75 @@
     }
 
     function resetStorePassword(storeId, storeName) {
-        const newPass = prompt('"' + storeName + '" (@' + storeId + ') için yeni şifre belirle (en az 6 karakter):');
-        if(newPass === null) return;
-        if(newPass.length < 6) { alert('Şifre en az 6 karakter olmalı.'); return; }
+        sysPrompt('"' + storeName + '" (@' + storeId + ') için yeni şifre belirle (en az 6 karakter):', { title: 'Şifre Sıfırla', placeholder: 'Yeni şifre' }).then(function(newPass) {
+            if(newPass === null) return;
+            if(newPass.length < 6) { sysAlert('Şifre en az 6 karakter olmalı.', { tone: 'warn' }); return; }
 
-        const proceed = confirm(
-            'Şifre sıfırlamak için tek bir ek adım gerekiyor (güvenlik nedeniyle, tarayıcıdan başka birinin şifresi direkt değiştirilemiyor):\n\n' +
-            '1) ŞİMDİ Firebase Console → Authentication → Users ekranına git\n' +
-            '2) "' + storeId + '@sina-terminal.local" kullanıcısını bul, sağdaki ⋮ menüden "Delete account" seç\n' +
-            '3) Sildikten sonra buraya dön ve "Tamam"a bas\n\n' +
-            'NOT: Bu işlem sadece giriş bilgisini siler. "' + storeName + '" mağazasının ayarları, sepeti ve geçmişi HİÇ etkilenmez — birazdan aynı kullanıcı adıyla yeni şifre otomatik oluşturulacak.\n\n' +
-            'Firebase\'de kullanıcıyı sildin mi? Devam etmek için Tamam\'a bas.'
-        );
-        if(!proceed) return;
-
-        secondaryAuth.createUserWithEmailAndPassword(usernameToEmail(storeId), newPass)
-            .then(function() {
-                return secondaryAuth.signOut();
-            })
-            .then(function() {
-                alert('Başarılı: "' + storeName + '" mağazasının yeni şifresi ayarlandı.\n\nMağaza, kullanıcı adı: ' + storeId + ' ve yeni şifre ile giriş yapabilir.');
-            })
-            .catch(function(err) {
-                console.error('Şifre sıfırlanamadı:', err);
-                if(err.code === 'auth/email-already-in-use') {
-                    alert('Hata: Bu kullanıcı Firebase\'de hâlâ mevcut görünüyor.\n\nLütfen Firebase Console → Authentication → Users ekranından "' + storeId + '@sina-terminal.local" kullanıcısının gerçekten silindiğinden emin ol, sonra tekrar dene.');
-                } else {
-                    alert('Hata oluştu: ' + err.message);
-                }
+            sysConfirm(
+                'Şifre sıfırlamak için tek bir ek adım gerekiyor (güvenlik nedeniyle, tarayıcıdan başka birinin şifresi direkt değiştirilemiyor):\n\n' +
+                '1) ŞİMDİ Firebase Console → Authentication → Users ekranına git\n' +
+                '2) "' + storeId + '@sina-terminal.local" kullanıcısını bul, sağdaki ⋮ menüden "Delete account" seç\n' +
+                '3) Sildikten sonra buraya dön ve "Onayla"ya bas\n\n' +
+                'NOT: Bu işlem sadece giriş bilgisini siler. "' + storeName + '" mağazasının ayarları, sepeti ve geçmişi HİÇ etkilenmez — birazdan aynı kullanıcı adıyla yeni şifre otomatik oluşturulacak.\n\n' +
+                'Firebase\'de kullanıcıyı sildin mi?',
+                { title: 'Tek Ek Adım Gerekiyor', okText: 'Sildim, Devam Et' }
+            ).then(function(proceed) {
+                if(!proceed) return;
+                secondaryAuth.createUserWithEmailAndPassword(usernameToEmail(storeId), newPass)
+                    .then(function() {
+                        return secondaryAuth.signOut();
+                    })
+                    .then(function() {
+                        sysAlert('"' + storeName + '" mağazasının yeni şifresi ayarlandı.\n\nMağaza, kullanıcı adı: ' + storeId + ' ve yeni şifre ile giriş yapabilir.', { title: 'Başarılı' });
+                    })
+                    .catch(function(err) {
+                        console.error('Şifre sıfırlanamadı:', err);
+                        if(err.code === 'auth/email-already-in-use') {
+                            sysAlert('Bu kullanıcı Firebase\'de hâlâ mevcut görünüyor.\n\nLütfen Firebase Console → Authentication → Users ekranından "' + storeId + '@sina-terminal.local" kullanıcısının gerçekten silindiğinden emin ol, sonra tekrar dene.', { title: 'Hata', tone: 'danger' });
+                        } else {
+                            sysAlert('Hata oluştu: ' + err.message, { title: 'Hata', tone: 'danger' });
+                        }
+                    });
             });
+        });
     }
 
     function deleteStore(storeId, storeName) {
-        const typed = prompt('Bu işlem geri alınamaz. "' + storeName + '" mağazasının TÜM verisini (ayarlar + geçmiş + satışlar) silmek için mağaza adını tam olarak yazıp onaylayın:\n\n' + storeName);
-        if(typed === null) return;
-        if(typed.trim() !== storeName) {
-            alert('Girilen ad eşleşmedi, mağaza silinmedi.');
-            return;
-        }
-        fbDb.ref('stores/' + storeId).remove()
-            .then(function() {
-                // Bu mağazanın admin history-cache'inden de temizlenmesi için dinleyici referansını bırak
-                delete _storeHistoryRefs[storeId];
-                _historyCache = _historyCache.filter(function(h) { return h.storeId !== storeId; });
-                renderAdminStoreList();
-                renderAdminPanel();
-                alert(
-                    'Mağaza verisi silindi.\n\n' +
-                    'ÖNEMLİ: Bu kullanıcının giriş yapabilme yetkisini de kapatmak için Firebase konsolunda şu adımı uygulaman gerekiyor:\n\n' +
-                    '1. Firebase Console → Authentication → Users\n' +
-                    '2. "' + storeId + '@sina-terminal.local" kullanıcısını bul\n' +
-                    '3. Sağdaki ⋮ menüsünden "Delete account" seç\n\n' +
-                    'Bu adımı atlarsan, mağaza verisi silinmiş olsa da o kullanıcı adı/şifre ile giriş yapılabilir (ama içeri girince hiçbir veri görmez).'
-                );
-            })
-            .catch(function(err) {
-                console.error('Mağaza silinemedi:', err);
-                alert('Mağaza silinirken hata oluştu: ' + err.message);
-            });
+        sysPrompt('Bu işlem geri alınamaz. "' + storeName + '" mağazasının TÜM verisini (ayarlar + geçmiş + satışlar) silmek için mağaza adını tam olarak yazıp onaylayın:\n\n' + storeName, { title: 'Mağazayı Sil', placeholder: storeName, tone: 'danger' }).then(function(typed) {
+            if(typed === null) return;
+            if(typed.trim() !== storeName) {
+                sysAlert('Girilen ad eşleşmedi, mağaza silinmedi.', { tone: 'warn' });
+                return;
+            }
+            fbDb.ref('stores/' + storeId).remove()
+                .then(function() {
+                    // Bu mağazanın admin history-cache'inden de temizlenmesi için dinleyici referansını bırak
+                    delete _storeHistoryRefs[storeId];
+                    _historyCache = _historyCache.filter(function(h) { return h.storeId !== storeId; });
+                    renderAdminStoreList();
+                    renderAdminPanel();
+                    sysAlert(
+                        'Mağaza verisi silindi.\n\n' +
+                        'ÖNEMLİ: Bu kullanıcının giriş yapabilme yetkisini de kapatmak için Firebase konsolunda şu adımı uygulaman gerekiyor:\n\n' +
+                        '1. Firebase Console → Authentication → Users\n' +
+                        '2. "' + storeId + '@sina-terminal.local" kullanıcısını bul\n' +
+                        '3. Sağdaki ⋮ menüsünden "Delete account" seç\n\n' +
+                        'Bu adımı atlarsan, mağaza verisi silinmiş olsa da o kullanıcı adı/şifre ile giriş yapılabilir (ama içeri girince hiçbir veri görmez).',
+                        { title: 'Mağaza Silindi' }
+                    );
+                })
+                .catch(function(err) {
+                    console.error('Mağaza silinemedi:', err);
+                    sysAlert('Mağaza silinirken hata oluştu: ' + err.message, { title: 'Hata', tone: 'danger' });
+                });
+        });
+    }
+
+    let _dashSortBy = 'etiket'; // 'etiket' | 'count'
+
+    function setDashSort(by) {
+        _dashSortBy = by;
+        renderDashOverview();
     }
 
     function renderDashOverview() {
@@ -2522,7 +2702,16 @@
         document.getElementById('dash-month-etiket').innerText = f(totalEtiket/3);
 
         const ranked = Object.keys(byStore).map(function(sid) { return Object.assign({ storeId: sid }, byStore[sid]); })
-            .sort(function(a,b) { return b.cash - a.cash; });
+            .sort(function(a,b) {
+                return _dashSortBy === 'count' ? (b.count - a.count) : (b.etiket - a.etiket);
+            });
+
+        const sortBarEl = document.getElementById('dash-store-rank-sortbar');
+        if(sortBarEl) {
+            sortBarEl.innerHTML =
+                '<button class="dash-sort-btn' + (_dashSortBy === 'etiket' ? ' active' : '') + '" onclick="setDashSort(\'etiket\')">Etiket÷3\'e Göre</button>' +
+                '<button class="dash-sort-btn' + (_dashSortBy === 'count' ? ' active' : '') + '" onclick="setDashSort(\'count\')">Satış Adedine Göre</button>';
+        }
 
         const rankEl = document.getElementById('dash-store-rank');
         if(!ranked.length) {
@@ -2536,8 +2725,8 @@
                 '<div><b style="color:var(--dash-ink);">' + s.name + '</b><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' satış</span></div>' +
                 '</div>' +
                 '<div style="text-align:right;">' +
-                '<div style="font-weight:700; color:var(--dash-ink);">' + f(s.cash) + ' ₺</div>' +
-                '<div style="font-size:10.5px; color:var(--dash-gold);">Etiket÷3: ' + f(s.etiket/3) + '</div>' +
+                '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">' + f(s.etiket/3) + '</div>' +
+                '<div style="font-size:10px; color:var(--dash-ink-dim); text-transform:uppercase; letter-spacing:.05em;">Etiket ÷3</div>' +
                 '</div></div>';
         }).join('');
     }
