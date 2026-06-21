@@ -860,6 +860,10 @@
         .empty-basket svg { opacity: .25; margin-bottom: 12px; }
         .empty-basket p { font-size: 12px; font-weight: 500; margin: 0; }
 
+        /* ── GEÇMİŞ EKRANI SEKMELERİ ── */
+        .hist-tab.active { color: var(--rose) !important; border-bottom-color: var(--rose) !important; }
+        .hist-tab:hover { color: var(--ink) !important; }
+
         /* ── SİSTEM MODALI (alert/confirm/prompt yerine) ── */
         #sys-modal-overlay {
             position: fixed; inset: 0;
@@ -1230,7 +1234,7 @@
             <div class="input-card">
                 <div id="formP">
                     <label class="field-label">Pırlanta Etiket</label>
-                    <input type="text" id="inpP" class="big-input" oninput="runCalc()" placeholder="0.00" inputmode="search">
+                    <input type="text" id="inpP" class="big-input" oninput="applyThousandsMask(this); runCalc();" placeholder="0.00" inputmode="search">
                     <div id="inpP-parts" style="display:none; margin-top:6px; font-size:10px; color:var(--ink-dim); text-align:center; line-height:1.8;"></div>
                 </div>
             </div>
@@ -1277,7 +1281,7 @@
 
             <div class="action-row" style="flex-direction:column; gap:8px;">
                 <div style="display:flex; gap:8px; width:100%;">
-                    <input type="text" id="iKod" placeholder="Model / Stok Kodu (opsiyonel)" style="font-size:15px; flex:1; text-align:left; padding:12px 14px;">
+                    <input type="text" id="iKod" placeholder="Model / Stok Kodu (opsiyonel)" style="font-size:15px; flex:1; text-align:left; padding:12px 14px; text-transform:uppercase;">
                     <button class="btn-primary" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
                 </div>
                 <div id="normal-save-actions" style="display:flex; gap:8px; width:100%;">
@@ -1442,7 +1446,7 @@
             </div>
             <div class="simple-modal-body">
                 <label class="field-label">Müşteri Adı</label>
-                <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px;">
+                <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px; text-transform:uppercase;">
                 <label class="field-label" style="margin-top:12px;">Telefon</label>
                 <input type="text" id="iPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
                 <div id="cusModalError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
@@ -1464,15 +1468,16 @@
             <div class="simple-modal-body">
                 <input type="hidden" id="editId">
                 <label class="field-label">Model / Stok Kodu</label>
-                <input type="text" id="editKod" style="font-size:16px;">
+                <input type="text" id="editKod" style="font-size:16px; text-transform:uppercase;">
                 <label class="field-label" style="margin-top:12px;">Açıklama (opsiyonel)</label>
                 <input type="text" id="editNote" placeholder="Örn: 1.2 ct, G renk, VS1 berraklık" style="font-size:14px; text-align:left; padding:10px 14px;">
                 <label class="field-label" style="margin-top:12px;" id="editLabel">Değer</label>
-                <input type="text" id="editVal" class="big-input" style="font-size:22px;" oninput="previewEdit()">
+                <input type="text" id="editVal" class="big-input" style="font-size:22px;" oninput="applyThousandsMask(this); previewManualPriceProfit();">
                 <div style="margin-top:14px; padding:12px; background:var(--bg); border-radius:10px; border:1px solid var(--border);">
                     <label class="field-label" style="margin:0;">Manuel Fiyat Düzeltme (opsiyonel)</label>
                     <div style="font-size:10px; color:var(--ink-dim); margin:4px 0 8px;">Boş bırakırsan otomatik hesaplanan fiyat kullanılır. Buraya bir tutar yazarsan, sadece bu üründe TÜM fiyatları (3T/2T/Tek/Nakit) o tutara göre orantılı kaydırır — örn. ekstra indirim için.</div>
-                    <input type="text" id="editManualPrice" placeholder="Örn: 42000 (Nakit fiyatı)" style="font-size:15px; text-align:left; padding:9px 12px;">
+                    <input type="text" id="editManualPrice" placeholder="Örn: 42.000 (Nakit fiyatı)" style="font-size:15px; text-align:left; padding:9px 12px;" oninput="applyThousandsMask(this); previewManualPriceProfit();">
+                    <div id="editManualProfitIndicator" style="display:none; margin-top:8px; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:700; text-align:center;"></div>
                 </div>
                 <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="saveEdit()">Kaydet</button>
             </div>
@@ -1489,7 +1494,8 @@
             <div class="simple-modal-body">
                 <div style="font-size:11px; color:var(--ink-dim); margin-bottom:10px; line-height:1.5;">Şu anki Nakit toplamı: <b id="basketTotalCurrentN">0 ₺</b> (<span id="basketTotalItemCount">0</span> ürün)<br>Yeni bir tutar gir, fark tüm ürünlere orantılı olarak yansıtılır.</div>
                 <label class="field-label">Yeni Nakit Toplamı</label>
-                <input type="text" id="basketTotalNewN" class="big-input" style="font-size:22px;" placeholder="Örn: 38000">
+                <input type="text" id="basketTotalNewN" class="big-input" style="font-size:22px;" placeholder="Örn: 38.000" oninput="applyThousandsMask(this); previewBasketTotalProfit();">
+                <div id="basketTotalProfitIndicator" style="display:none; margin-top:8px; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:700; text-align:center;"></div>
                 <div id="basketTotalError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
                 <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="applyBasketTotalEdit()">Uygula</button>
             </div>
@@ -1501,6 +1507,20 @@
         <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
             <h3 style="margin:0; font-size:16px;">Teklif Geçmişi</h3>
             <button onclick="closeHistoryScreen()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; color:var(--ink-mid); cursor:pointer;">✕ Kapat</button>
+        </div>
+        <div style="display:flex; gap:4px; padding:0 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
+            <button class="hist-tab active" data-tab="teklif" onclick="setHistTab('teklif')" style="background:none; border:none; cursor:pointer; padding:13px 16px 11px; font-size:13px; font-weight:700; color:var(--ink-dim); border-bottom:2px solid transparent;">📝 Teklifler</button>
+            <button class="hist-tab" data-tab="sold" onclick="setHistTab('sold')" style="background:none; border:none; cursor:pointer; padding:13px 16px 11px; font-size:13px; font-weight:700; color:var(--ink-dim); border-bottom:2px solid transparent;">✓ Satışa Dönenler</button>
+        </div>
+        <!-- Satışa Dönenler filtreleri (sadece o sekmede görünür) -->
+        <div id="sold-filters" style="display:none; padding:12px 18px; border-bottom:1px solid var(--border); background:var(--surface); flex-wrap:wrap; gap:8px; align-items:flex-end;">
+            <div><label class="field-label" style="margin:0 0 4px;">Başlangıç</label><input type="date" id="soldFilterStart" style="font-size:12px; padding:8px 10px;" onchange="renderHistory()"></div>
+            <div><label class="field-label" style="margin:0 0 4px;">Bitiş</label><input type="date" id="soldFilterEnd" style="font-size:12px; padding:8px 10px;" onchange="renderHistory()"></div>
+            <div><label class="field-label" style="margin:0 0 4px;">Min Tutar (₺)</label><input type="text" id="soldFilterMinAmt" style="font-size:12px; padding:8px 10px; width:90px;" placeholder="0" oninput="applyThousandsMask(this); renderHistory();"></div>
+            <div><label class="field-label" style="margin:0 0 4px;">Max Tutar (₺)</label><input type="text" id="soldFilterMaxAmt" style="font-size:12px; padding:8px 10px; width:90px;" placeholder="∞" oninput="applyThousandsMask(this); renderHistory();"></div>
+            <div><label class="field-label" style="margin:0 0 4px;">Min Adet</label><input type="text" id="soldFilterMinCount" style="font-size:12px; padding:8px 10px; width:70px;" placeholder="0" oninput="renderHistory()"></div>
+            <div><label class="field-label" style="margin:0 0 4px;">Max Adet</label><input type="text" id="soldFilterMaxCount" style="font-size:12px; padding:8px 10px; width:70px;" placeholder="∞" oninput="renderHistory()"></div>
+            <button onclick="clearSoldFilters()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer;">Temizle</button>
         </div>
         <div style="display:flex; flex:1; overflow:hidden; flex-wrap:wrap;">
             <!-- SOL: Liste -->
@@ -2104,6 +2124,47 @@
         return total;
     }
 
+    // smartEval gibi ama girdi binlik ayraçlı (örn "25.000+1.500") olabilir; noktaları binlik ayraç olarak temizler.
+    // Etiket/fiyat girişlerinde (inpP, editVal, editManualPrice, basketTotalNewN) kullanılır.
+    // Kur/kâr gibi küçük ondalıklı alanlarda (cfgU, pk3 vb.) KULLANILMAZ — onlar smartEval kullanır.
+    function smartEvalThousands(s) {
+        if(!s) return 0;
+        let val = s.toString().replace(/\./g, '').replace(/,/g, '.');
+        let total = 0;
+        val.split('+').forEach(p => { let v = parseFloat(p.trim()); if(!isNaN(v)) total += v; });
+        return total;
+    }
+
+    // Bir sayıyı Türkçe binlik ayraçlı string'e çevirir (25000 -> "25.000"). Ondalık varsa virgülle korunur.
+    function formatThousands(numStr) {
+        if(!numStr) return '';
+        const cleaned = numStr.toString().replace(/\./g, '');
+        const parts = cleaned.split(',');
+        const intPart = parts[0].replace(/\D/g, '');
+        if(!intPart) return parts.length > 1 ? ',' + parts[1] : '';
+        const withDots = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return parts.length > 1 ? withDots + ',' + parts[1] : withDots;
+    }
+
+    // input elementindeki değeri canlı olarak binlik ayraçlı formatlar, imleç pozisyonunu korur.
+    // '+' ile ayrılmış çoklu girişte her parçayı ayrı ayrı formatlar.
+    function applyThousandsMask(input) {
+        const oldValue = input.value;
+        const oldPos = input.selectionStart;
+        const digitsBeforeCursor = oldValue.slice(0, oldPos).replace(/[^\d,]/g, '').length;
+
+        const formatted = oldValue.split('+').map(formatThousands).join('+');
+        input.value = formatted;
+
+        // İmleci, eski konumdaki rakam sayısına göre yeniden konumlandır
+        let count = 0, newPos = formatted.length;
+        for(let i = 0; i < formatted.length; i++) {
+            if(/[\d,]/.test(formatted[i])) count++;
+            if(count >= digitsBeforeCursor) { newPos = i + 1; break; }
+        }
+        input.setSelectionRange(newPos, newPos);
+    }
+
     // Her mağaza tamamen kendi kutusunda çalışır: stores/{storeId}/config, stores/{storeId}/history
     // Kur/kâr oranları DA mağazaya özel — artık ortak ayar yok.
     const CFG_IDS = ['cfgU', 'cfgU_plus', 'pk3', 'pk2', 'pk1', 'pkN'];
@@ -2215,10 +2276,10 @@
         let details = '';
 
         let rawInpP = document.getElementById('inpP').value;
-        let labelVal = smartEval(rawInpP);
+        let labelVal = smartEvalThousands(rawInpP);
         // Çoklu giriş özeti
         const partsElP = document.getElementById('inpP-parts');
-        const partsP = rawInpP ? rawInpP.toString().replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
+        const partsP = rawInpP ? rawInpP.toString().replace(/\./g,'').replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
         if(partsP.length > 1) {
             partsElP.style.display = 'block';
             partsElP.innerHTML = partsP.map((p,i)=>'<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:0 2px;">'+(i+1)+'. '+p.toLocaleString('tr-TR')+'</span>').join(' + ') + ' = <b>'+partsP.length+' ürün</b>';
@@ -2299,7 +2360,7 @@
     function completeLinkedSale() {
         if(!_linkedHistoryKey || !_linkedHistoryStoreId) return;
         if(!basket.length) { sysAlert('Sepet boş, tamamlanacak bir satış yok.', { tone: 'warn' }); return; }
-        const cusName  = document.getElementById('iCus').value.trim()  || 'Müşterimiz';
+        const cusName  = document.getElementById('iCus').value.trim().toUpperCase()  || 'Müşterimiz';
         const cusPhone = document.getElementById('iPhone').value.trim() || '—';
 
         sysConfirm('Bu satışı tamamlamak istediğine emin misin? Sepetteki güncel ürün ve fiyatlarla geçmiş kaydı güncellenecek ve "Satış Oldu" olarak işaretlenecek.', { title: 'Satışı Tamamla', okText: 'Evet, Tamamla' }).then(function(ok) {
@@ -2424,7 +2485,7 @@
     }
 
     function submitCusModal() {
-        const cusName  = document.getElementById('iCus').value.trim();
+        const cusName  = document.getElementById('iCus').value.trim().toUpperCase();
         const cusPhone = document.getElementById('iPhone').value.trim();
         const errEl = document.getElementById('cusModalError');
 
@@ -2471,7 +2532,7 @@
     }
 
     function generatePDF() {
-        const cusName  = document.getElementById('iCus').value.trim()  || 'Müşterimiz';
+        const cusName  = document.getElementById('iCus').value.trim().toUpperCase()  || 'Müşterimiz';
         const cusPhone = document.getElementById('iPhone').value.trim() || '—';
 
         saveToHistory(cusName, cusPhone).catch(function(err) {
@@ -2566,7 +2627,7 @@
     }
 
     function sendWhatsApp() {
-        const cusName  = document.getElementById('iCus').value.trim()  || 'Müşterimiz';
+        const cusName  = document.getElementById('iCus').value.trim().toUpperCase()  || 'Müşterimiz';
         const cusPhone = document.getElementById('iPhone').value.trim().replace(/\D/g,'');
         const storeName = document.getElementById('cfgStore').value;
         const f = n => Math.round(n).toLocaleString('tr-TR');
@@ -2592,9 +2653,52 @@
         document.getElementById('editKod').value = item.k;
         document.getElementById('editNote').value = item.note || '';
         document.getElementById('editLabel').innerText = 'Pırlanta Etiket';
-        document.getElementById('editVal').value = item._rawP || '';
-        document.getElementById('editManualPrice').value = item._manualN ? Math.round(item.v.vN) : '';
+        document.getElementById('editVal').value = formatThousands(item._rawP || '');
+        document.getElementById('editManualPrice').value = item._manualN ? formatThousands(String(Math.round(item.v.vN))) : '';
+        previewManualPriceProfit();
         openModal('editModal');
+    }
+
+    // Tek ürün düzenleme ekranında, etiket + manuel fiyata göre kâr/zarar göstergesini günceller.
+    function previewManualPriceProfit() {
+        const indicator = document.getElementById('editManualProfitIndicator');
+        const labelVal = smartEvalThousands(document.getElementById('editVal').value);
+        const manualVal = smartEvalThousands(document.getElementById('editManualPrice').value);
+        if(!(labelVal > 0) || !(manualVal > 0)) { indicator.style.display = 'none'; return; }
+        const u = smartEval(document.getElementById('cfgU').value);
+        const costTl = (labelVal / 3) * u;
+        const pct = Math.round(((manualVal - costTl) / costTl) * 100);
+        renderProfitIndicator(indicator, pct, manualVal, costTl);
+    }
+
+    // Sepet toplamı düzenleme ekranında, sepetteki TÜM ürünlerin toplam maliyetine göre kâr/zarar gösterir.
+    function previewBasketTotalProfit() {
+        const indicator = document.getElementById('basketTotalProfitIndicator');
+        const newTotal = smartEvalThousands(document.getElementById('basketTotalNewN').value);
+        if(!(newTotal > 0) || !basket.length) { indicator.style.display = 'none'; return; }
+        const u = smartEval(document.getElementById('cfgU').value);
+        const totalCost = basket.reduce(function(a, item) {
+            const labelVal = smartEval(item._rawP);
+            return a + (labelVal / 3) * u;
+        }, 0);
+        if(!(totalCost > 0)) { indicator.style.display = 'none'; return; }
+        const pct = Math.round(((newTotal - totalCost) / totalCost) * 100);
+        renderProfitIndicator(indicator, pct, newTotal, totalCost);
+    }
+
+    // Kâr/zarar göstergesini ortak şekilde render eder (renk + metin)
+    function renderProfitIndicator(indicator, pct, finalVal, costTl) {
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        indicator.style.display = 'block';
+        if(pct >= 0) {
+            indicator.style.background = 'var(--success-bg)';
+            indicator.style.color = 'var(--success)';
+            indicator.innerHTML = '✓ KÂR: %' + pct + ' &nbsp;·&nbsp; Maliyet: ' + f(costTl) + ' ₺';
+        } else {
+            indicator.style.background = 'var(--rose-pale)';
+            indicator.style.color = 'var(--rose)';
+            indicator.innerHTML = '⚠ ZARAR: %' + Math.abs(pct) + ' &nbsp;·&nbsp; Maliyet: ' + f(costTl) + ' ₺';
+        }
     }
 
     function saveEdit() {
@@ -2606,15 +2710,15 @@
         const u  = smartEval(document.getElementById('cfgU').value),
               up = smartEval(document.getElementById('cfgU_plus').value);
         const xU = u * (1 + up/100);
-        const labelVal = smartEval(document.getElementById('editVal').value);
-        item._rawP = document.getElementById('editVal').value;
+        const labelVal = smartEvalThousands(document.getElementById('editVal').value);
+        item._rawP = String(labelVal);
         item.v = calcForLabelValue(labelVal, u, xU);
         const costTl = (labelVal / 3) * u;
 
         // Manuel fiyat düzeltmesi: girilirse Nakit fiyatı o tutara sabitlenir,
         // diğer tüm fiyatlar (3T/2T/Tek) aynı orana göre orantılı kaydırılır.
         const manualRaw = document.getElementById('editManualPrice').value.trim();
-        const manualVal = smartEval(manualRaw);
+        const manualVal = smartEvalThousands(manualRaw);
         if(manualRaw && manualVal > 0) {
             const ratio = manualVal / item.v.vN;
             item.v.v3 = item.v.v3 * ratio;
@@ -2700,6 +2804,11 @@
         document.getElementById('history-preview').style.display = 'none';
         document.getElementById('btnClearHistory').style.display = isAdmin ? 'none' : 'inline-block';
         _previewKey = null;
+        _histTab = 'teklif';
+        document.querySelectorAll('.hist-tab').forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.tab === 'teklif');
+        });
+        document.getElementById('sold-filters').style.display = 'none';
         attachHistoryListener();
         renderHistory();
         document.getElementById('history-screen').style.display = 'flex';
@@ -2709,15 +2818,70 @@
         document.getElementById('history-screen').style.display = 'none';
     }
 
+    let _histTab = 'teklif'; // 'teklif' | 'sold'
+
+    function setHistTab(tab) {
+        _histTab = tab;
+        document.querySelectorAll('.hist-tab').forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+        document.getElementById('sold-filters').style.display = (tab === 'sold') ? 'flex' : 'none';
+        document.getElementById('history-preview').style.display = 'none';
+        _previewKey = null;
+        renderHistory();
+    }
+
+    function clearSoldFilters() {
+        document.getElementById('soldFilterStart').value = '';
+        document.getElementById('soldFilterEnd').value = '';
+        document.getElementById('soldFilterMinAmt').value = '';
+        document.getElementById('soldFilterMaxAmt').value = '';
+        document.getElementById('soldFilterMinCount').value = '';
+        document.getElementById('soldFilterMaxCount').value = '';
+        renderHistory();
+    }
+
     function renderHistory() {
         const q = (document.getElementById('histSearch').value || '').toLowerCase().trim();
-        const hist = _historyCache;
         const el = document.getElementById('history-list');
-        const filtered = q ? hist.filter(function(h) {
-            return (h.cusName + ' ' + h.cusPhone + ' ' + (h.storeName||'')).toLowerCase().indexOf(q) !== -1;
-        }) : hist;
+
+        // 1) Aktif sekmeye göre ayır: Teklifler = status !== 'sold', Satışa Dönenler = status === 'sold'
+        let filtered = _historyCache.filter(function(h) {
+            return _histTab === 'sold' ? h.status === 'sold' : h.status !== 'sold';
+        });
+
+        // 2) Satışa Dönenler sekmesinde ek filtreler (tarih/tutar/adet aralığı)
+        if(_histTab === 'sold') {
+            const startD = document.getElementById('soldFilterStart').value ? new Date(document.getElementById('soldFilterStart').value + 'T00:00:00').getTime() : null;
+            const endD   = document.getElementById('soldFilterEnd').value   ? new Date(document.getElementById('soldFilterEnd').value + 'T23:59:59').getTime() : null;
+            const minAmt = smartEvalThousands(document.getElementById('soldFilterMinAmt').value) || null;
+            const maxAmt = smartEvalThousands(document.getElementById('soldFilterMaxAmt').value) || null;
+            const minCnt = parseInt(document.getElementById('soldFilterMinCount').value) || null;
+            const maxCnt = parseInt(document.getElementById('soldFilterMaxCount').value) || null;
+
+            filtered = filtered.filter(function(h) {
+                const soldTime = h.soldAtMillis || h.tsMillis || 0;
+                if(startD && soldTime < startD) return false;
+                if(endD && soldTime > endD) return false;
+                const sN = h.basket.reduce(function(a,b){return a+b.v.vN;},0);
+                if(minAmt && sN < minAmt) return false;
+                if(maxAmt && sN > maxAmt) return false;
+                if(minCnt && h.basket.length < minCnt) return false;
+                if(maxCnt && h.basket.length > maxCnt) return false;
+                return true;
+            });
+        }
+
+        // 3) Arama
+        if(q) {
+            filtered = filtered.filter(function(h) {
+                return (h.cusName + ' ' + h.cusPhone + ' ' + (h.storeName||'')).toLowerCase().indexOf(q) !== -1;
+            });
+        }
+
         if(!filtered.length) {
-            el.innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-dim); font-size:13px;">' + (q ? 'Eşleşen kayıt bulunamadı.' : 'Henüz kayıtlı teklif yok.') + '</div>';
+            const emptyMsg = _histTab === 'sold' ? 'Bu filtrelerle satışa dönen kayıt bulunamadı.' : (q ? 'Eşleşen kayıt bulunamadı.' : 'Henüz bekleyen teklif yok.');
+            el.innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-dim); font-size:13px;">' + emptyMsg + '</div>';
             return;
         }
         const f = n => Math.round(n).toLocaleString('tr-TR');
@@ -3691,14 +3855,15 @@
         const currentN = basket.reduce((a,b) => a + b.v.vN, 0);
         document.getElementById('basketTotalCurrentN').innerText = Math.round(currentN).toLocaleString('tr-TR') + ' ₺';
         document.getElementById('basketTotalItemCount').innerText = basket.length;
-        document.getElementById('basketTotalNewN').value = Math.round(currentN);
+        document.getElementById('basketTotalNewN').value = formatThousands(String(Math.round(currentN)));
         document.getElementById('basketTotalError').style.display = 'none';
+        previewBasketTotalProfit();
         openModal('basketTotalEditModal');
     }
 
     function applyBasketTotalEdit() {
         const errEl = document.getElementById('basketTotalError');
-        const newTotal = smartEval(document.getElementById('basketTotalNewN').value);
+        const newTotal = smartEvalThousands(document.getElementById('basketTotalNewN').value);
         if(!(newTotal > 0)) {
             errEl.innerText = 'Geçerli bir tutar gir.';
             errEl.style.display = 'block';
