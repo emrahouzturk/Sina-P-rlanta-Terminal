@@ -1163,6 +1163,34 @@
         </div>
     </div>
 
+    <!-- MAĞAZA BİLGİSİ DÜZENLE MODAL -->
+    <div id="editStoreModal" class="modal-overlay">
+        <div class="modal" style="max-width:420px;">
+            <div class="modal-header">
+                <h3>Mağaza Bilgilerini Düzenle</h3>
+                <span class="modal-close" onclick="closeModal('editStoreModal')">×</span>
+            </div>
+            <div class="simple-modal-body">
+                <input type="hidden" id="editStoreId">
+                <label class="field-label">Ad</label>
+                <input type="text" id="editStoreName" style="font-size:15px; text-align:left; padding:10px 14px;">
+                <label class="field-label" style="margin-top:12px;">Tür</label>
+                <select id="editStoreType" style="width:100%; padding:10px 14px; border-radius:9px; border:1.5px solid var(--border); font-family:'Poppins',sans-serif; font-size:14px; font-weight:600; background:var(--bg);">
+                    <option value="magaza">Mağaza</option>
+                    <option value="satis_noktasi">Satış Noktası</option>
+                </select>
+                <label class="field-label" style="margin-top:12px;">İl</label>
+                <select id="editStoreIl" style="width:100%; padding:10px 14px; border-radius:9px; border:1.5px solid var(--border); font-family:'Poppins',sans-serif; font-size:14px; font-weight:600; background:var(--bg);"></select>
+                <label class="field-label" style="margin-top:12px;">Telefon</label>
+                <input type="text" id="editStoreTel" style="font-size:15px; text-align:left; padding:10px 14px;">
+                <label class="field-label" style="margin-top:12px;">Adres</label>
+                <input type="text" id="editStoreAddr" style="font-size:15px; text-align:left; padding:10px 14px;">
+                <div id="editStoreError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
+                <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="saveStoreInfo()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MASTER LAYOUT -->
     <div class="master-wrapper no-print" id="main-wrapper" style="display:none;">
         <div class="left-column">
@@ -1243,7 +1271,7 @@
 
             <div class="action-row" style="flex-direction:column; gap:8px;">
                 <div style="display:flex; gap:8px; width:100%;">
-                    <input type="text" id="iKod" placeholder="Model / Stok Kodu" style="font-size:15px; flex:1; text-align:left; padding:12px 14px;">
+                    <input type="text" id="iKod" placeholder="Model / Stok Kodu (opsiyonel)" style="font-size:15px; flex:1; text-align:left; padding:12px 14px;">
                     <button class="btn-primary" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
                 </div>
                 <div style="display:flex; gap:8px; width:100%;">
@@ -2086,6 +2114,27 @@
         };
     }
 
+    // Tek bir etiket değeri (örn. 2500) için 3T/2T/Tek/Nakit fiyatlarını hesaplar.
+    // runCalc (canlı önizleme) ve addBasket (her + parçası için ayrı satır) ortak kullanır.
+    function calcForLabelValue(labelVal, u, xU) {
+        const codes = getCodes(u, xU);
+        if(!(labelVal > 0)) return { v3:0, v2:0, v1:0, vN:0, old:0, m3:'', m2:'', m1:'', mN:'' };
+        const listTl = labelVal * xU;
+        const costTl = (labelVal / 3) * u;
+        const res = {
+            v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
+            v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
+            v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
+            vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
+            old: listTl
+        };
+        res.m3 = codes.getPCode(res.v3, costTl);
+        res.m2 = codes.getPCode(res.v2, costTl);
+        res.m1 = codes.getPCode(res.v1, costTl);
+        res.mN = codes.getPCode(res.vN, costTl);
+        return res;
+    }
+
     function runCalc() {
         const u  = smartEval(document.getElementById('cfgU').value),
               up = smartEval(document.getElementById('cfgU_plus').value);
@@ -2093,8 +2142,7 @@
         document.getElementById('tech-rates').innerHTML =
             `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)}`;
 
-        let res = {v3:0, v2:0, v1:0, vN:0, old:0, m3:'', m2:'', m1:'', mN:''}, details = '';
-        const codes = getCodes(u, xU);
+        let details = '';
 
         let rawInpP = document.getElementById('inpP').value;
         let labelVal = smartEval(rawInpP);
@@ -2105,28 +2153,15 @@
             partsElP.style.display = 'block';
             partsElP.innerHTML = partsP.map((p,i)=>'<span style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:0 2px;">'+(i+1)+'. '+p.toLocaleString('tr-TR')+'</span>').join(' + ') + ' = <b>'+partsP.length+' ürün</b>';
         } else { partsElP.style.display = 'none'; }
-        if(labelVal > 0) {
-            let listTl = labelVal * xU;
-            let costTl = (labelVal / 3) * u;
-            res = {
-                v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
-                v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
-                v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
-                vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
-                old: listTl
-            };
-            res.m3 = codes.getPCode(res.v3, costTl);
-            res.m2 = codes.getPCode(res.v2, costTl);
-            res.m1 = codes.getPCode(res.v1, costTl);
-            res.mN = codes.getPCode(res.vN, costTl);
-            details = 'Pırlanta';
-        }
+
+        const res = calcForLabelValue(labelVal, u, xU);
+        if(labelVal > 0) details = 'Pırlanta';
 
         updateBox('3', res.old, res.v3, 3, res.m3);
         updateBox('2', res.old, res.v2, 2, res.m2);
         updateBox('1', res.old, res.v1, 1, res.m1);
         updateBox('N', res.old, res.vN, 0, res.mN);
-        return { res, details, mode: currentMode };
+        return { res, details, mode: currentMode, partsP, u, xU };
     }
 
     function updateBox(id, old, v, div, mCode) {
@@ -2139,11 +2174,27 @@
     }
 
     function addBasket() {
-        const k = document.getElementById('iKod').value.trim();
-        if(!k) { document.getElementById('iKod').focus(); return; }
-        const calc = runCalc();
-        const rawP  = document.getElementById('inpP').value;
-        basket.push({ id: Date.now(), k: k.toUpperCase(), v: calc.res, d: calc.details, mode: calc.mode, _rawP: rawP, _manualN: false, note: '' });
+        const rawP = document.getElementById('inpP').value;
+        const calc = runCalc(); // partsP, u, xU buradan gelir
+        const kRaw = document.getElementById('iKod').value.trim();
+        const parts = calc.partsP; // [] | [tek değer] | [değer1, değer2, ...]
+
+        if(!parts.length) {
+            sysAlert('Önce bir etiket değeri girmelisin.', { tone: 'warn' });
+            return;
+        }
+
+        parts.forEach(function(labelVal, idx) {
+            const itemRes = calcForLabelValue(labelVal, calc.u, calc.xU);
+            // Kod boşsa otomatik "Ürün N" adı ver (N, sepetteki mevcut ürün sayısına göre devam eder)
+            const autoName = 'Ürün ' + (basket.length + 1);
+            const kod = kRaw ? (parts.length > 1 ? kRaw.toUpperCase() + '-' + (idx+1) : kRaw.toUpperCase()) : autoName;
+            basket.push({
+                id: Date.now() + idx, k: kod, v: itemRes, d: calc.details, mode: calc.mode,
+                _rawP: String(labelVal), _manualN: false, note: ''
+            });
+        });
+
         document.getElementById('iKod').value  = '';
         document.getElementById('inpP').value  = '';
         runCalc();
@@ -2412,22 +2463,15 @@
         const id  = parseInt(document.getElementById('editId').value);
         const idx = basket.findIndex(i => i.id === id); if(idx === -1) return;
         const item = basket[idx];
-        item.k = document.getElementById('editKod').value.toUpperCase();
+        const kRaw = document.getElementById('editKod').value.trim();
+        item.k = kRaw ? kRaw.toUpperCase() : item.k; // boş bırakılırsa eski adı/otomatik adı korur
         const u  = smartEval(document.getElementById('cfgU').value),
               up = smartEval(document.getElementById('cfgU_plus').value);
         const xU = u * (1 + up/100);
-        const codes = getCodes(u, xU);
         const labelVal = smartEval(document.getElementById('editVal').value);
         item._rawP = document.getElementById('editVal').value;
+        item.v = calcForLabelValue(labelVal, u, xU);
         const costTl = (labelVal / 3) * u;
-        const listTl = labelVal * xU;
-        item.v = {
-            v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
-            v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
-            v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
-            vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
-            old: listTl
-        };
 
         // Manuel fiyat düzeltmesi: girilirse Nakit fiyatı o tutara sabitlenir,
         // diğer tüm fiyatlar (3T/2T/Tek) aynı orana göre orantılı kaydırılır.
@@ -2440,14 +2484,15 @@
             item.v.v1 = item.v.v1 * ratio;
             item.v.vN = manualVal;
             item._manualN = true;
+            const codes = getCodes(u, xU);
+            item.v.m3 = codes.getPCode(item.v.v3, costTl);
+            item.v.m2 = codes.getPCode(item.v.v2, costTl);
+            item.v.m1 = codes.getPCode(item.v.v1, costTl);
+            item.v.mN = codes.getPCode(item.v.vN, costTl);
         } else {
             item._manualN = false;
         }
 
-        item.v.m3 = codes.getPCode(item.v.v3, costTl);
-        item.v.m2 = codes.getPCode(item.v.v2, costTl);
-        item.v.m1 = codes.getPCode(item.v.v1, costTl);
-        item.v.mN = codes.getPCode(item.v.vN, costTl);
         item.d = 'Pırlanta' + (item._manualN ? ' · Manuel fiyat' : '');
         item.note = document.getElementById('editNote').value.trim();
         closeModal('editModal');
@@ -2595,15 +2640,40 @@
             '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>' +
             '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + (h.storeName || 'Mağaza') + '</span>' +
             (isSold ? ' <span style="font-size:10px;color:var(--success);font-weight:800;">✓ SATIŞ OLDU' + (h.soldAt ? ' · '+h.soldAt : '') + '</span>' : '');
-        document.getElementById('prev-items').innerHTML = h.basket.map(function(i) {
+        document.getElementById('prev-items').innerHTML = h.basket.map(function(i, idx) {
+            const editBtn = isAdmin ? '' : ' <span onclick="openEditHistoryItem(\'' + key + '\', ' + idx + ')" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;">✎</span>';
             return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">' +
-                '<span><b>' + i.k + '</b>' + (i.note ? ' <em style="opacity:.6;">— ' + i.note + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + i.d + '</span></span>' +
+                '<span><b>' + i.k + '</b>' + editBtn + (i.note ? ' <em style="opacity:.6;">— ' + i.note + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + i.d + '</span></span>' +
                 '<span style="text-align:right;flex-shrink:0;margin-left:12px;">' +
                 '<span style="color:var(--rose);font-weight:700;">' + f(i.v.vN) + ' ₺</span><br>' +
                 '<span style="opacity:.6;font-size:10px;">3T: ' + f(i.v.v3) + ' ₺</span>' +
                 '</span></div>';
         }).join('');
         document.getElementById('history-preview').style.display = 'block';
+    }
+
+    // Geçmişteki bir kaydın içindeki tek bir ürünün kodu/notunu düzenler (fiyat aynı kalır, geriye dönük doğru kod girilebilsin diye)
+    function openEditHistoryItem(key, itemIdx) {
+        const h = _historyCache.find(function(x) { return x.key === key; });
+        if(!h || !h.basket[itemIdx]) return;
+        const item = h.basket[itemIdx];
+        sysPrompt('Ürün kodu / adı:', { title: 'Geçmiş Ürünü Düzenle', defaultValue: item.k, placeholder: 'Örn: SINA-1200' }).then(function(newKod) {
+            if(newKod === null) return;
+            sysPrompt('Açıklama (opsiyonel):', { title: 'Açıklama', defaultValue: item.note || '', placeholder: 'Örn: 1.2 ct, G renk, VS1' }).then(function(newNote) {
+                if(newNote === null) newNote = item.note || '';
+                const updatedBasket = JSON.parse(JSON.stringify(h.basket));
+                updatedBasket[itemIdx].k = (newKod.trim() || item.k).toUpperCase();
+                updatedBasket[itemIdx].note = newNote.trim();
+                fbDb.ref('stores/' + h.storeId + '/history/' + key + '/basket').set(updatedBasket)
+                    .then(function() {
+                        previewHistory(key); // ekranı tazele
+                    })
+                    .catch(function(err) {
+                        console.error('Güncellenemedi:', err);
+                        sysAlert('Güncellenirken hata oluştu: ' + err.message, { tone: 'danger' });
+                    });
+            });
+        });
     }
 
     // Geçmişteki bir kaydı, o anda kaydedildiği fiyatlarla (hiç yeniden hesaplamadan) yazdırır.
@@ -2631,24 +2701,11 @@
         const u  = smartEval(document.getElementById('cfgU').value),
               up = smartEval(document.getElementById('cfgU_plus').value);
         const xU = u * (1 + up/100);
-        const codes = getCodes(u, xU);
         basket = h.basket.map(function(item) {
             const ni = JSON.parse(JSON.stringify(item));
             if(ni.mode === 'pirlanta' && ni._rawP) {
                 const labelVal = smartEval(ni._rawP);
-                const costTl = (labelVal / 3) * u;
-                const listTl = labelVal * xU;
-                ni.v = {
-                    v3: costTl * (1 + smartEval(document.getElementById('pk3').value)/100),
-                    v2: costTl * (1 + smartEval(document.getElementById('pk2').value)/100),
-                    v1: costTl * (1 + smartEval(document.getElementById('pk1').value)/100),
-                    vN: costTl * (1 + smartEval(document.getElementById('pkN').value)/100),
-                    old: listTl
-                };
-                ni.v.m3 = codes.getPCode(ni.v.v3, costTl);
-                ni.v.m2 = codes.getPCode(ni.v.v2, costTl);
-                ni.v.m1 = codes.getPCode(ni.v.v1, costTl);
-                ni.v.mN = codes.getPCode(ni.v.vN, costTl);
+                ni.v = calcForLabelValue(labelVal, u, xU);
             }
             return ni;
         });
@@ -2814,7 +2871,8 @@
                 const actionsHtml = isArchived
                     ? '<button onclick="event.stopPropagation(); restoreStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-ghost" style="flex:1;">↩ Geri Yükle</button>' +
                       '<button onclick="event.stopPropagation(); permanentlyDeleteStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-danger" style="flex:1;">🗑 Kalıcı Sil</button>'
-                    : '<button onclick="event.stopPropagation(); resetStorePassword(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-ghost" style="flex:1;">🔑 Şifre Sıfırla</button>' +
+                    : '<button onclick="event.stopPropagation(); openEditStoreInfo(\'' + sid + '\')" class="dash-btn-ghost" style="flex:1;">✎ Bilgileri Düzenle</button>' +
+                      '<button onclick="event.stopPropagation(); resetStorePassword(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-ghost" style="flex:1;">🔑 Şifre Sıfırla</button>' +
                       '<button onclick="event.stopPropagation(); deleteStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-danger" style="flex:1;">🗑 Arşivle</button>';
                 return '<div style="border-bottom:1px solid var(--dash-border); opacity:' + (isArchived ? '0.65' : '1') + ';">' +
                     '<div style="display:flex; justify-content:space-between; align-items:center; padding:13px 4px; cursor:pointer;" onclick="toggleStoreDetail(\'' + sid + '\')">' +
@@ -2863,6 +2921,61 @@
     function toggleStoreDetail(storeId) {
         const el = document.getElementById('store-detail-' + storeId);
         if(el) el.style.display = (el.style.display === 'none' ? 'block' : 'none');
+    }
+
+    function openEditStoreInfo(storeId) {
+        fbDb.ref('stores/' + storeId + '/config').once('value').then(function(snap) {
+            const cfg = snap.val() || {};
+            document.getElementById('editStoreId').value = storeId;
+            document.getElementById('editStoreName').value = cfg.cfgStore || '';
+            document.getElementById('editStoreType').value = cfg.storeType || 'magaza';
+            const ilSel = document.getElementById('editStoreIl');
+            if(!ilSel.dataset.filled) {
+                ilSel.innerHTML = TR_PROVINCES.map(function(il) { return '<option value="' + il + '">' + il + '</option>'; }).join('');
+                ilSel.dataset.filled = '1';
+            }
+            ilSel.value = cfg.il || '';
+            document.getElementById('editStoreTel').value = cfg.cfgTel || '';
+            document.getElementById('editStoreAddr').value = cfg.cfgAddr || '';
+            document.getElementById('editStoreError').style.display = 'none';
+            openModal('editStoreModal');
+        }).catch(function(err) {
+            console.error('Mağaza bilgisi okunamadı:', err);
+            sysAlert('Mağaza bilgisi okunamadı: ' + err.message, { tone: 'danger' });
+        });
+    }
+
+    function saveStoreInfo() {
+        const storeId = document.getElementById('editStoreId').value;
+        const name = document.getElementById('editStoreName').value.trim();
+        const type = document.getElementById('editStoreType').value;
+        const il = document.getElementById('editStoreIl').value;
+        const tel = document.getElementById('editStoreTel').value.trim();
+        const addr = document.getElementById('editStoreAddr').value.trim();
+        const errEl = document.getElementById('editStoreError');
+
+        if(!name || !il) {
+            errEl.innerText = 'Ad ve il alanları gerekli.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        fbDb.ref('stores/' + storeId + '/config').update({
+            cfgStore: name,
+            storeType: type,
+            il: il,
+            bolge: PROVINCE_TO_REGION[il] || '',
+            cfgTel: tel,
+            cfgAddr: addr
+        }).then(function() {
+            closeModal('editStoreModal');
+            renderAdminStoreList();
+            sysAlert('"' + name + '" bilgileri güncellendi.', { title: 'Kaydedildi' });
+        }).catch(function(err) {
+            console.error('Güncellenemedi:', err);
+            errEl.innerText = 'Kaydedilirken hata oluştu: ' + err.message;
+            errEl.style.display = 'block';
+        });
     }
 
     function resetStorePassword(storeId, storeName) {
