@@ -1686,10 +1686,13 @@
 
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div class="dash-section-title" style="margin-bottom:0;">Mevcut Mağazalar</div>
-                    <div id="bulk-action-bar" style="display:none; align-items:center; gap:10px;">
-                        <span id="bulk-selected-count" style="font-size:11.5px; color:var(--dash-ink-dim); font-weight:700;">0 seçildi</span>
-                        <button class="dash-btn-ghost" onclick="openBulkEditModal()">✎ Toplu Kâr/xU Düzenle</button>
-                        <button class="dash-btn-ghost" onclick="clearBulkSelection()">Seçimi Temizle</button>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <button class="dash-btn-ghost" onclick="toggleSelectAllStores()" id="bulk-select-all-btn">☑ Tümünü Seç</button>
+                        <div id="bulk-action-bar" style="display:none; align-items:center; gap:10px;">
+                            <span id="bulk-selected-count" style="font-size:11.5px; color:var(--dash-ink-dim); font-weight:700;">0 seçildi</span>
+                            <button class="dash-btn-ghost" onclick="openBulkEditModal()">✎ Toplu Kâr/xU Düzenle</button>
+                            <button class="dash-btn-ghost" onclick="clearBulkSelection()">Seçimi Temizle</button>
+                        </div>
                     </div>
                 </div>
                 <div class="dash-panel" style="margin-top:14px;">
@@ -1760,8 +1763,17 @@
                     </select>
                     <input type="text" id="logFilterSearch" class="dash-input" style="flex:1; min-width:160px;" placeholder="Mağaza adı ara..." oninput="renderAdminLog()">
                 </div>
-                <div class="dash-section-title">İşlem Kayıtları</div>
-                <div class="dash-panel" style="padding:6px 18px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="dash-section-title" style="margin-bottom:0;">İşlem Kayıtları</div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div id="log-bulk-bar" style="display:none; align-items:center; gap:8px;">
+                            <span id="log-bulk-count" style="font-size:11.5px; color:var(--dash-ink-dim); font-weight:700;">0 seçildi</span>
+                            <button class="dash-btn-danger" onclick="deleteSelectedLogEntries()">🗑 Seçilenleri Sil</button>
+                        </div>
+                        <button class="dash-btn-ghost" onclick="clearAllAdminLog()">Tümünü Sil</button>
+                    </div>
+                </div>
+                <div class="dash-panel" style="padding:6px 18px; margin-top:14px;">
                     <div id="admin-log-list" style="max-height:60vh; overflow-y:auto;"></div>
                 </div>
             </div>
@@ -1779,6 +1791,7 @@
                 <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" style="height:32px;">
             </div>
             <div id="rep-pdf-summary" style="margin-bottom:20px;"></div>
+            <div id="rep-pdf-charts" style="margin-bottom:24px; page-break-inside:avoid;"></div>
             <table style="width:100%; border-collapse:collapse; font-size:11px;">
                 <thead>
                     <tr id="rep-pdf-thead" style="border-bottom:2px solid #1a1a24; text-align:left;">
@@ -3299,12 +3312,14 @@
 
             if(!rows.length) {
                 listEl.innerHTML = '<div style="padding:24px 4px; text-align:center; color:var(--dash-ink-dim); font-size:13px;">Kayıt bulunamadı.</div>';
+                updateLogBulkBar();
                 return;
             }
             listEl.innerHTML = rows.map(function(r) {
                 const meta = ADMIN_ACTION_LABELS[r.action] || { icon: '•', label: r.action, color: 'var(--dash-ink-dim)' };
                 return '<div class="dash-store-row" style="align-items:flex-start;">' +
                     '<div style="display:flex; align-items:flex-start; gap:10px;">' +
+                    '<input type="checkbox" class="log-row-checkbox" value="' + r.key + '" onclick="updateLogBulkBar();" style="width:15px; height:15px; margin-top:2px; cursor:pointer; flex-shrink:0;">' +
                     '<span style="font-size:15px;">' + meta.icon + '</span>' +
                     '<div>' +
                     '<span style="font-weight:700; color:' + meta.color + ';">' + meta.label + '</span> ' +
@@ -3313,12 +3328,57 @@
                     '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + (r.details || '') + '</span>' +
                     '</div>' +
                     '</div>' +
-                    '<div style="font-size:10.5px; color:var(--dash-ink-dim); white-space:nowrap; margin-left:12px;">' + r.ts + '</div>' +
+                    '<div style="text-align:right;">' +
+                    '<div style="font-size:10.5px; color:var(--dash-ink-dim); white-space:nowrap;">' + r.ts + '</div>' +
+                    '<button onclick="deleteLogEntry(\'' + r.key + '\')" style="background:none; border:none; color:var(--dash-ink-dim); font-size:10px; cursor:pointer; margin-top:4px; padding:0;">🗑 Sil</button>' +
+                    '</div>' +
                     '</div>';
             }).join('');
+            updateLogBulkBar();
         }).catch(function(err) {
             console.error('Admin log okunamadı:', err);
             listEl.innerHTML = '<div style="padding:24px 4px; text-align:center; color:var(--dash-rose); font-size:13px;">İşlem geçmişi okunamadı.</div>';
+        });
+    }
+
+    function updateLogBulkBar() {
+        const bar = document.getElementById('log-bulk-bar');
+        if(!bar) return;
+        const selected = document.querySelectorAll('.log-row-checkbox:checked').length;
+        if(selected > 0) {
+            bar.style.display = 'flex';
+            document.getElementById('log-bulk-count').innerText = selected + ' seçildi';
+        } else {
+            bar.style.display = 'none';
+        }
+    }
+
+    function deleteLogEntry(key) {
+        sysConfirm('Bu işlem kaydı silinsin mi?', { okText: 'Sil', danger: true }).then(function(ok) {
+            if(!ok) return;
+            fbDb.ref('adminLog/' + key).remove().then(renderAdminLog).catch(function(err) {
+                sysAlert('Silinemedi: ' + err.message, { tone: 'danger' });
+            });
+        });
+    }
+
+    function deleteSelectedLogEntries() {
+        const keys = Array.from(document.querySelectorAll('.log-row-checkbox:checked')).map(function(cb) { return cb.value; });
+        if(!keys.length) return;
+        sysConfirm(keys.length + ' işlem kaydı silinsin mi? Bu işlem geri alınamaz.', { okText: 'Seçilenleri Sil', danger: true }).then(function(ok) {
+            if(!ok) return;
+            Promise.all(keys.map(function(k) { return fbDb.ref('adminLog/' + k).remove(); }))
+                .then(renderAdminLog)
+                .catch(function(err) { sysAlert('Bazıları silinemedi: ' + err.message, { tone: 'danger' }); });
+        });
+    }
+
+    function clearAllAdminLog() {
+        sysConfirm('TÜM işlem geçmişini silmek istediğine emin misin? Bu işlem geri alınamaz.', { okText: 'Tümünü Sil', danger: true, title: 'Tüm Geçmişi Sil' }).then(function(ok) {
+            if(!ok) return;
+            fbDb.ref('adminLog').remove().then(renderAdminLog).catch(function(err) {
+                sysAlert('Silinemedi: ' + err.message, { tone: 'danger' });
+            });
         });
     }
 
@@ -3486,6 +3546,17 @@
 
     function clearBulkSelection() {
         document.querySelectorAll('.bulk-store-checkbox').forEach(function(cb) { cb.checked = false; });
+        const btn = document.getElementById('bulk-select-all-btn');
+        if(btn) btn.innerText = '☑ Tümünü Seç';
+        updateBulkActionBar();
+    }
+
+    function toggleSelectAllStores() {
+        const checkboxes = document.querySelectorAll('.bulk-store-checkbox');
+        const btn = document.getElementById('bulk-select-all-btn');
+        const allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
+        checkboxes.forEach(function(cb) { cb.checked = !allChecked; });
+        if(btn) btn.innerText = allChecked ? '☑ Tümünü Seç' : '☐ Seçimi Kaldır';
         updateBulkActionBar();
     }
 
@@ -4131,8 +4202,88 @@
         return parts.join(' · ');
     }
 
+    // PDF raporuna eklenecek bar chart (mağaza bazlı etiket÷3) ve trend (zaman bazlı toplam) SVG'lerini üretir.
+    function renderPdfCharts(reportData, filteredRows) {
+        const container = document.getElementById('rep-pdf-charts');
+        if(!container) return;
+
+        // 1) BAR CHART: mağaza bazlı etiket÷3 toplamı
+        const byStoreEtiket = {};
+        filteredRows.filter(function(h) { return h.status === 'sold'; }).forEach(function(h) {
+            const et = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0) / 3;
+            const name = h.storeName || h.storeId;
+            byStoreEtiket[name] = (byStoreEtiket[name] || 0) + et;
+        });
+        const barData = Object.keys(byStoreEtiket).map(function(name) { return { name: name, val: byStoreEtiket[name] }; })
+            .sort(function(a,b) { return b.val - a.val; }).slice(0, 10); // en fazla 10 mağaza göster, taşma olmasın
+
+        // 2) TREND: filtre tarih aralığına göre günlük ya da aylık toplam (aralık 45 günden büyükse aylık grupla)
+        const dates = filteredRows.map(function(h) { return h.tsMillis || 0; }).filter(function(t) { return t > 0; });
+        const minD = dates.length ? Math.min.apply(null, dates) : Date.now();
+        const maxD = dates.length ? Math.max.apply(null, dates) : Date.now();
+        const spanDays = Math.max(1, Math.round((maxD - minD) / 86400000));
+        const groupByMonth = spanDays > 45;
+
+        const trendBuckets = {}; // key -> total
+        filteredRows.filter(function(h) { return h.status === 'sold'; }).forEach(function(h) {
+            const d = new Date(h.tsMillis || 0);
+            const key = groupByMonth ? (d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')) : d.toLocaleDateString('tr-TR');
+            const et = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0) / 3;
+            trendBuckets[key] = (trendBuckets[key] || 0) + et;
+        });
+        const trendKeys = Object.keys(trendBuckets).sort();
+        const trendData = trendKeys.map(function(k) { return { label: k, val: trendBuckets[k] }; });
+
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+
+        // Bar chart SVG (yatay çubuklar, basılı sayfada daha okunaklı)
+        let barSvg = '';
+        if(barData.length) {
+            const maxVal = Math.max.apply(null, barData.map(function(b){return b.val;}).concat([1]));
+            const rowH = 26, chartW = 760, labelW = 150, barAreaW = chartW - labelW - 70;
+            const svgH = barData.length * rowH + 20;
+            const bars = barData.map(function(b, i) {
+                const y = 10 + i * rowH;
+                const barW = (b.val / maxVal) * barAreaW;
+                return '<text x="' + (labelW-8) + '" y="' + (y+15) + '" font-size="10.5" text-anchor="end" fill="#1a1a24">' + b.name + '</text>' +
+                       '<rect x="' + labelW + '" y="' + y + '" width="' + barW.toFixed(1) + '" height="18" fill="#c8244c" opacity="0.85" rx="3"/>' +
+                       '<text x="' + (labelW + barW + 6) + '" y="' + (y+14) + '" font-size="10" fill="#1a1a24" font-weight="700">$' + f(b.val) + '</text>';
+            }).join('');
+            barSvg = '<div style="margin-bottom:18px;"><div style="font-size:11px; font-weight:800; color:#9090a0; margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em;">Mağaza Bazlı Etiket÷3 ($)</div>' +
+                '<svg width="100%" viewBox="0 0 ' + chartW + ' ' + svgH + '" style="max-width:100%;">' + bars + '</svg></div>';
+        }
+
+        // Trend çizgi grafik SVG
+        let trendSvg = '';
+        if(trendData.length > 1) {
+            const w = 760, h = 160, padL = 50, padR = 20, padT = 15, padB = 30;
+            const plotW = w - padL - padR, plotH = h - padT - padB;
+            const maxVal = Math.max.apply(null, trendData.map(function(t){return t.val;}).concat([1]));
+            const pts = trendData.map(function(t, i) {
+                const x = padL + (trendData.length === 1 ? 0 : (i / (trendData.length - 1)) * plotW);
+                const y = padT + plotH - (t.val / maxVal) * plotH;
+                return { x: x, y: y, label: t.label, val: t.val };
+            });
+            const pathD = pts.map(function(p, i) { return (i===0?'M':'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
+            // Çok fazla nokta varsa etiketleri seyrekleştir (en fazla ~10 etiket göster)
+            const labelStep = Math.max(1, Math.ceil(pts.length / 10));
+            const labels = pts.map(function(p, i) {
+                if(i % labelStep !== 0 && i !== pts.length-1) return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="2.5" fill="#c8244c"/>';
+                return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="#c8244c"/>' +
+                    '<text x="'+p.x.toFixed(1)+'" y="'+(h-8)+'" font-size="9" fill="#9090a0" text-anchor="middle">'+p.label+'</text>';
+            }).join('');
+            trendSvg = '<div><div style="font-size:11px; font-weight:800; color:#9090a0; margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em;">' + (groupByMonth ? 'Aylık' : 'Günlük') + ' Etiket÷3 Trendi ($)</div>' +
+                '<svg width="100%" viewBox="0 0 ' + w + ' ' + h + '" style="max-width:100%;">' +
+                '<path d="' + pathD + '" fill="none" stroke="#c8244c" stroke-width="2"/>' + labels +
+                '</svg></div>';
+        }
+
+        container.innerHTML = barSvg + trendSvg;
+    }
+
     function generateAdminReportPDF() {
         const data = buildReportData();
+        const filteredRows = getFilteredHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
 
         let totalCash = 0, totalEtiket = 0, totalCount = 0;
@@ -4151,6 +4302,8 @@
             '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">TOPLAM NAKİT TUTAR</div><div style="font-size:16px; font-weight:800;">' + f(totalCash) + ' ₺</div></div>' +
             '<div><div style="font-size:9px; color:#c8244c; font-weight:800;">ETİKET TOPLAMI (÷3, $)</div><div style="font-size:16px; font-weight:800; color:#c8244c;">$ ' + f(totalEtiket) + '</div></div>' +
             '</div>';
+
+        renderPdfCharts(data, filteredRows);
 
         const theadRow = document.getElementById('rep-pdf-thead');
         if(data.mode === 'urun') {
