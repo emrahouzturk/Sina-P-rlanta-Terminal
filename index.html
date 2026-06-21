@@ -1413,9 +1413,10 @@
             </div>
             <div id="pane0" class="pane active">
                 <div class="settings-grid">
-                    <div><label class="field-label">U (USD)</label><input type="text" id="cfgU" value="34.20" inputmode="decimal"></div>
+                    <div><label class="field-label">U (USD) — Otomatik</label><input type="text" id="cfgU" value="34.20" inputmode="decimal" readonly style="background:var(--bg); color:var(--ink-dim); cursor:not-allowed;"></div>
                     <div><label class="field-label">xU (%)</label><input type="text" id="cfgU_plus" value="3" inputmode="decimal"></div>
                 </div>
+                <div id="usd-rate-status" style="padding:0 20px 14px; font-size:10.5px; color:var(--ink-dim); line-height:1.5;">Kur güncelleniyor…</div>
             </div>
             <div id="pane1" class="pane">
                 <div class="settings-grid">
@@ -1580,7 +1581,7 @@
                         <div class="stat-sub">aktif kullanıcı</div>
                     </div>
                     <div class="dash-stat-card accent-success">
-                        <div class="eyebrow">Bu Ay Satış Adedi</div>
+                        <div class="eyebrow">Bu Ay Satılan Ürün Adedi</div>
                         <div class="stat-value" id="dash-month-count">—</div>
                         <div class="stat-sub" id="dash-month-label">—</div>
                     </div>
@@ -2157,8 +2158,9 @@
     }
 
     // Her mağaza tamamen kendi kutusunda çalışır: stores/{storeId}/config, stores/{storeId}/history
-    // Kur/kâr oranları DA mağazaya özel — artık ortak ayar yok.
-    const CFG_IDS = ['cfgU', 'cfgU_plus', 'pk3', 'pk2', 'pk1', 'pkN'];
+    // Kâr oranları mağazaya özel. cfgU (USD/TRY) artık OTOMATİK çekiliyor ve tüm mağazalarda ortak —
+    // mağaza config'inde saklanmıyor, sadece ekranda gösteriliyor.
+    const CFG_IDS = ['cfgU_plus', 'pk3', 'pk2', 'pk1', 'pkN'];
     const LOCAL_IDS  = ['cfgStore', 'cfgTel', 'cfgAddr']; // mağaza bilgisi de db'ye yazılır ama cihazda da cache'lenir
     let _applyingRemote = false; // Firebase'den gelen veriyi uygularken saveCfg tetiklenmesin
     let _cfgListenerAttached = false;
@@ -2214,7 +2216,64 @@
             console.error('Firebase config hata:', err);
         });
 
+        attachUsdRateListener();
         runCalc(); setInterval(updateTech, 1000);
+    }
+
+    // ── OTOMATİK USD/TRY KURU ──
+    // Tüm mağazalar ortak bir Firebase köşesini (globalRates/usdTry) dinler.
+    // Kur 24 saatten eskiyse, dinleyen herhangi bir cihaz dış API'den çekip o köşeyi günceller
+    // (böylece her mağaza ayrı ayrı dış API'ye istek atmaz, tek bir ortak değer paylaşılır).
+    const USD_RATE_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 saat
+
+    function attachUsdRateListener() {
+        fbDb.ref('globalRates/usdTry').on('value', function(snap) {
+            const data = snap.val();
+            const statusEl = document.getElementById('usd-rate-status');
+            if(data && data.rate > 0) {
+                document.getElementById('cfgU').value = data.rate;
+                runCalc();
+                const ageMs = Date.now() - (data.fetchedAtMillis || 0);
+                if(statusEl) {
+                    statusEl.innerText = 'Otomatik kur: ' + data.rate + ' (kaynak: ' + (data.source || 'açık veri') + ', güncellenme: ' + new Date(data.fetchedAtMillis).toLocaleString('tr-TR') + ')';
+                }
+                if(ageMs > USD_RATE_MAX_AGE_MS) {
+                    refreshUsdRateFromApi(); // bayatladıysa bu cihaz güncellemeyi dener
+                }
+            } else {
+                // Hiç kur kaydı yoksa bu cihaz ilk kez çeker
+                refreshUsdRateFromApi();
+            }
+        }, function(err) {
+            console.error('Kur okunamadı:', err);
+        });
+    }
+
+    function refreshUsdRateFromApi() {
+        const statusEl = document.getElementById('usd-rate-status');
+        if(statusEl) statusEl.innerText = 'Kur güncelleniyor…';
+
+        const primaryUrl  = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json';
+        const fallbackUrl = 'https://latest.currency-api.pages.dev/v1/currencies/usd.json';
+
+        fetch(primaryUrl).then(function(r) {
+            if(!r.ok) throw new Error('primary failed');
+            return r.json();
+        }).catch(function() {
+            return fetch(fallbackUrl).then(function(r) { return r.json(); });
+        }).then(function(data) {
+            const rate = data && data.usd && data.usd.try;
+            if(!rate || !(rate > 0)) throw new Error('Geçersiz kur verisi');
+            const rounded = Math.round(rate * 100) / 100;
+            fbDb.ref('globalRates/usdTry').set({
+                rate: rounded,
+                source: 'fawazahmed0/currency-api',
+                fetchedAtMillis: Date.now()
+            }).catch(function(err) { console.error('Kur Firebase\'e yazılamadı:', err); });
+        }).catch(function(err) {
+            console.error('USD kuru çekilemedi:', err);
+            if(statusEl) statusEl.innerText = '⚠ Otomatik kur çekilemedi. Mevcut değer kullanılıyor, gerekirse elle düzeltebilirsin (Ayarlar açıkken kilidi kaldırmak için bana bildir).';
+        });
     }
 
     function updateTech() {
@@ -3156,7 +3215,6 @@
                     storeType: storeType,
                     il: storeIl,
                     bolge: PROVINCE_TO_REGION[storeIl] || '',
-                    cfgU: '34.20',
                     cfgU_plus: '3',
                     pk3: '50', pk2: '44', pk1: '38', pkN: '32',
                     lastTime: new Date().toISOString()
@@ -3481,12 +3539,13 @@
             const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
             totalCash += sN; totalEtiket += et;
             if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, cash: 0, etiket: 0 };
-            byStore[h.storeId].count++;
+            byStore[h.storeId].count += h.basket.length;
             byStore[h.storeId].cash += sN;
             byStore[h.storeId].etiket += et;
         });
 
-        document.getElementById('dash-month-count').innerText = monthRows.length;
+        const monthProductCount = monthRows.reduce(function(a,h){ return a + h.basket.length; }, 0);
+        document.getElementById('dash-month-count').innerText = monthProductCount;
         document.getElementById('dash-month-cash').innerText = f(totalCash);
         document.getElementById('dash-month-etiket').innerText = '$ ' + f(totalEtiket/3);
 
@@ -3502,7 +3561,7 @@
         if(sortBarEl) {
             sortBarEl.innerHTML =
                 '<button class="dash-sort-btn' + (_dashSortBy === 'etiket' ? ' active' : '') + '" onclick="setDashSort(\'etiket\')">Etiket÷3\'e Göre</button>' +
-                '<button class="dash-sort-btn' + (_dashSortBy === 'count' ? ' active' : '') + '" onclick="setDashSort(\'count\')">Satış Adedine Göre</button>';
+                '<button class="dash-sort-btn' + (_dashSortBy === 'count' ? ' active' : '') + '" onclick="setDashSort(\'count\')">Ürün Adedine Göre</button>';
         }
 
         const rankEl = document.getElementById('dash-store-rank');
@@ -3514,7 +3573,7 @@
             return '<div class="dash-store-row">' +
                 '<div style="display:flex; align-items:center; gap:12px;">' +
                 '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                '<div><b style="color:var(--dash-ink);">' + s.name + '</b>' + (s.il ? ' <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' : '') + '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' satış</span></div>' +
+                '<div><b style="color:var(--dash-ink);">' + s.name + '</b>' + (s.il ? ' <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' : '') + '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün</span></div>' +
                 '</div>' +
                 '<div style="text-align:right;">' +
                 '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -3591,15 +3650,15 @@
         const rows = getFilteredHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
 
-        let totalCash = 0, totalEtiket = 0, soldCount = 0;
+        let totalCash = 0, totalEtiket = 0, soldTxCount = 0, soldProductCount = 0;
         rows.forEach(function(h) {
             const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
             const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
-            if(h.status === 'sold') { totalCash += sN; totalEtiket += et; soldCount++; }
+            if(h.status === 'sold') { totalCash += sN; totalEtiket += et; soldTxCount++; soldProductCount += h.basket.length; }
         });
 
         document.getElementById('rep-summary').innerHTML =
-            '<div class="dash-stat-card accent-success" style="padding:14px 16px;"><div class="eyebrow">Satış Adedi</div><div class="stat-value" style="font-size:24px;">' + soldCount + '</div></div>' +
+            '<div class="dash-stat-card accent-success" style="padding:14px 16px;"><div class="eyebrow">Satış Adedi</div><div class="stat-value" style="font-size:24px;">' + soldProductCount + '</div><div class="stat-sub">' + soldProductCount + ' ürün / ' + soldTxCount + ' işlem</div></div>' +
             '<div class="dash-stat-card" style="padding:14px 16px;"><div class="eyebrow">Toplam Nakit Tutar</div><div class="stat-value" style="font-size:20px;">' + f(totalCash) + ' ₺</div></div>' +
             '<div class="dash-stat-card accent-rose" style="padding:14px 16px;"><div class="eyebrow">Etiket Toplamı (÷3)</div><div class="stat-value" style="font-size:20px;">$ ' + f(totalEtiket/3) + '</div></div>';
 
@@ -3611,7 +3670,7 @@
             titleEl.innerText = 'Mağaza Bazlı Tutarlar';
             sortBarEl.innerHTML =
                 '<button class="dash-sort-btn' + (_reportSortBy === 'etiket' ? ' active' : '') + '" onclick="setReportSort(\'etiket\')">Etiket÷3\'e Göre Sırala</button>' +
-                '<button class="dash-sort-btn' + (_reportSortBy === 'count' ? ' active' : '') + '" onclick="setReportSort(\'count\')">Satış Adedine Göre Sırala</button>';
+                '<button class="dash-sort-btn' + (_reportSortBy === 'count' ? ' active' : '') + '" onclick="setReportSort(\'count\')">Ürün Adedine Göre Sırala</button>';
 
             const soldRows = rows.filter(function(h) { return h.status === 'sold'; });
             const byStore = {};
@@ -3619,7 +3678,7 @@
                 const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
                 if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, cash: 0, etiket: 0, il: (_storesInfo[h.storeId]||{}).il || '—' };
-                byStore[h.storeId].count++;
+                byStore[h.storeId].count += h.basket.length;
                 byStore[h.storeId].cash += sN;
                 byStore[h.storeId].etiket += et;
             });
@@ -3639,7 +3698,7 @@
                 return '<div class="dash-store-row">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' satış</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -3719,7 +3778,7 @@
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
                 const info = _storesInfo[h.storeId] || {};
                 if(!byStore[h.storeId]) byStore[h.storeId] = { magaza: h.storeName || h.storeId, il: info.il || '—', bolge: info.bolge || '—', adet: 0, nakit: 0, etiket: 0 };
-                byStore[h.storeId].adet++;
+                byStore[h.storeId].adet += h.basket.length;
                 byStore[h.storeId].nakit += sN;
                 byStore[h.storeId].etiket += et;
             });
