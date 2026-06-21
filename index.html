@@ -1222,6 +1222,70 @@
         </div>
     </div>
 
+    <!-- ADMIN YARDIM KILAVUZU MODAL -->
+    <div id="adminHelpModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Admin Kullanım Kılavuzu</h3>
+                <span class="modal-close" onclick="closeModal('adminHelpModal')">×</span>
+            </div>
+            <div class="modal-body">
+
+                <div class="help-section">
+                    <h4>1. Genel Bakış</h4>
+                    <div class="help-card">
+                        <b>Üst kartlar:</b> Toplam mağaza sayısı, bu ay satılan ürün adedi, bu ayki nakit toplamı, bu ayki etiket÷3 toplamı (prim hesap tabanı, $).<br><br>
+                        <b>Mağaza Performansı:</b> Bu ay hangi mağaza ne kadar satmış — Etiket÷3'e veya Ürün Adedine göre sıralayabilirsin.<br><br>
+                        <b>⚠ Hareketsiz Mağazalar:</b> Son 14 gündür hiç teklif/satış girmemiş mağazalar burada otomatik listelenir — varsa kırmızı kutu görünür.<br><br>
+                        <b>Trend Grafiği:</b> Son 6 ayın toplam etiket÷3 gidişi, tüm mağazalar birlikte.
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>2. Mağazalar</h4>
+                    <p>Yeni mağaza/satış noktası oluşturma, mevcutları yönetme.</p>
+                    <div class="help-card">
+                        <b>Oluştururken:</b> Tür (Mağaza/Satış Noktası) ve İl seçimi zorunlu — bölge otomatik hesaplanır.<br><br>
+                        <b>Her mağaza satırında:</b> ✎ Bilgileri Düzenle, 🔑 Şifre Sıfırla, 🗑 Arşivle (30 gün sonra otomatik kalıcı silinir, içinde geri yükleyebilirsin).<br><br>
+                        <b>Şifre sıfırlama:</b> Tarayıcı güvenliği nedeniyle tek bir ek adım gerekir — sana Firebase Console'da kullanıcıyı silmen için net talimat gösterilir, sonra yeni şifre otomatik oluşturulur. Mağazanın verisi bu işlemden hiç etkilenmez.<br><br>
+                        <b>☑ Tümünü Seç + ✎ Toplu Kâr/xU Düzenle:</b> Birden fazla (ya da tüm) mağazayı seçip, xU payını ve 3T/2T/Tek/Nakit kâr oranlarını <b>tek seferde</b> güncelleyebilirsin. Sadece doldurduğun alanlar değişir.
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>3. Satış Raporu</h4>
+                    <p>Bölge → İl → Mağaza şeklinde zincirleme filtreleme, tarih aralığı, tür (Mağaza/Satış Noktası) ve durum (Satış/Teklif) filtreleri.</p>
+                    <div class="help-card">
+                        <b>💰 Tutar Bazlı:</b> Mağaza başına toplam adet + etiket÷3. Etikete ya da adede göre sıralanabilir.<br><br>
+                        <b>📦 Ürün Bazlı:</b> Her satılan ürün kendi satırında, kodu + etiketiyle, en yüksek etiketten en düşüğe sıralı.<br><br>
+                        <b>📊 Excel İndir:</b> Aktif filtrelere ve seçili moda göre .xlsx dosyası iner.<br><br>
+                        <b>📄 PDF Rapor Al:</b> Aynı veriyle, üstte mağaza bazlı bar chart ve zaman bazlı trend grafiği olan bir PDF basılır.
+                    </div>
+                    <p style="margin-top:8px; font-size:11px; color:var(--ink-dim);">Not: Tüm tarih filtreleri gerçek satış tarihine göre çalışır — bir mağaza geçmiş bir satışı geriye dönük girse de, doğru aya/güne düşer.</p>
+                </div>
+
+                <div class="help-section">
+                    <h4>4. İşlem Geçmişi</h4>
+                    <p>Senin yaptığın her kritik işlem (mağaza oluşturma, bilgi düzenleme, şifre sıfırlama, arşivleme, geri yükleme, kalıcı silme) otomatik kayda geçer — kim, ne zaman, hangi mağazaya.</p>
+                    <div class="help-card">
+                        İşlem türüne veya mağaza adına göre filtreleyebilirsin. Test/gereksiz kayıtları tek tek (🗑) ya da seçerek toplu silebilir, gerekirse <b>Tümünü Sil</b> ile bütün geçmişi temizleyebilirsin.
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>5. Önemli Hatırlatmalar</h4>
+                    <div class="help-card">
+                        <b>USD kuru</b> artık tüm mağazalarda otomatik ve ortak — sen hiç dokunmazsın, mağazalar da kuru değiştiremez, sadece kendi xU payını ayarlar.<br><br>
+                        <b>Mağaza arşivleme</b> veriyi silmez, sadece girişi kapatır. Gerçekten kalıcı silmek için arşivdeki mağazada "Kalıcı Sil" gerekir, bu işlem geri alınamaz.<br><br>
+                        <b>Teklif sayısı</b> gerçek müşteri trafiğini yansıtmaz — mağaza sadece kaydetmeyi seçtiği teklifleri girer. Bu yüzden "teklif/satış dönüşüm oranı" gibi bir metrik güvenilir değildir, kullanılmıyor.
+                    </div>
+                </div>
+
+                <button class="btn-primary" style="width:100%; margin-top:8px; border-radius:var(--r-sm);" onclick="closeModal('adminHelpModal')">Anladım, Kapat</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MASTER LAYOUT -->
     <div class="master-wrapper no-print" id="main-wrapper" style="display:none;">
         <div class="left-column">
@@ -1412,7 +1476,7 @@
                     <h4>4. Satış / Kayıt Seçenekleri</h4>
                     <p>Sepet doluyken üç buton var:</p>
                     <div class="help-card">
-                        <b>✓ Satış Oldu:</b> Müşteri o an alıyorsa kullan. İsim+telefon gir, kayıt direkt <b>"Satış Oldu"</b> durumunda geçmişe yazılır.<br><br>
+                        <b>✓ Satış Oldu:</b> Müşteri o an alıyorsa kullan. İsim+telefon ile birlikte <b>Satış Tarihi</b> de sorulur (varsayılan bugün) — geçmiş bir tarihte yapılan ama sisteme hiç girilmemiş bir satışı da buradan, gerçek tarihiyle girebilirsin. Kayıt direkt <b>"Satış Oldu"</b> durumunda geçmişe yazılır.<br><br>
                         <b>👤 Müşteriye Kaydet:</b> Müşteri düşünüyor/kararsızsa kullan. Aynı bilgiyi alır ama kayıt <b>"Teklif"</b> durumunda kalır — sonra satışa dönerse Geçmiş'ten işaretlersin.<br><br>
                         <b>📄 PDF Teklif:</b> Aynı şekilde bilgi alır, hem kaydeder hem yazdırır.
                     </div>
@@ -1426,8 +1490,18 @@
                         <b>📝 Teklifler:</b> Henüz satışa dönmemiş, bekleyen teklifler. Bir karta tıklayınca sağda detay açılır.<br><br>
                         <b>✓ Satışa Dönenler:</b> Satış olarak işaretlenmiş kayıtlar. Tarih, tutar ve adet aralığına göre filtreleyebilirsin.
                     </div>
-                    <p style="margin-top:8px;">Bir müşteri geri dönüp satın aldıysa: Teklifler'den o kaydı bul → <b>↩ Sepete Yükle (Düzenle)</b> de → istersen fiyatta son bir değişiklik/indirim yap → sepetteki <b>✓ Bu Satışı Tamamla</b> butonuna bas. Aynı kayıt güncellenir, mükerrer kayıt oluşmaz.</p>
+                    <p style="margin-top:8px;">Bir müşteri geri dönüp satın aldıysa: Teklifler'den o kaydı bul → <b>↩ Sepete Yükle (Düzenle)</b> de → istersen fiyatta son bir değişiklik/indirim yap → sepetteki <b>✓ Bu Satışı Tamamla</b> butonuna bas. Aynı kayıt güncellenir, mükerrer kayıt oluşmaz. "Satış Oldu" derken de gerçek satış tarihi sorulur.</p>
                     <p style="margin-top:8px;"><b>📄 O Günkü Fiyatla PDF:</b> Unuttuğun bir teklifin PDF'ini, o gün kaydedildiği fiyatlarla (güncel kura göre değil) tekrar basabilirsin.</p>
+                </div>
+
+                <div class="help-section">
+                    <h4>6. Geriye Dönük Düzeltmeler</h4>
+                    <p>Bir satışın <b>tarihini</b> ya da bir ürünün <b>kodunu</b> sonradan yanlış girdiğini fark edersen, kaydı silmene gerek yok:</p>
+                    <div class="help-card">
+                        <b>Satış tarihini düzelt:</b> Geçmiş → Satışa Dönenler'den kaydı aç, "✓ SATIŞ OLDU · [tarih]" yazısının yanındaki <b>✎ tarihi düzelt</b> linkine bas, doğru tarihi seç.<br><br>
+                        <b>Ürün kodunu düzelt:</b> Kaydı açtığında her ürünün yanındaki ✎ ikonuna bas, kodu/açıklamayı düzelt.
+                    </div>
+                    <p style="margin-top:8px; font-size:11px; color:var(--ink-dim);">Önemli: Ay sonu fiziki barkod sayımı sistemle uyuşmuyorsa, eksik kalan satışları gerçek tarihleriyle buradan geriye dönük girmen, raporların doğru çıkması için önemlidir.</p>
                 </div>
 
                 <button class="btn-primary" style="width:100%; margin-top:8px; border-radius:var(--r-sm);" onclick="closeModal('helpModal')">Anladım, Kapat</button>
@@ -1487,6 +1561,11 @@
                 <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px; text-transform:uppercase;">
                 <label class="field-label" style="margin-top:12px;">Telefon</label>
                 <input type="text" id="iPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
+                <div id="cusModalDateWrap" style="display:none; margin-top:12px;">
+                    <label class="field-label">Satış Tarihi</label>
+                    <input type="date" id="cusModalSaleDate" style="font-size:15px; text-align:left; padding:10px 14px;">
+                    <div style="font-size:10px; color:var(--ink-dim); margin-top:4px;">Geçmiş bir satışı sonradan giriyorsan gerçek satış tarihini seç.</div>
+                </div>
                 <div id="cusModalError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
                 <div style="display:flex; gap:8px; margin-top:14px;">
                     <button class="btn-ghost" style="flex:1; border-radius:var(--r-sm);" onclick="closeModal('cusModal')">Vazgeç</button>
@@ -1595,10 +1674,16 @@
                     <div class="subtitle">Komuta Merkezi</div>
                 </div>
             </div>
-            <button class="dash-logout" onclick="doLogout()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Çıkış Yap
-            </button>
+            <div style="display:flex; gap:10px;">
+                <button class="dash-logout" onclick="openModal('adminHelpModal')">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Yardım
+                </button>
+                <button class="dash-logout" onclick="doLogout()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Çıkış Yap
+                </button>
+            </div>
         </div>
 
         <div class="dash-tabbar">
@@ -2586,7 +2671,9 @@
     }
 
     // Sepeti mağazanın kendi geçmişine kaydeder. Hem PDF akışı hem "Müşteriye Kaydet" akışı bunu kullanır.
-    function saveToHistory(cusName, cusPhone, status) {
+    // customSaleDateStr verilirse (YYYY-MM-DD), status='sold' kaydında soldAt/soldAtMillis o tarihe göre ayarlanır.
+    // ts/tsMillis (teklifin oluşturulma anı) her zaman gerçek "şimdi" kalır — sistemde ne zaman girildiğini gösterir.
+    function saveToHistory(cusName, cusPhone, status, customSaleDateStr) {
         status = status || 'teklif';
         const now = new Date();
         const ts  = now.toLocaleString('tr-TR');
@@ -2596,11 +2683,23 @@
 
         if(!currentStoreId) return Promise.reject(new Error('Mağaza oturumu bulunamadı'));
 
+        let soldAt = null, soldAtMillis = null;
+        if(status === 'sold') {
+            if(customSaleDateStr) {
+                const customDate = new Date(customSaleDateStr + 'T12:00:00');
+                soldAt = customDate.toLocaleDateString('tr-TR');
+                soldAtMillis = customDate.getTime();
+            } else {
+                soldAt = now.toLocaleDateString('tr-TR');
+                soldAtMillis = now.getTime();
+            }
+        }
+
         return fbDb.ref('stores/' + currentStoreId + '/history').push({
             ref, ts, tsMillis: now.getTime(), cusName, cusPhone, storeName,
             status: status,
-            soldAt: status === 'sold' ? now.toLocaleDateString('tr-TR') : null,
-            soldAtMillis: status === 'sold' ? now.getTime() : null,
+            soldAt: soldAt,
+            soldAtMillis: soldAtMillis,
             basket: JSON.parse(JSON.stringify(basket))
         }).then(function() {
             return { ref, ts };
@@ -2618,19 +2717,24 @@
         document.getElementById('cusModalError').style.display = 'none';
         const titleEl = document.getElementById('cusModalTitle');
         const btnEl = document.getElementById('cusModalSubmitBtn');
+        const dateWrap = document.getElementById('cusModalDateWrap');
         btnEl.className = 'btn-primary';
         btnEl.style.background = '';
         btnEl.onclick = submitCusModal;
         if(purpose === 'save') {
             titleEl.innerText = 'Müşteriye Kaydet';
             btnEl.innerText = '👤 Kaydet';
+            dateWrap.style.display = 'none';
         } else if(purpose === 'directSale') {
             titleEl.innerText = '✓ Satış Oldu';
             btnEl.innerText = '✓ Satışı Kaydet';
             btnEl.style.background = 'var(--success)';
+            dateWrap.style.display = 'block';
+            document.getElementById('cusModalSaleDate').value = new Date().toISOString().slice(0,10);
         } else {
             titleEl.innerText = 'Müşteri Bilgileri';
             btnEl.innerText = '📄 Yazdır';
+            dateWrap.style.display = 'none';
         }
         openModal('cusModal');
     }
@@ -2648,7 +2752,8 @@
 
         if(_cusModalPurpose === 'save' || _cusModalPurpose === 'directSale') {
             const status = _cusModalPurpose === 'directSale' ? 'sold' : 'teklif';
-            saveToHistory(cusName, cusPhone, status).then(function() {
+            const customDate = _cusModalPurpose === 'directSale' ? document.getElementById('cusModalSaleDate').value : null;
+            saveToHistory(cusName, cusPhone, status, customDate).then(function() {
                 closeModal('cusModal');
                 if(status === 'sold') {
                     sysConfirm('"' + cusName + '" için satış kaydedildi.\n\nBu satışın PDF\'ini de şimdi yazdırmak ister misin?', { title: 'Satış Kaydedildi', okText: 'PDF Yazdır', cancelText: 'Hayır, Bu Kadar' }).then(function(yes) {
@@ -3080,16 +3185,27 @@
     }
 
     function markHistoryStatus(key, storeId, status) {
-        const updates = { status: status };
         if(status === 'sold') {
-            updates.soldAt = new Date().toLocaleDateString('tr-TR');
-            updates.soldAtMillis = Date.now();
-        } else {
-            updates.soldAt = null;
-            updates.soldAtMillis = null;
+            sysPrompt('Bu satış gerçekte hangi tarihte oldu?', {
+                title: 'Satış Tarihi',
+                inputType: 'date',
+                defaultValue: new Date().toISOString().slice(0,10)
+            }).then(function(dateStr) {
+                if(dateStr === null) return;
+                const d = dateStr ? new Date(dateStr + 'T12:00:00') : new Date();
+                fbDb.ref('stores/' + storeId + '/history/' + key).update({
+                    status: 'sold',
+                    soldAt: d.toLocaleDateString('tr-TR'),
+                    soldAtMillis: d.getTime()
+                }).catch(err => console.error('Durum güncellenemedi:', err));
+            });
+            return;
         }
-        fbDb.ref('stores/' + storeId + '/history/' + key).update(updates)
-            .catch(err => console.error('Durum güncellenemedi:', err));
+        fbDb.ref('stores/' + storeId + '/history/' + key).update({
+            status: status,
+            soldAt: null,
+            soldAtMillis: null
+        }).catch(err => console.error('Durum güncellenemedi:', err));
     }
 
     let _previewKey = null;
@@ -3102,10 +3218,11 @@
         document.getElementById('btnPrintHistoryPdf').style.display = isAdmin ? 'none' : 'inline-block';
         const f = n => Math.round(n).toLocaleString('tr-TR');
         const isSold = h.status === 'sold';
+        const editDateBtn = (!isAdmin && isSold) ? ' <span onclick="editSaleDate(\'' + key + '\', \'' + h.storeId + '\')" style="font-size:9px; color:var(--success); cursor:pointer; font-weight:700; text-decoration:underline;">✎ tarihi düzelt</span>' : '';
         document.getElementById('prev-title').innerHTML =
             '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>' +
             '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + (h.storeName || 'Mağaza') + '</span>' +
-            (isSold ? ' <span style="font-size:10px;color:var(--success);font-weight:800;">✓ SATIŞ OLDU' + (h.soldAt ? ' · '+h.soldAt : '') + '</span>' : '');
+            (isSold ? ' <span style="font-size:10px;color:var(--success);font-weight:800;">✓ SATIŞ OLDU' + (h.soldAt ? ' · '+h.soldAt : '') + '</span>' + editDateBtn : '');
         document.getElementById('prev-items').innerHTML = h.basket.map(function(i, idx) {
             const editBtn = isAdmin ? '' : ' <span onclick="openEditHistoryItem(\'' + key + '\', ' + idx + ')" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;">✎</span>';
             return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">' +
@@ -3116,6 +3233,30 @@
                 '</span></div>';
         }).join('');
         document.getElementById('history-preview').style.display = 'block';
+    }
+
+    // Zaten "Satış Oldu" işaretlenmiş bir kaydın satış tarihini sonradan düzeltir.
+    function editSaleDate(key, storeId) {
+        const h = _historyCache.find(function(x) { return x.key === key; });
+        if(!h) return;
+        const currentDateStr = h.soldAtMillis ? new Date(h.soldAtMillis).toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
+        sysPrompt('Bu satışın doğru tarihini seç:', {
+            title: 'Satış Tarihini Düzelt',
+            inputType: 'date',
+            defaultValue: currentDateStr
+        }).then(function(dateStr) {
+            if(dateStr === null || !dateStr) return;
+            const d = new Date(dateStr + 'T12:00:00');
+            fbDb.ref('stores/' + storeId + '/history/' + key).update({
+                soldAt: d.toLocaleDateString('tr-TR'),
+                soldAtMillis: d.getTime()
+            }).then(function() {
+                previewHistory(key); // ekranı tazele
+            }).catch(function(err) {
+                console.error('Tarih güncellenemedi:', err);
+                sysAlert('Tarih güncellenirken hata oluştu: ' + err.message, { tone: 'danger' });
+            });
+        });
     }
 
     // Geçmişteki bir kaydın içindeki tek bir ürünün kodu/notunu düzenler (fiyat aynı kalır, geriye dönük doğru kod girilebilsin diye)
@@ -3823,7 +3964,7 @@
         });
 
         const f = n => Math.round(n).toLocaleString('tr-TR');
-        const monthRows = _historyCache.filter(function(h) { return (h.tsMillis||0) >= monthStart && h.status === 'sold'; });
+        const monthRows = _historyCache.filter(function(h) { return h.status === 'sold' && (h.soldAtMillis || h.tsMillis || 0) >= monthStart; });
 
         let totalCash = 0, totalEtiket = 0;
         const byStore = {}; // storeId -> { name, count, cash, etiket }
@@ -3933,7 +4074,11 @@
         }
 
         const totals = months.map(function(m) {
-            const rows = _historyCache.filter(function(h) { return h.status === 'sold' && (h.tsMillis||0) >= m.start && (h.tsMillis||0) < m.end; });
+            const rows = _historyCache.filter(function(h) {
+                if(h.status !== 'sold') return false;
+                const d = h.soldAtMillis || h.tsMillis || 0;
+                return d >= m.start && d < m.end;
+            });
             const etiket = rows.reduce(function(a,h){ return a + h.basket.reduce(function(aa,b){ return aa + (b._rawP ? smartEval(b._rawP) : 0); }, 0); }, 0);
             return etiket / 3;
         });
@@ -4007,8 +4152,10 @@
             if(bolgeFilter && info.bolge !== bolgeFilter) return false;
             if(ilFilter && info.il !== ilFilter) return false;
             if(typeFilter && info.storeType !== typeFilter) return false;
-            if(startD && (h.tsMillis||0) < startD) return false;
-            if(endD && (h.tsMillis||0) > endD) return false;
+            // Satış kayıtlarında gerçek satış tarihi (soldAtMillis) esas alınır, teklif kayıtlarında oluşturulma tarihi (tsMillis).
+            const effectiveDate = (h.status === 'sold' && h.soldAtMillis) ? h.soldAtMillis : (h.tsMillis || 0);
+            if(startD && effectiveDate < startD) return false;
+            if(endD && effectiveDate > endD) return false;
             return true;
         });
     }
@@ -4152,7 +4299,7 @@
                         il: (_storesInfo[h.storeId]||{}).il || '—',
                         bolge: (_storesInfo[h.storeId]||{}).bolge || '—',
                         musteri: h.cusName,
-                        tarih: h.ts,
+                        tarih: h.soldAt || h.ts,
                         kod: item.k,
                         etiket: Math.round(etiket),
                         etiketBolu3: Math.round(etiket/3),
@@ -4218,7 +4365,8 @@
             .sort(function(a,b) { return b.val - a.val; }).slice(0, 10); // en fazla 10 mağaza göster, taşma olmasın
 
         // 2) TREND: filtre tarih aralığına göre günlük ya da aylık toplam (aralık 45 günden büyükse aylık grupla)
-        const dates = filteredRows.map(function(h) { return h.tsMillis || 0; }).filter(function(t) { return t > 0; });
+        // Gerçek satış tarihi (soldAtMillis) esas alınır — geçmişe dönük girilen satışlar doğru aya/güne düşsün.
+        const dates = filteredRows.filter(function(h) { return h.status === 'sold'; }).map(function(h) { return h.soldAtMillis || h.tsMillis || 0; }).filter(function(t) { return t > 0; });
         const minD = dates.length ? Math.min.apply(null, dates) : Date.now();
         const maxD = dates.length ? Math.max.apply(null, dates) : Date.now();
         const spanDays = Math.max(1, Math.round((maxD - minD) / 86400000));
@@ -4226,7 +4374,7 @@
 
         const trendBuckets = {}; // key -> total
         filteredRows.filter(function(h) { return h.status === 'sold'; }).forEach(function(h) {
-            const d = new Date(h.tsMillis || 0);
+            const d = new Date(h.soldAtMillis || h.tsMillis || 0);
             const key = groupByMonth ? (d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')) : d.toLocaleDateString('tr-TR');
             const et = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0) / 3;
             trendBuckets[key] = (trendBuckets[key] || 0) + et;
