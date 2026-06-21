@@ -1158,6 +1158,7 @@
             <input type="text" id="sys-modal-input" style="display:none;">
             <div id="sys-modal-actions">
                 <button class="sys-btn-cancel" id="sys-modal-cancel" style="display:none;">Vazgeç</button>
+                <button class="sys-btn-cancel" id="sys-modal-secondary" style="display:none;">İkinci Seçenek</button>
                 <button class="sys-btn-ok" id="sys-modal-ok">Tamam</button>
             </div>
         </div>
@@ -1269,17 +1270,26 @@
                 </div>
             </div>
 
+            <div id="linked-history-banner" style="display:none; margin:0 0 8px; padding:10px 14px; background:var(--rose-pale); border:1px solid var(--rose-soft); border-radius:10px; font-size:11.5px; color:var(--rose); font-weight:600; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <span id="linked-history-text">🔗 Bağlı kayıt: —</span>
+                <span onclick="unlinkHistoryRecord()" style="cursor:pointer; font-weight:800; opacity:.7;">✕ Bağlantıyı Kaldır</span>
+            </div>
+
             <div class="action-row" style="flex-direction:column; gap:8px;">
                 <div style="display:flex; gap:8px; width:100%;">
                     <input type="text" id="iKod" placeholder="Model / Stok Kodu (opsiyonel)" style="font-size:15px; flex:1; text-align:left; padding:12px 14px;">
                     <button class="btn-primary" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
                 </div>
-                <div style="display:flex; gap:8px; width:100%;">
+                <div id="normal-save-actions" style="display:flex; gap:8px; width:100%;">
                     <button class="btn-dark" style="flex:1;" onclick="openCusModal('save')">👤 Müşteriye Kaydet</button>
                     <button class="btn-ghost" style="flex:1;" onclick="openCusModal('pdf')">📄 PDF Teklif</button>
                 </div>
+                <div id="linked-save-actions" style="display:none; gap:8px; width:100%;">
+                    <button class="btn-dark" style="flex:1; background:var(--success);" onclick="completeLinkedSale()">✓ Bu Satışı Tamamla</button>
+                    <button class="btn-ghost" style="flex:1;" onclick="openCusModal('pdf')">📄 PDF Teklif</button>
+                </div>
                 <div style="display:flex; gap:8px; width:100%;">
-                    <button class="btn-ghost" style="flex:1;" onclick="openModal('historyModal')">🕐 Geçmiş</button>
+                    <button class="btn-ghost" style="flex:1;" onclick="openHistoryScreen()">🕐 Geçmiş</button>
                 </div>
             </div>
 
@@ -1318,7 +1328,10 @@
                     <div class="sum-cell"><div class="sum-cell-label">Tek Çekim</div><div class="sum-cell-val"><span id="sum1">0</span> ₺</div></div>
                     <div class="sum-cell cash"><div class="sum-cell-label">Nakit</div><div class="sum-cell-val"><span id="sumN">0</span> ₺</div></div>
                 </div>
-                <button class="btn-clear" onclick="clearBasket()">Sepeti Temizle</button>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="btn-ghost" style="flex:1; border-radius:var(--r-sm); padding:10px;" onclick="openBasketTotalEdit()">✎ Toplamı Düzenle</button>
+                    <button class="btn-clear" style="flex:1;" onclick="clearBasket()">Sepeti Temizle</button>
+                </div>
             </div>
         </div>
 
@@ -1423,14 +1436,20 @@
     <!-- MÜŞTERİ / PDF MODAL -->
     <div id="cusModal" class="modal-overlay">
         <div class="modal" style="max-width:380px;">
-            <div class="simple-modal-body">
+            <div class="modal-header">
                 <h3 id="cusModalTitle">Müşteri Bilgileri</h3>
+                <span class="modal-close" onclick="closeModal('cusModal')">×</span>
+            </div>
+            <div class="simple-modal-body">
                 <label class="field-label">Müşteri Adı</label>
                 <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px;">
                 <label class="field-label" style="margin-top:12px;">Telefon</label>
                 <input type="text" id="iPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
                 <div id="cusModalError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
-                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" id="cusModalSubmitBtn" onclick="generatePDF()">📄 Yazdır</button>
+                <div style="display:flex; gap:8px; margin-top:14px;">
+                    <button class="btn-ghost" style="flex:1; border-radius:var(--r-sm);" onclick="closeModal('cusModal')">Vazgeç</button>
+                    <button class="btn-primary" style="flex:2; border-radius:var(--r-sm);" id="cusModalSubmitBtn" onclick="generatePDF()">📄 Yazdır</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1460,30 +1479,50 @@
         </div>
     </div>
 
-    <!-- GEÇMİŞ MODAL -->
-    <div id="historyModal" class="modal-overlay">
-        <div class="modal" style="max-width:500px;">
+    <!-- SEPET TOPLAMI DÜZENLE MODAL -->
+    <div id="basketTotalEditModal" class="modal-overlay">
+        <div class="modal" style="max-width:380px;">
             <div class="modal-header">
-                <h3>Teklif Geçmişi</h3>
-                <span class="modal-close" onclick="closeModal('historyModal')">×</span>
+                <h3>Sepet Toplamını Düzenle</h3>
+                <span class="modal-close" onclick="closeModal('basketTotalEditModal')">×</span>
             </div>
-            <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; gap:8px;">
-                <input type="text" id="histSearch" placeholder="Ad, soyad, numara veya mağaza ara..." style="font-size:13px; padding:8px 12px; flex:1; text-align:left;" oninput="renderHistory()">
-                <button id="btnClearHistory" onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
+            <div class="simple-modal-body">
+                <div style="font-size:11px; color:var(--ink-dim); margin-bottom:10px; line-height:1.5;">Şu anki Nakit toplamı: <b id="basketTotalCurrentN">0 ₺</b> (<span id="basketTotalItemCount">0</span> ürün)<br>Yeni bir tutar gir, fark tüm ürünlere orantılı olarak yansıtılır.</div>
+                <label class="field-label">Yeni Nakit Toplamı</label>
+                <input type="text" id="basketTotalNewN" class="big-input" style="font-size:22px;" placeholder="Örn: 38000">
+                <div id="basketTotalError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
+                <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="applyBasketTotalEdit()">Uygula</button>
             </div>
-            <div id="history-list" style="padding:0; max-height:40vh; overflow-y:auto; border-bottom:1px solid var(--border);">
-            </div>
-            <!-- Önizleme Paneli -->
-            <div id="history-preview" style="display:none; padding:16px 20px; background:var(--bg);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                    <div style="font-size:12px; font-weight:700; color:var(--ink);" id="prev-title">—</div>
-                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <button onclick="document.getElementById('history-preview').style.display='none'; _previewKey=null;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕ Kapat</button>
-                        <button id="btnPrintHistoryPdf" onclick="printHistoryAsIs()" style="background:none; border:1.5px solid var(--rose-soft); color:var(--rose); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; cursor:pointer;">📄 O Günkü Fiyatla PDF</button>
-                        <button id="btnLoadHistory" onclick="confirmLoadHistory()" style="background:var(--rose); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:11px; font-weight:700; cursor:pointer;">↩ Güncel Kurla Aktar</button>
-                    </div>
+        </div>
+    </div>
+
+    <!-- GEÇMİŞ EKRANI (tam ekran) -->
+    <div id="history-screen" style="position:fixed; inset:0; background:var(--bg); z-index:600; display:none; flex-direction:column;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
+            <h3 style="margin:0; font-size:16px;">Teklif Geçmişi</h3>
+            <button onclick="closeHistoryScreen()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; color:var(--ink-mid); cursor:pointer;">✕ Kapat</button>
+        </div>
+        <div style="display:flex; flex:1; overflow:hidden; flex-wrap:wrap;">
+            <!-- SOL: Liste -->
+            <div id="history-list-pane" style="flex:1; min-width:320px; display:flex; flex-direction:column; border-right:1px solid var(--border); overflow:hidden;">
+                <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; gap:8px; background:var(--surface);">
+                    <input type="text" id="histSearch" placeholder="Ad, soyad, numara veya mağaza ara..." style="font-size:13px; padding:9px 12px; flex:1; text-align:left;" oninput="renderHistory()">
+                    <button id="btnClearHistory" onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:9px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
                 </div>
-                <div id="prev-items" style="font-size:11px; color:var(--ink-mid); line-height:1.8;"></div>
+                <div id="history-list" style="flex:1; overflow-y:auto;">
+                </div>
+            </div>
+            <!-- SAĞ: Önizleme -->
+            <div id="history-preview" style="display:none; flex:1; min-width:320px; padding:22px 26px; overflow-y:auto; background:var(--surface);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                    <div style="font-size:14px; font-weight:700; color:var(--ink);" id="prev-title">—</div>
+                    <button onclick="document.getElementById('history-preview').style.display='none'; _previewKey=null;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:7px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕</button>
+                </div>
+                <div id="prev-items" style="font-size:12px; color:var(--ink-mid); line-height:1.9; margin-bottom:18px;"></div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button id="btnLoadHistory" onclick="confirmLoadHistory()" style="background:var(--rose); color:#fff; border:none; border-radius:9px; padding:11px 18px; font-size:12.5px; font-weight:700; cursor:pointer; flex:1; min-width:160px;">↩ Sepete Yükle (Düzenle)</button>
+                    <button id="btnPrintHistoryPdf" onclick="printHistoryAsIs()" style="background:none; border:1.5px solid var(--rose-soft); color:var(--rose); border-radius:9px; padding:11px 16px; font-size:12.5px; font-weight:700; cursor:pointer;">📄 O Günkü Fiyatla PDF</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1855,6 +1894,37 @@
         document.getElementById('sys-modal-input').style.display = 'none';
         document.getElementById('sys-modal-input').value = '';
         document.getElementById('sys-modal-cancel').style.display = 'none';
+        document.getElementById('sys-modal-secondary').style.display = 'none';
+    }
+
+    // 3 seçenekli onay: ok (örn. "Üstüne Ekle"), secondary (örn. "Değiştir"), cancel (örn. "Vazgeç")
+    // resolve değeri: 'ok' | 'secondary' | 'cancel'
+    function sysThreeWay(message, opts) {
+        opts = opts || {};
+        return new Promise(function(resolve) {
+            document.getElementById('sys-modal-icon').className = opts.tone || 'warn';
+            document.getElementById('sys-modal-icon').innerText = '⚠️';
+            document.getElementById('sys-modal-title').innerText = opts.title || 'Seçim Yap';
+            document.getElementById('sys-modal-message').innerText = message;
+            document.getElementById('sys-modal-input').style.display = 'none';
+
+            const cancelBtn = document.getElementById('sys-modal-cancel');
+            cancelBtn.style.display = 'block';
+            cancelBtn.innerText = opts.cancelText || 'Vazgeç';
+            cancelBtn.onclick = function() { _sysModalClose(); resolve('cancel'); };
+
+            const secondaryBtn = document.getElementById('sys-modal-secondary');
+            secondaryBtn.style.display = 'block';
+            secondaryBtn.innerText = opts.secondaryText || 'İkinci Seçenek';
+            secondaryBtn.onclick = function() { _sysModalClose(); resolve('secondary'); };
+
+            const okBtn = document.getElementById('sys-modal-ok');
+            okBtn.innerText = opts.okText || 'Onayla';
+            okBtn.className = 'sys-btn-ok';
+            okBtn.onclick = function() { _sysModalClose(); resolve('ok'); };
+
+            document.getElementById('sys-modal-overlay').style.display = 'flex';
+        });
     }
 
     function sysAlert(message, opts) {
@@ -2202,6 +2272,60 @@
         setTimeout(() => { const c = document.getElementById('basket-container'); c.scrollTop = c.scrollHeight; }, 100);
     }
 
+    function updateLinkedHistoryBanner() {
+        const banner = document.getElementById('linked-history-banner');
+        const normalActions = document.getElementById('normal-save-actions');
+        const linkedActions = document.getElementById('linked-save-actions');
+        if(_linkedHistoryKey && basket.length > 0) {
+            const h = _historyCache.find(function(x) { return x.key === _linkedHistoryKey; });
+            const label = h ? (h.cusName + ' · ' + h.ts) : _linkedHistoryKey;
+            document.getElementById('linked-history-text').innerText = '🔗 Bağlı kayıt: ' + label;
+            banner.style.display = 'flex';
+            normalActions.style.display = 'none';
+            linkedActions.style.display = 'flex';
+        } else {
+            banner.style.display = 'none';
+            normalActions.style.display = 'flex';
+            linkedActions.style.display = 'none';
+        }
+    }
+
+    function unlinkHistoryRecord() {
+        _linkedHistoryKey = null;
+        _linkedHistoryStoreId = null;
+        updateLinkedHistoryBanner();
+    }
+
+    function completeLinkedSale() {
+        if(!_linkedHistoryKey || !_linkedHistoryStoreId) return;
+        if(!basket.length) { sysAlert('Sepet boş, tamamlanacak bir satış yok.', { tone: 'warn' }); return; }
+        const cusName  = document.getElementById('iCus').value.trim()  || 'Müşterimiz';
+        const cusPhone = document.getElementById('iPhone').value.trim() || '—';
+
+        sysConfirm('Bu satışı tamamlamak istediğine emin misin? Sepetteki güncel ürün ve fiyatlarla geçmiş kaydı güncellenecek ve "Satış Oldu" olarak işaretlenecek.', { title: 'Satışı Tamamla', okText: 'Evet, Tamamla' }).then(function(ok) {
+            if(!ok) return;
+            const updates = {
+                cusName: cusName,
+                cusPhone: cusPhone,
+                basket: JSON.parse(JSON.stringify(basket)),
+                status: 'sold',
+                soldAt: new Date().toLocaleDateString('tr-TR'),
+                soldAtMillis: Date.now()
+            };
+            fbDb.ref('stores/' + _linkedHistoryStoreId + '/history/' + _linkedHistoryKey).update(updates)
+                .then(function() {
+                    sysAlert('Satış tamamlandı ve geçmiş güncellendi.', { title: 'Tamamlandı' });
+                    _linkedHistoryKey = null;
+                    _linkedHistoryStoreId = null;
+                    clearBasketAfterSave();
+                })
+                .catch(function(err) {
+                    console.error('Güncellenemedi:', err);
+                    sysAlert('Satış tamamlanırken hata oluştu: ' + err.message, { tone: 'danger', title: 'Hata' });
+                });
+        });
+    }
+
     function renderBasket() {
         const container = document.getElementById('basket-container');
         const countEl   = document.getElementById('basket-count');
@@ -2209,6 +2333,7 @@
             container.innerHTML = `<div class="empty-basket"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><p>Sepet boş</p></div>`;
             document.getElementById('sum-box').style.display = 'none';
             if(countEl) countEl.innerText = '';
+            updateLinkedHistoryBanner();
             return;
         }
         document.getElementById('sum-box').style.display = 'block';
@@ -2218,7 +2343,9 @@
         document.getElementById('sum2').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v2, 0)).toLocaleString('tr-TR');
         document.getElementById('sum1').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v1, 0)).toLocaleString('tr-TR');
         document.getElementById('sumN').innerText = Math.round(basket.reduce((a,b)=>a+b.v.vN, 0)).toLocaleString('tr-TR');
+        updateLinkedHistoryBanner();
     }
+
 
     function createGroupHtml(title, mode, items) {
         const f = (n) => Math.round(n).toLocaleString('tr-TR');
@@ -2314,9 +2441,9 @@
                     if(yes) {
                         _cusModalPurpose = 'pdf-only-print'; // geçmişe tekrar yazmadan sadece yazdır
                         printCurrentBasketPdf(cusName, cusPhone);
+                        clearBasketAfterSave();
                     } else {
-                        document.getElementById('iCus').value = '';
-                        document.getElementById('iPhone').value = '';
+                        clearBasketAfterSave();
                     }
                 });
             }).catch(function(err) {
@@ -2333,6 +2460,16 @@
         }
     }
 
+    // Müşteriye Kaydet / PDF işlemi tamamlandıktan sonra sepeti ve müşteri bilgisi alanlarını temizler
+    function clearBasketAfterSave() {
+        basket = [];
+        _linkedHistoryKey = null;
+        _linkedHistoryStoreId = null;
+        document.getElementById('iCus').value = '';
+        document.getElementById('iPhone').value = '';
+        renderBasket();
+    }
+
     function generatePDF() {
         const cusName  = document.getElementById('iCus').value.trim()  || 'Müşterimiz';
         const cusPhone = document.getElementById('iPhone').value.trim() || '—';
@@ -2346,6 +2483,7 @@
             );
         });
         printCurrentBasketPdf(cusName, cusPhone);
+        clearBasketAfterSave();
     }
 
     // Sadece yazdırma ekranını hazırlar ve yazdırır (geçmişe ayrıca yazmaz — bu, çağıran fonksiyonun işidir)
@@ -2557,13 +2695,18 @@
         }
     }
 
-    function openHistory() {
+    function openHistoryScreen() {
         document.getElementById('histSearch').value = '';
         document.getElementById('history-preview').style.display = 'none';
         document.getElementById('btnClearHistory').style.display = isAdmin ? 'none' : 'inline-block';
         _previewKey = null;
         attachHistoryListener();
         renderHistory();
+        document.getElementById('history-screen').style.display = 'flex';
+    }
+
+    function closeHistoryScreen() {
+        document.getElementById('history-screen').style.display = 'none';
     }
 
     function renderHistory() {
@@ -2689,29 +2832,53 @@
         setTimeout(function() { basket = savedBasket; renderBasket(); }, 1200);
     }
 
+    let _linkedHistoryKey = null;   // sepet şu an hangi geçmiş kayda "bağlı" (varsa)
+    let _linkedHistoryStoreId = null;
+
     function confirmLoadHistory() {
         if(_previewKey === null) return;
-        loadHistory(_previewKey);
+        if(basket.length > 0) {
+            sysThreeWay(
+                'Sepette zaten ' + basket.length + ' ürün var. Ne yapmak istersin?',
+                { title: 'Sepet Boş Değil', okText: 'Üstüne Ekle', secondaryText: 'Sepeti Değiştir', cancelText: 'Vazgeç' }
+            ).then(function(choice) {
+                if(choice === 'ok') loadHistory(_previewKey, true);
+                else if(choice === 'secondary') loadHistory(_previewKey, false);
+                // 'cancel' → hiçbir şey yapma
+            });
+            return;
+        }
+        loadHistory(_previewKey, false);
     }
 
-    function loadHistory(key) {
+    function loadHistory(key, addOnTop) {
         const h = _historyCache.find(function(x) { return x.key === key; });
         if(!h) return;
         // Güncel kurlarla yeniden hesapla
         const u  = smartEval(document.getElementById('cfgU').value),
               up = smartEval(document.getElementById('cfgU_plus').value);
         const xU = u * (1 + up/100);
-        basket = h.basket.map(function(item) {
+        const loadedItems = h.basket.map(function(item) {
             const ni = JSON.parse(JSON.stringify(item));
+            ni.id = Date.now() + Math.floor(Math.random()*10000); // çakışmayı önlemek için yeni id
             if(ni.mode === 'pirlanta' && ni._rawP) {
                 const labelVal = smartEval(ni._rawP);
                 ni.v = calcForLabelValue(labelVal, u, xU);
             }
             return ni;
         });
+
+        if(addOnTop) {
+            basket = basket.concat(loadedItems);
+        } else {
+            basket = loadedItems;
+        }
+
+        _linkedHistoryKey = key;
+        _linkedHistoryStoreId = h.storeId;
         document.getElementById('iCus').value   = h.cusName !== 'Müşterimiz' ? h.cusName : '';
         document.getElementById('iPhone').value = h.cusPhone !== '—' ? h.cusPhone : '';
-        closeModal('historyModal');
+        closeHistoryScreen();
         renderBasket();
     }
 
@@ -3154,7 +3321,10 @@
 
         const ranked = Object.keys(byStore).map(function(sid) { return Object.assign({ storeId: sid, il: (_storesInfo[sid]||{}).il || '' }, byStore[sid]); })
             .sort(function(a,b) {
-                return _dashSortBy === 'count' ? (b.count - a.count) : (b.etiket - a.etiket);
+                if(_dashSortBy === 'count') {
+                    return (b.count - a.count) || (b.etiket - a.etiket);
+                }
+                return (b.etiket - a.etiket) || (b.count - a.count);
             });
 
         const sortBarEl = document.getElementById('dash-store-rank-sortbar');
@@ -3283,7 +3453,12 @@
                 byStore[h.storeId].etiket += et;
             });
             const ranked = Object.keys(byStore).map(function(sid) { return Object.assign({ storeId: sid }, byStore[sid]); })
-                .sort(function(a,b) { return _reportSortBy === 'count' ? (b.count - a.count) : (b.etiket - a.etiket); });
+                .sort(function(a,b) {
+                    if(_reportSortBy === 'count') {
+                        return (b.count - a.count) || (b.etiket - a.etiket);
+                    }
+                    return (b.etiket - a.etiket) || (b.count - a.count);
+                });
 
             if(!ranked.length) {
                 listEl.innerHTML = '<div style="padding:24px 4px; text-align:center; color:var(--dash-ink-dim); font-size:13px;">Kayıt bulunamadı.</div>';
@@ -3380,7 +3555,12 @@
             let storeRows = Object.values(byStore).map(function(s) {
                 return { magaza: s.magaza, il: s.il, bolge: s.bolge, adet: s.adet, nakit: Math.round(s.nakit), etiketBolu3: Math.round(s.etiket/3) };
             });
-            storeRows.sort(function(a,b) { return _reportSortBy === 'count' ? (b.adet - a.adet) : (b.etiketBolu3 - a.etiketBolu3); });
+            storeRows.sort(function(a,b) {
+                if(_reportSortBy === 'count') {
+                    return (b.adet - a.adet) || (b.etiketBolu3 - a.etiketBolu3);
+                }
+                return (b.etiketBolu3 - a.etiketBolu3) || (b.adet - a.adet);
+            });
             return { mode: 'tutar', rows: storeRows };
         }
     }
@@ -3503,7 +3683,57 @@
 
     function removeItem(id)  { basket = basket.filter(i=>i.id!==id); renderBasket(); }
     function clearBasket()   { basket = []; renderBasket(); }
-    function openModal(id)   { document.getElementById(id).style.display='flex'; if(id==='historyModal') openHistory(); }
+
+    // Sepet toplamından (Nakit) düzenleme: yeni tutarı tüm ürünlere orantılı dağıtır.
+    // Her ürünün 3T/2T/Tek/Nakit fiyatı aynı oranla ölçeklenir, _manualN=true işaretlenir.
+    function openBasketTotalEdit() {
+        if(!basket.length) return;
+        const currentN = basket.reduce((a,b) => a + b.v.vN, 0);
+        document.getElementById('basketTotalCurrentN').innerText = Math.round(currentN).toLocaleString('tr-TR') + ' ₺';
+        document.getElementById('basketTotalItemCount').innerText = basket.length;
+        document.getElementById('basketTotalNewN').value = Math.round(currentN);
+        document.getElementById('basketTotalError').style.display = 'none';
+        openModal('basketTotalEditModal');
+    }
+
+    function applyBasketTotalEdit() {
+        const errEl = document.getElementById('basketTotalError');
+        const newTotal = smartEval(document.getElementById('basketTotalNewN').value);
+        if(!(newTotal > 0)) {
+            errEl.innerText = 'Geçerli bir tutar gir.';
+            errEl.style.display = 'block';
+            return;
+        }
+        const currentTotal = basket.reduce((a,b) => a + b.v.vN, 0);
+        if(!(currentTotal > 0)) {
+            errEl.innerText = 'Sepetteki ürünlerin toplamı sıfır, dağıtım yapılamıyor.';
+            errEl.style.display = 'block';
+            return;
+        }
+        const ratio = newTotal / currentTotal;
+        const u  = smartEval(document.getElementById('cfgU').value),
+              up = smartEval(document.getElementById('cfgU_plus').value);
+        const xU = u * (1 + up/100);
+        const codes = getCodes(u, xU);
+        basket.forEach(function(item) {
+            const labelVal = smartEval(item._rawP);
+            const costTl = (labelVal / 3) * u;
+            item.v.v3 = item.v.v3 * ratio;
+            item.v.v2 = item.v.v2 * ratio;
+            item.v.v1 = item.v.v1 * ratio;
+            item.v.vN = item.v.vN * ratio;
+            item.v.m3 = codes.getPCode(item.v.v3, costTl);
+            item.v.m2 = codes.getPCode(item.v.v2, costTl);
+            item.v.m1 = codes.getPCode(item.v.v1, costTl);
+            item.v.mN = codes.getPCode(item.v.vN, costTl);
+            item._manualN = true;
+            item.d = 'Pırlanta · Manuel fiyat';
+        });
+        closeModal('basketTotalEditModal');
+        renderBasket();
+    }
+
+    function openModal(id)   { document.getElementById(id).style.display='flex'; }
     function closeModal(id)  { document.getElementById(id).style.display='none'; }
     // ── BAĞLANTI DURUMU İZLEME ──
     // navigator.onLine sadece ağ arayüzünün açık olduğunu gösterir (yanıltıcı olabilir);
