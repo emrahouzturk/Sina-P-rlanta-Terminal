@@ -1234,7 +1234,7 @@
             <div class="input-card">
                 <div id="formP">
                     <label class="field-label">Pırlanta Etiket</label>
-                    <input type="text" id="inpP" class="big-input" oninput="applyThousandsMask(this); runCalc();" placeholder="0.00" inputmode="search">
+                    <input type="text" id="inpP" class="big-input" oninput="applyThousandsMask(this); runCalc();" placeholder="0.00" inputmode="text">
                     <div id="inpP-parts" style="display:none; margin-top:6px; font-size:10px; color:var(--ink-dim); text-align:center; line-height:1.8;"></div>
                 </div>
             </div>
@@ -1284,9 +1284,10 @@
                     <input type="text" id="iKod" placeholder="Model / Stok Kodu (opsiyonel)" style="font-size:15px; flex:1; text-align:left; padding:12px 14px; text-transform:uppercase;">
                     <button class="btn-primary" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
                 </div>
-                <div id="normal-save-actions" style="display:flex; gap:8px; width:100%;">
-                    <button class="btn-dark" style="flex:1;" onclick="openCusModal('save')">👤 Müşteriye Kaydet</button>
-                    <button class="btn-ghost" style="flex:1;" onclick="openCusModal('pdf')">📄 PDF Teklif</button>
+                <div id="normal-save-actions" style="display:flex; flex-wrap:wrap; gap:8px; width:100%;">
+                    <button class="btn-dark" style="flex:1; min-width:140px; background:var(--success);" onclick="openCusModal('directSale')">✓ Satış Oldu</button>
+                    <button class="btn-dark" style="flex:1; min-width:140px;" onclick="openCusModal('save')">👤 Müşteriye Kaydet</button>
+                    <button class="btn-ghost" style="flex:1; min-width:140px;" onclick="openCusModal('pdf')">📄 PDF Teklif</button>
                 </div>
                 <div id="linked-save-actions" style="display:none; gap:8px; width:100%;">
                     <button class="btn-dark" style="flex:1; background:var(--success);" onclick="completeLinkedSale()">✓ Bu Satışı Tamamla</button>
@@ -1474,9 +1475,9 @@
                 <label class="field-label" style="margin-top:12px;" id="editLabel">Değer</label>
                 <input type="text" id="editVal" class="big-input" style="font-size:22px;" oninput="applyThousandsMask(this); previewManualPriceProfit();">
                 <div style="margin-top:14px; padding:12px; background:var(--bg); border-radius:10px; border:1px solid var(--border);">
-                    <label class="field-label" style="margin:0;">Manuel Fiyat Düzeltme (opsiyonel)</label>
-                    <div style="font-size:10px; color:var(--ink-dim); margin:4px 0 8px;">Boş bırakırsan otomatik hesaplanan fiyat kullanılır. Buraya bir tutar yazarsan, sadece bu üründe TÜM fiyatları (3T/2T/Tek/Nakit) o tutara göre orantılı kaydırır — örn. ekstra indirim için.</div>
-                    <input type="text" id="editManualPrice" placeholder="Örn: 42.000 (Nakit fiyatı)" style="font-size:15px; text-align:left; padding:9px 12px;" oninput="applyThousandsMask(this); previewManualPriceProfit();">
+                    <label class="field-label" style="margin:0;">Nakit Fiyatı (Ekstra İndirim İçin Düzenle)</label>
+                    <div style="font-size:10px; color:var(--ink-dim); margin:4px 0 8px;">Şu anki Nakit fiyatı aşağıda yazıyor. Değiştirmezsen otomatik hesaplanan fiyat kullanılır. Değiştirirsen TÜM fiyatlar (3T/2T/Tek/Nakit) o tutara göre orantılı kayar.</div>
+                    <input type="text" id="editManualPrice" style="font-size:15px; text-align:left; padding:9px 12px;" oninput="applyThousandsMask(this); previewManualPriceProfit();">
                     <div id="editManualProfitIndicator" style="display:none; margin-top:8px; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:700; text-align:center;"></div>
                 </div>
                 <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="saveEdit()">Kaydet</button>
@@ -2146,23 +2147,13 @@
         return parts.length > 1 ? withDots + ',' + parts[1] : withDots;
     }
 
-    // input elementindeki değeri canlı olarak binlik ayraçlı formatlar, imleç pozisyonunu korur.
+    // input elementindeki değeri canlı olarak binlik ayraçlı formatlar.
     // '+' ile ayrılmış çoklu girişte her parçayı ayrı ayrı formatlar.
+    // Basitlik ve güvenilirlik için imleç her zaman metnin sonuna taşınır.
     function applyThousandsMask(input) {
-        const oldValue = input.value;
-        const oldPos = input.selectionStart;
-        const digitsBeforeCursor = oldValue.slice(0, oldPos).replace(/[^\d,]/g, '').length;
-
-        const formatted = oldValue.split('+').map(formatThousands).join('+');
+        const formatted = input.value.split('+').map(formatThousands).join('+');
         input.value = formatted;
-
-        // İmleci, eski konumdaki rakam sayısına göre yeniden konumlandır
-        let count = 0, newPos = formatted.length;
-        for(let i = 0; i < formatted.length; i++) {
-            if(/[\d,]/.test(formatted[i])) count++;
-            if(count >= digitsBeforeCursor) { newPos = i + 1; break; }
-        }
-        input.setSelectionRange(newPos, newPos);
+        input.setSelectionRange(formatted.length, formatted.length);
     }
 
     // Her mağaza tamamen kendi kutusunda çalışır: stores/{storeId}/config, stores/{storeId}/history
@@ -2443,7 +2434,8 @@
     }
 
     // Sepeti mağazanın kendi geçmişine kaydeder. Hem PDF akışı hem "Müşteriye Kaydet" akışı bunu kullanır.
-    function saveToHistory(cusName, cusPhone) {
+    function saveToHistory(cusName, cusPhone, status) {
+        status = status || 'teklif';
         const now = new Date();
         const ts  = now.toLocaleString('tr-TR');
         const dateShort = now.toLocaleDateString('tr-TR');
@@ -2454,14 +2446,16 @@
 
         return fbDb.ref('stores/' + currentStoreId + '/history').push({
             ref, ts, tsMillis: now.getTime(), cusName, cusPhone, storeName,
-            status: 'teklif', soldAt: null, soldAtMillis: null,
+            status: status,
+            soldAt: status === 'sold' ? now.toLocaleDateString('tr-TR') : null,
+            soldAtMillis: status === 'sold' ? now.getTime() : null,
             basket: JSON.parse(JSON.stringify(basket))
         }).then(function() {
             return { ref, ts };
         });
     }
 
-    let _cusModalPurpose = 'pdf'; // 'pdf' | 'save'
+    let _cusModalPurpose = 'pdf'; // 'pdf' | 'save' | 'directSale'
 
     function openCusModal(purpose) {
         if(!basket.length) {
@@ -2472,14 +2466,19 @@
         document.getElementById('cusModalError').style.display = 'none';
         const titleEl = document.getElementById('cusModalTitle');
         const btnEl = document.getElementById('cusModalSubmitBtn');
+        btnEl.className = 'btn-primary';
+        btnEl.style.background = '';
+        btnEl.onclick = submitCusModal;
         if(purpose === 'save') {
             titleEl.innerText = 'Müşteriye Kaydet';
             btnEl.innerText = '👤 Kaydet';
-            btnEl.onclick = submitCusModal;
+        } else if(purpose === 'directSale') {
+            titleEl.innerText = '✓ Satış Oldu';
+            btnEl.innerText = '✓ Satışı Kaydet';
+            btnEl.style.background = 'var(--success)';
         } else {
             titleEl.innerText = 'Müşteri Bilgileri';
             btnEl.innerText = '📄 Yazdır';
-            btnEl.onclick = submitCusModal;
         }
         openModal('cusModal');
     }
@@ -2495,12 +2494,19 @@
             return;
         }
 
-        if(_cusModalPurpose === 'save') {
-            saveToHistory(cusName, cusPhone).then(function() {
+        if(_cusModalPurpose === 'save' || _cusModalPurpose === 'directSale') {
+            const status = _cusModalPurpose === 'directSale' ? 'sold' : 'teklif';
+            saveToHistory(cusName, cusPhone, status).then(function() {
                 closeModal('cusModal');
+                if(status === 'sold') {
+                    sysConfirm('"' + cusName + '" için satış kaydedildi.\n\nBu satışın PDF\'ini de şimdi yazdırmak ister misin?', { title: 'Satış Kaydedildi', okText: 'PDF Yazdır', cancelText: 'Hayır, Bu Kadar' }).then(function(yes) {
+                        if(yes) { printCurrentBasketPdf(cusName, cusPhone); }
+                        clearBasketAfterSave();
+                    });
+                    return;
+                }
                 sysConfirm('"' + cusName + '" için fiyat geçmişe kaydedildi.\n\nBu teklifin PDF\'ini de şimdi yazdırmak ister misin?', { title: 'Kaydedildi', okText: 'PDF Yazdır', cancelText: 'Hayır, Bu Kadar' }).then(function(yes) {
                     if(yes) {
-                        _cusModalPurpose = 'pdf-only-print'; // geçmişe tekrar yazmadan sadece yazdır
                         printCurrentBasketPdf(cusName, cusPhone);
                         clearBasketAfterSave();
                     } else {
@@ -2654,7 +2660,7 @@
         document.getElementById('editNote').value = item.note || '';
         document.getElementById('editLabel').innerText = 'Pırlanta Etiket';
         document.getElementById('editVal').value = formatThousands(item._rawP || '');
-        document.getElementById('editManualPrice').value = item._manualN ? formatThousands(String(Math.round(item.v.vN))) : '';
+        document.getElementById('editManualPrice').value = formatThousands(String(Math.round(item.v.vN)));
         previewManualPriceProfit();
         openModal('editModal');
     }
@@ -2715,12 +2721,13 @@
         item.v = calcForLabelValue(labelVal, u, xU);
         const costTl = (labelVal / 3) * u;
 
-        // Manuel fiyat düzeltmesi: girilirse Nakit fiyatı o tutara sabitlenir,
-        // diğer tüm fiyatlar (3T/2T/Tek) aynı orana göre orantılı kaydırılır.
+        // Manuel fiyat düzeltmesi: otomatik hesaplanan Nakit fiyatından farklıysa uygulanır.
+        // Alan her zaman dolu geldiği için (mevcut fiyatla), kullanıcı hiç değiştirmezse manuel sayılmaz.
         const manualRaw = document.getElementById('editManualPrice').value.trim();
         const manualVal = smartEvalThousands(manualRaw);
-        if(manualRaw && manualVal > 0) {
-            const ratio = manualVal / item.v.vN;
+        const autoVN = item.v.vN; // calcForLabelValue'dan gelen otomatik Nakit fiyatı
+        if(manualRaw && manualVal > 0 && Math.round(manualVal) !== Math.round(autoVN)) {
+            const ratio = manualVal / autoVN;
             item.v.v3 = item.v.v3 * ratio;
             item.v.v2 = item.v.v2 * ratio;
             item.v.v1 = item.v.v1 * ratio;
