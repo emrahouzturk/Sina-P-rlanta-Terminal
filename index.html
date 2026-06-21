@@ -1321,6 +1321,22 @@
                 <div id="h-tel-display" class="brand-sub"></div>
             </div>
 
+            <div id="leaderboard-card" style="display:none; background:linear-gradient(135deg,var(--rose-pale),var(--gold-pale)); border:1px solid var(--rose-soft); border-radius:14px; padding:14px 16px; margin-bottom:16px;">
+                <div style="font-size:10px; font-weight:800; color:var(--rose); letter-spacing:.05em; text-transform:uppercase; margin-bottom:8px;">🏆 Bu Ay Sıralaman</div>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1; text-align:center; background:rgba(255,255,255,.6); border-radius:10px; padding:8px 6px;">
+                        <div style="font-size:9px; color:var(--ink-dim); font-weight:700;">TÜRKİYE GENELİ</div>
+                        <div id="lb-turkiye-rank" style="font-size:20px; font-weight:800; color:var(--ink); margin-top:2px;">—</div>
+                        <div id="lb-turkiye-diff" style="font-size:9.5px; color:var(--ink-dim); margin-top:2px;">—</div>
+                    </div>
+                    <div style="flex:1; text-align:center; background:rgba(255,255,255,.6); border-radius:10px; padding:8px 6px;">
+                        <div style="font-size:9px; color:var(--ink-dim); font-weight:700;" id="lb-bolge-label">BÖLGE GENELİ</div>
+                        <div id="lb-bolge-rank" style="font-size:20px; font-weight:800; color:var(--ink); margin-top:2px;">—</div>
+                        <div id="lb-bolge-diff" style="font-size:9.5px; color:var(--ink-dim); margin-top:2px;">—</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="input-card">
                 <div id="formP">
                     <label class="field-label">Pırlanta Etiket</label>
@@ -1696,6 +1712,13 @@
         <div class="dash-body">
             <!-- TAB 0: GENEL BAKIŞ -->
             <div id="dash-pane0" class="dash-pane active">
+                <div class="dash-panel" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding:14px 20px;">
+                    <div>
+                        <div style="font-size:12.5px; font-weight:700; color:var(--dash-ink);">🏆 Mağaza Sıralama Ekranı</div>
+                        <div style="font-size:10.5px; color:var(--dash-ink-dim); margin-top:2px;">Açıksa mağazalar kendi Türkiye/bölge sıralamasını görür (tutar/adet paylaşılmaz, sadece sıra).</div>
+                    </div>
+                    <button id="leaderboard-toggle-btn" class="dash-btn-ghost" onclick="toggleLeaderboardVisibility()">Yükleniyor…</button>
+                </div>
                 <div class="dash-stat-grid">
                     <div class="dash-stat-card accent-gold">
                         <div class="eyebrow">Toplam Mağaza</div>
@@ -2278,12 +2301,14 @@
                     document.getElementById('user-chip').innerText = '🏪 ' + uname;
                     loadCfg();
                     attachHistoryListener();
+                    attachLeaderboardListener(uname);
                 }).catch(function() {
                     document.getElementById('dashboard-screen').style.display = 'none';
                     document.getElementById('main-wrapper').style.display = 'flex';
                     document.getElementById('user-chip').innerText = '🏪 ' + uname;
                     loadCfg();
                     attachHistoryListener();
+                    attachLeaderboardListener(uname);
                 });
             }
         } else {
@@ -2425,6 +2450,38 @@
         }, function(err) {
             console.error('Kur okunamadı:', err);
         });
+    }
+
+    // ── MAĞAZA SIRALAMA EKRANI (mağaza tarafı) ──
+    // Admin panelinden hesaplanıp yayınlanan sıra/yüzde bilgisini okur; ham etiket/ciro rakamı asla içermez.
+    function attachLeaderboardListener(storeId) {
+        fbDb.ref('globalSettings/leaderboardEnabled').on('value', function(snap) {
+            const enabled = snap.val() !== false; // varsayılan: açık
+            document.getElementById('leaderboard-card').style.display = enabled ? 'block' : 'none';
+        });
+        fbDb.ref('globalSettings/leaderboard/data/' + storeId).on('value', function(snap) {
+            const d = snap.val();
+            if(!d) return;
+            renderLeaderboardCard(d);
+        });
+    }
+
+    function renderLeaderboardCard(d) {
+        document.getElementById('lb-turkiye-rank').innerText = d.turkiyeRank + ' / ' + d.turkiyeTotal;
+        document.getElementById('lb-turkiye-diff').innerText = formatLeaderboardDiff(d.turkiyeRank, d.pctBehindAbove, d.pctBehindTop);
+
+        const bolgeLabelEl = document.getElementById('lb-bolge-label');
+        bolgeLabelEl.innerText = d.bolge ? (d.bolge.toUpperCase() + ' GENELİ') : 'BÖLGE GENELİ';
+        document.getElementById('lb-bolge-rank').innerText = d.bolgeRank + ' / ' + d.bolgeTotal;
+        document.getElementById('lb-bolge-diff').innerText = formatLeaderboardDiff(d.bolgeRank, d.bolgePctBehindAbove, d.bolgePctBehindTop);
+    }
+
+    function formatLeaderboardDiff(rank, pctBehindAbove, pctBehindTop) {
+        if(rank === 1) return '🥇 1. sıradasın!';
+        const parts = [];
+        if(pctBehindAbove !== null && pctBehindAbove !== undefined) parts.push('Üsttekine %' + Math.abs(pctBehindAbove) + ' uzak');
+        if(pctBehindTop !== null && pctBehindTop !== undefined) parts.push('1.\'ye %' + Math.abs(pctBehindTop) + ' uzak');
+        return parts.length ? parts.join(' · ') : '—';
     }
 
     function refreshUsdRateFromApi() {
@@ -3369,6 +3426,28 @@
         setDashTab(0);
         renderAdminStoreList();
         refreshStoresInfo().then(function() { renderAdminPanel(); renderDashOverview(); });
+        attachLeaderboardToggleListener();
+    }
+
+    // ── MAĞAZA SIRALAMA EKRANI AÇMA/KAPAMA (admin kontrolü) ──
+    function attachLeaderboardToggleListener() {
+        fbDb.ref('globalSettings/leaderboardEnabled').on('value', function(snap) {
+            const enabled = snap.val() !== false; // varsayılan: açık
+            const btn = document.getElementById('leaderboard-toggle-btn');
+            if(btn) {
+                btn.innerText = enabled ? '🟢 Açık — Kapat' : '⚪ Kapalı — Aç';
+            }
+        });
+    }
+
+    function toggleLeaderboardVisibility() {
+        fbDb.ref('globalSettings/leaderboardEnabled').once('value').then(function(snap) {
+            const current = snap.val() !== false;
+            fbDb.ref('globalSettings/leaderboardEnabled').set(!current);
+        }).catch(function(err) {
+            console.error('Ayar değiştirilemedi:', err);
+            sysAlert('Ayar değiştirilemedi: ' + err.message, { tone: 'danger' });
+        });
     }
 
     function populateProvinceDropdowns() {
@@ -4017,6 +4096,59 @@
 
         renderInactiveStores();
         renderTrendChart();
+        computeAndPublishLeaderboard(byStore);
+    }
+
+    // ── MAĞAZA SIRALAMASI HESAPLAMA (admin tarafında, mağazaların okuyabileceği ortak yola yazılır) ──
+    // byStore: { storeId: { etiket, ... } } — bu ayın etiket÷3 toplamı, bölge bilgisi _storesInfo'dan alınır.
+    // GÜVENLİK: Ham etiket/ciro rakamları Firebase'e hiç yazılmaz — sadece yüzdesel fark (türetilmiş, geri çözülemez) gönderilir.
+    function computeAndPublishLeaderboard(byStore) {
+        if(!isAdmin) return;
+        const entries = Object.keys(byStore).map(function(sid) {
+            return { storeId: sid, etiket: byStore[sid].etiket, bolge: (_storesInfo[sid]||{}).bolge || '' };
+        });
+        // Hiç satışı olmayan ama aktif olan mağazaları da listeye dahil et (0 ile), sıralamada en sonda yer alsınlar
+        Object.keys(_storesInfo).forEach(function(sid) {
+            if(_storesInfo[sid].archived) return;
+            if(!entries.find(function(e) { return e.storeId === sid; })) {
+                entries.push({ storeId: sid, etiket: 0, bolge: _storesInfo[sid].bolge || '' });
+            }
+        });
+
+        // Yüzdesel fark hesabı: (referans - kendi) / referans * 100. Referans 0 ise fark hesaplanmaz (null).
+        function pctDiff(self, reference) {
+            if(reference === null || reference === undefined || reference === 0) return null;
+            return Math.round(((reference - self) / reference) * 100);
+        }
+
+        const turkiyeSorted = entries.slice().sort(function(a,b) { return b.etiket - a.etiket; });
+        const leaderboard = {};
+        turkiyeSorted.forEach(function(e, idx) {
+            const bolgeList = turkiyeSorted.filter(function(x) { return x.bolge === e.bolge; });
+            const bolgeIdx = bolgeList.findIndex(function(x) { return x.storeId === e.storeId; });
+            const aboveEtiket = idx > 0 ? turkiyeSorted[idx-1].etiket : null;
+            const topEtiket = turkiyeSorted.length ? turkiyeSorted[0].etiket : null;
+            const bolgeAboveEtiket = bolgeIdx > 0 ? bolgeList[bolgeIdx-1].etiket : null;
+            const bolgeTopEtiket = bolgeList.length ? bolgeList[0].etiket : null;
+
+            leaderboard[e.storeId] = {
+                turkiyeRank: idx + 1,
+                turkiyeTotal: turkiyeSorted.length,
+                bolgeRank: bolgeIdx + 1,
+                bolgeTotal: bolgeList.length,
+                bolge: e.bolge,
+                // Sadece türetilmiş yüzdeler gönderilir — ham etiket/ciro rakamı asla yazılmaz.
+                pctBehindAbove: idx === 0 ? null : pctDiff(e.etiket, aboveEtiket),       // bir üstündeki mağazaya göre ne kadar gerideyim
+                pctBehindTop: idx === 0 ? null : pctDiff(e.etiket, topEtiket),           // 1. sıradakine göre ne kadar gerideyim
+                bolgePctBehindAbove: bolgeIdx === 0 ? null : pctDiff(e.etiket, bolgeAboveEtiket),
+                bolgePctBehindTop: bolgeIdx === 0 ? null : pctDiff(e.etiket, bolgeTopEtiket)
+            };
+        });
+
+        fbDb.ref('globalSettings/leaderboard').set({
+            data: leaderboard,
+            updatedAtMillis: Date.now()
+        }).catch(function(err) { console.error('Sıralama yayınlanamadı:', err); });
     }
 
     // ── HAREKETSİZ MAĞAZA UYARISI ──
