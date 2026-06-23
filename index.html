@@ -4188,7 +4188,6 @@
     }
 
     let _histPage = { teklif: 1, sold: 1 }; // her sekme kendi sayfa numarasını ayrı tutar
-    let _histPageSize = { teklif: null, sold: null }; // her sekme için ayrı hesaplanır — filtre alanı yüzünden kart/alan yüksekliği farklı olabilir
 
     function shiftHistoryPage(delta) {
         _histPage[_histTab] += delta;
@@ -4279,8 +4278,27 @@
                 '</div>';
         }
 
-        el.innerHTML = filtered.map(renderCard).join('');
-        paginationEl.style.display = 'none';
+        // Sayfalama: DOM ölçümüne hiç dayanmaz (mobilde offsetHeight ölçümü güvenilmez çıktığı için
+        // bir önceki sürümde liste tamamen kaybolma hatasına sebep oluyordu). Sabit bir sayı kullanılır.
+        const PAGE_SIZE = 6;
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if(_histPage[_histTab] > totalPages) _histPage[_histTab] = totalPages;
+        if(_histPage[_histTab] < 1) _histPage[_histTab] = 1;
+        const pageStart = (_histPage[_histTab] - 1) * PAGE_SIZE;
+        const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+
+        el.innerHTML = pageItems.map(renderCard).join('');
+
+        if(totalPages > 1) {
+            paginationEl.style.display = 'flex';
+            document.getElementById('hist-page-label').innerText = _histPage[_histTab] + ' / ' + totalPages;
+            document.getElementById('hist-page-prev').disabled = (_histPage[_histTab] <= 1);
+            document.getElementById('hist-page-prev').style.opacity = (_histPage[_histTab] <= 1) ? '0.4' : '1';
+            document.getElementById('hist-page-next').disabled = (_histPage[_histTab] >= totalPages);
+            document.getElementById('hist-page-next').style.opacity = (_histPage[_histTab] >= totalPages) ? '0.4' : '1';
+        } else {
+            paginationEl.style.display = 'none';
+        }
     }
 
     function markHistoryStatus(key, storeId, status) {
