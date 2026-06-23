@@ -1093,6 +1093,13 @@
                 font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 13px;
                 cursor: pointer;
             }
+
+            /* Geçmiş ekranı: mobilde liste ve önizleme yan yana değil üst-alt sıralanır,
+               böylece liste alanı tam genişliği ve net bir yüksekliği alır, scroll güvenilir çalışır. */
+            #history-body-row { flex-direction: column; }
+            #history-list-pane { border-right: none; border-bottom: 1px solid var(--border); }
+            #history-preview { min-height: 0; }
+        }
             .dash-tabs-list {
                 display: none;
                 flex-direction: column;
@@ -1871,14 +1878,14 @@
             <div style="flex-shrink:0;"><label class="field-label" style="margin:0 0 4px;">Max Adet</label><input type="text" id="soldFilterMaxCount" style="font-size:12px; padding:8px 10px; width:70px;" placeholder="∞" oninput="renderHistory()"></div>
             <button onclick="clearSoldFilters()" style="flex-shrink:0; background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Temizle</button>
         </div>
-        <div style="display:flex; flex:1; overflow:hidden; flex-wrap:wrap; min-height:0;">
+        <div id="history-body-row" style="display:flex; flex:1; overflow:hidden; min-height:0;">
             <!-- SOL: Liste -->
-            <div id="history-list-pane" style="flex:1 1 320px; min-width:320px; display:flex; flex-direction:column; border-right:1px solid var(--border); overflow:hidden; min-height:200px;">
+            <div id="history-list-pane" style="flex:1; min-width:0; display:flex; flex-direction:column; border-right:1px solid var(--border); overflow:hidden;">
                 <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; gap:8px; background:var(--surface); flex-shrink:0;">
                     <input type="text" id="histSearch" placeholder="Ad, soyad, numara veya mağaza ara..." style="font-size:13px; padding:9px 12px; flex:1; text-align:left;" oninput="renderHistory()">
                     <button id="btnClearHistory" onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:9px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
                 </div>
-                <div id="history-list" style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; min-height:0;">
+                <div id="history-list" style="flex:1; overflow-y:scroll; -webkit-overflow-scrolling:touch; min-height:0;">
                 </div>
                 <div id="history-pagination" style="display:none; flex-shrink:0; align-items:center; justify-content:space-between; padding:10px 18px; border-top:1px solid var(--border); background:var(--surface);">
                     <button onclick="shiftHistoryPage(-1)" id="hist-page-prev" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:9px 14px; font-size:12px; font-weight:700; color:var(--ink-mid); cursor:pointer;">‹ Önceki</button>
@@ -1887,7 +1894,7 @@
                 </div>
             </div>
             <!-- SAĞ: Önizleme -->
-            <div id="history-preview" style="display:none; flex:1; min-width:320px; padding:22px 26px; overflow-y:auto; background:var(--surface);">
+            <div id="history-preview" style="display:none; flex:1; min-width:0; padding:22px 26px; overflow-y:auto; background:var(--surface);">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
                     <div style="font-size:14px; font-weight:700; color:var(--ink);" id="prev-title">—</div>
                     <button onclick="document.getElementById('history-preview').style.display='none'; _previewKey=null;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:7px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕</button>
