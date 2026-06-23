@@ -1878,7 +1878,7 @@
                     <input type="text" id="histSearch" placeholder="Ad, soyad, numara veya mağaza ara..." style="font-size:13px; padding:9px 12px; flex:1; text-align:left;" oninput="renderHistory()">
                     <button id="btnClearHistory" onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:9px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
                 </div>
-                <div id="history-list" style="flex:1; overflow:hidden;">
+                <div id="history-list" style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; min-height:0;">
                 </div>
                 <div id="history-pagination" style="display:none; flex-shrink:0; align-items:center; justify-content:space-between; padding:10px 18px; border-top:1px solid var(--border); background:var(--surface);">
                     <button onclick="shiftHistoryPage(-1)" id="hist-page-prev" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:9px 14px; font-size:12px; font-weight:700; color:var(--ink-mid); cursor:pointer;">‹ Önceki</button>
@@ -4279,37 +4279,8 @@
                 '</div>';
         }
 
-        // Sayfa başına kayıt sayısı bu sekme için henüz hesaplanmadıysa: bir kart geçici olarak çizilip
-        // yüksekliği ölçülür, liste alanının gerçek yüksekliğine göre kaç kart sığdığı belirlenir.
-        // Her sekme ayrı hesaplanır çünkü "Satışa Dönenler"de filtre alanı olduğu için liste alanı daha kısa,
-        // ve o sekmedeki kart biraz daha uzun (kapanış tutarı satırı) olabilir.
-        if(_histPageSize[_histTab] === null) {
-            el.innerHTML = renderCard(filtered[0]);
-            const cardEl = el.querySelector('.hist-card');
-            const cardHeight = cardEl ? cardEl.offsetHeight : 140;
-            const availableHeight = el.clientHeight || 400;
-            _histPageSize[_histTab] = Math.max(2, Math.floor(availableHeight / cardHeight));
-        }
-        const pageSize = _histPageSize[_histTab];
-
-        const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-        if(_histPage[_histTab] > totalPages) _histPage[_histTab] = totalPages;
-        if(_histPage[_histTab] < 1) _histPage[_histTab] = 1;
-        const pageStart = (_histPage[_histTab] - 1) * pageSize;
-        const pageItems = filtered.slice(pageStart, pageStart + pageSize);
-
-        el.innerHTML = pageItems.map(renderCard).join('');
-
-        if(totalPages > 1) {
-            paginationEl.style.display = 'flex';
-            document.getElementById('hist-page-label').innerText = _histPage[_histTab] + ' / ' + totalPages;
-            document.getElementById('hist-page-prev').disabled = (_histPage[_histTab] <= 1);
-            document.getElementById('hist-page-prev').style.opacity = (_histPage[_histTab] <= 1) ? '0.4' : '1';
-            document.getElementById('hist-page-next').disabled = (_histPage[_histTab] >= totalPages);
-            document.getElementById('hist-page-next').style.opacity = (_histPage[_histTab] >= totalPages) ? '0.4' : '1';
-        } else {
-            paginationEl.style.display = 'none';
-        }
+        el.innerHTML = filtered.map(renderCard).join('');
+        paginationEl.style.display = 'none';
     }
 
     function markHistoryStatus(key, storeId, status) {
