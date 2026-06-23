@@ -2,37 +2,6 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sina Pırlanta — Terminal</title>
-    <link rel="icon" type="image/svg+xml" href="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- Firebase (Realtime Database + Auth) — çoklu mağaza senkronizasyonu ve giriş için -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-    <!-- SheetJS — admin rapor ekranından Excel (.xlsx) indirme için -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDOKp-t0XKgrnn15wQWQT2VrIpaXIhdn7E",
-            authDomain: "urfa-sina-terminal.firebaseapp.com",
-            databaseURL: "https://urfa-sina-terminal-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "urfa-sina-terminal",
-            storageBucket: "urfa-sina-terminal.firebasestorage.app",
-            messagingSenderId: "913493390147",
-            appId: "1:913493390147:web:57ae68a49ab87b4987b5f6"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const fbDb   = firebase.database();
-        const fbAuth = firebase.auth();
-        const AUTH_DOMAIN_SUFFIX = '@sina-terminal.local'; // kullanıcı adını e-posta formatına çevirmek için
-
-        // İkincil app instance'ı: admin yeni mağaza/kullanıcı oluştururken kendi oturumu bozulmasın
-        const secondaryApp  = firebase.initializeApp(firebaseConfig, 'Secondary');
-        const secondaryAuth = secondaryApp.auth();
-    </script>
-
     <style>
         :root {
             --rose:      #c8244c;
@@ -1180,6 +1149,37 @@
             .price-card.cash .price-value { font-size: 21px; }
         }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sina Pırlanta — Terminal</title>
+    <link rel="icon" type="image/svg+xml" href="https://www.sinapirlanta.com/themes/custom/sina/logo.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase (Realtime Database + Auth) — çoklu mağaza senkronizasyonu ve giriş için -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <!-- SheetJS — admin rapor ekranından Excel (.xlsx) indirme için -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDOKp-t0XKgrnn15wQWQT2VrIpaXIhdn7E",
+            authDomain: "urfa-sina-terminal.firebaseapp.com",
+            databaseURL: "https://urfa-sina-terminal-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "urfa-sina-terminal",
+            storageBucket: "urfa-sina-terminal.firebasestorage.app",
+            messagingSenderId: "913493390147",
+            appId: "1:913493390147:web:57ae68a49ab87b4987b5f6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const fbDb   = firebase.database();
+        const fbAuth = firebase.auth();
+        const AUTH_DOMAIN_SUFFIX = '@sina-terminal.local'; // kullanıcı adını e-posta formatına çevirmek için
+
+        // İkincil app instance'ı: admin yeni mağaza/kullanıcı oluştururken kendi oturumu bozulmasın
+        const secondaryApp  = firebase.initializeApp(firebaseConfig, 'Secondary');
+        const secondaryAuth = secondaryApp.auth();
+    </script>
+
 </head>
 <body>
 
@@ -2241,7 +2241,7 @@
     </div>
 
     <!-- ADMIN PDF RAPOR PRINT AREA -->
-    <div id="admin-print-area">
+    <div id="admin-print-area" style="display:none;">
         <div style="font-family:'Poppins',sans-serif; padding:40px 48px; max-width:900px; margin:0 auto; color:#1a1a24;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #1a1a24; padding-bottom:20px; margin-bottom:24px;">
                 <div>
@@ -2263,7 +2263,7 @@
     </div>
 
     <!-- PRINT AREA -->
-    <div id="print-area">
+    <div id="print-area" style="display:none;">
         <style>
             #print-area {
                 font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
