@@ -1693,6 +1693,7 @@
                     </div>
                     <p style="margin-top:8px;">Bir müşteri geri dönüp satın aldıysa: Teklifler'den o kaydı bul → <b>↩ Sepete Yükle (Düzenle)</b> de → istersen fiyatta son bir değişiklik/indirim yap → sepetteki <b>✓ Bu Satışı Tamamla</b> butonuna bas. Aynı kayıt güncellenir, mükerrer kayıt oluşmaz. "Satış Oldu" derken de gerçek satış tarihi ve ödeme açıklaması sorulur.</p>
                     <p style="margin-top:8px;"><b>📄 O Günkü Fiyatla PDF:</b> Unuttuğun bir teklifin PDF'ini, o gün kaydedildiği fiyatlarla (güncel kura göre değil) tekrar basabilirsin.</p>
+                    <p style="margin-top:8px;"><b>✎ Müşteri Bilgisini Düzelt:</b> Bir kaydı önizlerken, müşteri adının yanındaki bu linkten isim/telefon yanlış girilmişse sonradan düzeltebilirsin — hem teklif hem satış kayıtlarında çalışır.</p>
                 </div>
 
                 <div class="help-section">
@@ -1701,8 +1702,9 @@
                     <div class="help-card">
                         <b>Filtreler:</b> Tarih aralığı, durum (satış/teklif), tutar ve adet aralığı.<br><br>
                         <b>💰 Tutar Bazlı / 📦 Ürün Bazlı:</b> Tutar bazlı günlere göre gruplar; ürün bazlı her satılan ürünü kendi satırında gösterir.<br><br>
-                        <b>Rakamlar:</b> Her satırda <b>Satış Tutarı ₺</b>, <b>Etiket $</b> (ham etiket değeri), <b>Maliyet $</b> (etiket÷3) ve <b>Maliyet ₺</b> (etiket÷3 × güncel kur) birlikte görünür.<br><br>
-                        <b>Kâr/Zarar:</b> Her satırda ve genel özette, satış tutarının maliyete göre yüzde farkı — <span style="color:var(--success); font-weight:700;">kâr yeşille</span>, <span style="color:var(--rose); font-weight:700;">zarar kırmızıyla</span>, yanında parantez içinde TL farkıyla gösterilir (örn. <em>+24% (+8.500 ₺)</em>).<br><br>
+                        <b>Rakamlar:</b> Her satırda <b>Satış Tutarı ₺</b>, <b>Satış Tutarı $</b>, <b>Etiket $</b> (ham etiket değeri), <b>Maliyet $</b> (etiket÷3) ve <b>Maliyet ₺</b> (etiket÷3 × kur) birlikte görünür.<br><br>
+                        <b>Kâr/Zarar:</b> Hem ₺ hem $ bazında, her satırda ve genel özette — <span style="color:var(--success); font-weight:700;">kâr yeşille</span>, <span style="color:var(--rose); font-weight:700;">zarar kırmızıyla</span>, parantez içinde TL/USD farkıyla gösterilir (örn. <em>+24% (+8.500 ₺)</em> ve <em>+$120</em>).<br><br>
+                        <b>$ hesaplaması nasıl çalışıyor:</b> Her satış kaydedildiğinde, o günkü güncel kur otomatik kaydedilir. Rapor, satış tutarını her zaman <b>o satışın kendi kuruyla</b> USD'ye çevirir — böylece kur zamanla değişse de, geçmiş satışların USD karşılığı yanlış çıkmaz. (Bu özellikten önce kaydedilmiş eski satışlarda kur bilgisi yoktur, onlar için güncel kur kullanılır, yaklaşık bir değer olur.)<br><br>
                         <b>📊 Excel İndir:</b> Aynı veriyi indirir.<br><br>
                         <b>📄 PDF Rapor Al:</b> Raporu <b>yeni bir sekmede/pencerede</b> açar ve otomatik yazdırma penceresini tetikler — tarayıcı açılır pencereyi (popup) engellerse, o uyarıyı bu site için kapatman gerekir.
                     </div>
@@ -1710,8 +1712,9 @@
 
                 <div class="help-section">
                     <h4>6. Geriye Dönük Düzeltmeler</h4>
-                    <p>Bir satışın <b>tarihini</b>, <b>kapanış tutarını/ödeme açıklamasını</b> ya da bir ürünün <b>kodunu</b> sonradan yanlış girdiğini fark edersen, kaydı silmene gerek yok:</p>
+                    <p>Bir satışın <b>tarihini</b>, <b>kapanış tutarını/ödeme açıklamasını</b>, <b>müşteri bilgisini</b> ya da bir ürünün <b>kodunu</b> sonradan yanlış girdiğini fark edersen, kaydı silmene gerek yok:</p>
                     <div class="help-card">
+                        <b>Müşteri adını/telefonunu düzelt:</b> Bir kaydı önizlerken üst kısımda isminin yanındaki <b>✎ müşteri bilgisini düzelt</b> linkine bas — hem teklif hem satış kayıtlarında çalışır.<br><br>
                         <b>Satış tarihini düzelt:</b> Geçmiş → Satışa Dönenler'den kaydı aç, "✓ SATIŞ OLDU · [tarih]" yazısının yanındaki <b>✎ tarihi düzelt</b> linkine bas, doğru tarihi seç.<br><br>
                         <b>Kapanış tutarını/ödeme açıklamasını düzelt:</b> Aynı ekranda, kapanış tutarının yanındaki <b>✎ kapanışı düzelt</b> linkine bas.<br><br>
                         <b>Ürün kodunu düzelt:</b> Kaydı açtığında her ürünün yanındaki ✎ ikonuna bas, kodu/açıklamayı düzelt.
@@ -3271,6 +3274,9 @@
             soldAtMillis: soldAtMillis,
             closingAmount: status === 'sold' ? (closingAmount || null) : null,
             paymentNote: status === 'sold' ? (paymentNote || '') : '',
+            // Kayıt anındaki güncel USD/TRY kuru — geçmişe dönük girilen satışlarda gerçek satış gününün
+            // kuru bilinmediği için, kayıt anının kuru kullanılır (mağaza bunu kabul etti).
+            usdRateAtSave: status === 'sold' ? (smartEval(document.getElementById('cfgU').value) || null) : null,
             basket: JSON.parse(JSON.stringify(basketOverride || basket))
         }).then(function() {
             return { ref, ts };
@@ -3915,43 +3921,59 @@
     // Tutar/ürün bazlı satırları hazırlar — her satırda TL, ham etiket, etiket÷3 ($) birlikte tutulur.
     function buildStoreReportData() {
         const rows = getFilteredStoreHistoryRows().filter(function(h) { return h.status === 'sold'; });
-        const u = smartEval(document.getElementById('cfgU').value) || 0;
+        const currentU = smartEval(document.getElementById('cfgU').value) || 0;
 
-        // Maliyet = (etiket / 3) × güncel kur. profitTl = satış tutarı - maliyet. profitPct = yüzde fark.
-        function withProfit(row) {
-            const cost = Math.round((row.etiket / 3) * u);
+        // Her satışın USD karşılığı, KENDİ kayıt anındaki kuruyla hesaplanır (usdRateAtSave) — eski kayıtlarda
+        // bu alan yoksa (bu özellikten önce girilmiş), güncel kura düşülür (yaklaşık değer).
+        function rateFor(h) { return h.usdRateAtSave || currentU; }
+
+        // Maliyet = (etiket / 3) × o satışın kendi kuru. profitTl = satış tutarı - maliyet (TL bazında).
+        // profitUsd = (satış tutarı / o satışın kuru) - maliyet $ (USD bazında, ayrı hesaplanır — TL'den bölerek değil).
+        function withProfit(row, rate) {
+            const cost = Math.round((row.etiket / 3) * rate);
             const profitTl = row.tl - cost;
             const profitPct = cost > 0 ? Math.round((profitTl / cost) * 100) : null;
-            return Object.assign({}, row, { cost: cost, profitTl: profitTl, profitPct: profitPct });
+            const tlUsd = rate > 0 ? (row.tl / rate) : 0;
+            const profitUsd = tlUsd - (row.etiket / 3);
+            return Object.assign({}, row, { cost: cost, profitTl: profitTl, profitPct: profitPct, tlUsd: Math.round(tlUsd), profitUsd: Math.round(profitUsd), rate: rate });
         }
 
         if(_srMode === 'urun') {
             const productRows = [];
             rows.forEach(function(h) {
+                const rate = rateFor(h);
                 h.basket.forEach(function(item) {
                     const etiket = item._rawP ? smartEval(item._rawP) : 0;
                     productRows.push(withProfit({
                         tarih: h.soldAt || h.ts, musteri: h.cusName, kod: item.k,
                         etiket: Math.round(etiket), etiketBolu3: Math.round(etiket/3), tl: Math.round(item.v.vN)
-                    }));
+                    }, rate));
                 });
             });
             productRows.sort(function(a,b) { return b.etiket - a.etiket; });
             return { mode: 'urun', rows: productRows };
         } else {
-            // Tutar bazlı: tek mağaza olduğu için tarih bazlı (gün) gruplama anlamlı
+            // Tutar bazlı: tek mağaza olduğu için tarih bazlı (gün) gruplama anlamlı.
+            // USD toplamı, her satışın KENDİ kuruyla ayrı ayrı USD'ye çevrilip sonra toplanır (TL toplamından bölünmez).
             const byDate = {};
             rows.forEach(function(h) {
+                const rate = rateFor(h);
                 const dateKey = h.soldAt || h.ts.split(' ')[0];
                 const sN = (h.closingAmount && h.closingAmount > 0) ? h.closingAmount : h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
-                if(!byDate[dateKey]) byDate[dateKey] = { tarih: dateKey, adet: 0, tl: 0, etiket: 0 };
+                if(!byDate[dateKey]) byDate[dateKey] = { tarih: dateKey, adet: 0, tl: 0, etiket: 0, tlUsdSum: 0 };
                 byDate[dateKey].adet += h.basket.length;
                 byDate[dateKey].tl += sN;
                 byDate[dateKey].etiket += et;
+                byDate[dateKey].tlUsdSum += (rate > 0 ? (sN / rate) : 0);
             });
             let dateRows = Object.values(byDate).map(function(d) {
-                return withProfit({ tarih: d.tarih, adet: d.adet, tl: Math.round(d.tl), etiket: Math.round(d.etiket), etiketBolu3: Math.round(d.etiket/3) });
+                const row = withProfit({ tarih: d.tarih, adet: d.adet, tl: Math.round(d.tl), etiket: Math.round(d.etiket), etiketBolu3: Math.round(d.etiket/3) }, currentU);
+                // Tutar bazlı modda USD toplamı zaten gün içindeki her satıştan ayrı ayrı toplandı (tlUsdSum) —
+                // withProfit'in tek kur ile hesapladığı tlUsd/profitUsd'nin üzerine bu daha doğru toplamı yazıyoruz.
+                row.tlUsd = Math.round(d.tlUsdSum);
+                row.profitUsd = Math.round(d.tlUsdSum - (d.etiket/3));
+                return row;
             });
             dateRows.sort(function(a,b) { return b.etiket - a.etiket; });
             return { mode: 'tutar', rows: dateRows };
@@ -3963,24 +3985,29 @@
         const rows = getFilteredStoreHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
 
-        let totalTl = 0, totalEtiket = 0, totalCount = 0;
+        let totalTl = 0, totalEtiket = 0, totalCount = 0, totalTlUsd = 0;
         if(data.mode === 'urun') {
             totalCount = data.rows.length;
-            data.rows.forEach(function(r) { totalTl += r.tl; totalEtiket += r.etiket; });
+            data.rows.forEach(function(r) { totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd; });
         } else {
-            data.rows.forEach(function(r) { totalCount += r.adet; totalTl += r.tl; totalEtiket += r.etiket; });
+            data.rows.forEach(function(r) { totalCount += r.adet; totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd; });
         }
+        const totalMaliyetUsd = totalEtiket / 3;
+        const totalProfitUsd = totalTlUsd - totalMaliyetUsd;
 
         document.getElementById('sr-summary').innerHTML =
             '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Satış Adedi</div><div style="font-size:20px; font-weight:800; color:var(--success);">' + totalCount + '</div></div>' +
-            '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Toplam ₺</div><div style="font-size:18px; font-weight:800; color:var(--ink);">' + f(totalTl) + '</div></div>' +
+            '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Satış Tutarı ₺</div><div style="font-size:18px; font-weight:800; color:var(--ink);">' + f(totalTl) + '</div></div>' +
+            '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Satış Tutarı $</div><div style="font-size:18px; font-weight:800; color:var(--ink);">$ ' + f(totalTlUsd) + '</div></div>' +
             '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Etiket $</div><div style="font-size:18px; font-weight:800; color:var(--ink);">' + f(totalEtiket) + '</div></div>' +
-            '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Maliyet $</div><div style="font-size:18px; font-weight:800; color:var(--gold);">$ ' + f(totalEtiket/3) + '</div></div>';
+            '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Maliyet $</div><div style="font-size:18px; font-weight:800; color:var(--gold);">$ ' + f(totalMaliyetUsd) + '</div></div>' +
+            '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Kâr/Zarar $</div><div style="font-size:18px; font-weight:800; color:' + (totalProfitUsd >= 0 ? 'var(--success)' : 'var(--rose)') + ';">' + (totalProfitUsd >= 0 ? '+' : '') + '$ ' + f(totalProfitUsd) + '</div></div>';
 
-        // Kârlılık: toplam maliyet (etiket/3 × U kuru) ile toplam TL satış tutarı karşılaştırılır.
+        // Kârlılık (TL): toplam maliyet (etiket/3 × güncel kur) ile toplam TL satış tutarı karşılaştırılır.
         const u = smartEval(document.getElementById('cfgU').value) || 0;
         const totalCost = (totalEtiket / 3) * u;
         const profitPct = totalCost > 0 ? Math.round(((totalTl - totalCost) / totalCost) * 100) : null;
+        const profitPctUsd = totalMaliyetUsd > 0 ? Math.round((totalProfitUsd / totalMaliyetUsd) * 100) : null;
         const profitEl = document.getElementById('sr-profit');
         if(profitPct === null) {
             profitEl.innerHTML = '<div style="font-size:11px; color:var(--ink-dim);">Kârlılık hesaplanamadı (veri yok).</div>';
@@ -3988,10 +4015,14 @@
             const isProfit = profitPct >= 0;
             const sign = isProfit ? '+' : '';
             const totalProfitTl = totalTl - totalCost;
+            const isProfitUsd = totalProfitUsd >= 0;
+            const signUsd = isProfitUsd ? '+' : '';
             profitEl.innerHTML =
                 '<div style="font-size:10px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; margin-bottom:6px;">Filtre Sonucu Kârlılık</div>' +
                 '<div style="font-size:22px; font-weight:800; color:' + (isProfit ? 'var(--success)' : 'var(--rose)') + ';">' + (isProfit ? '✓ KÂR: ' : '⚠ ZARAR: ') + sign + profitPct + '% (' + sign + f(totalProfitTl) + ' ₺)</div>' +
-                '<div style="font-size:10.5px; color:var(--ink-dim); margin-top:4px;">Maliyet ₺: ' + f(totalCost) + ' ₺ &nbsp;·&nbsp; Maliyet $: $ ' + f(totalEtiket/3) + '</div>';
+                '<div style="font-size:15px; font-weight:800; color:' + (isProfitUsd ? 'var(--success)' : 'var(--rose)') + '; margin-top:4px;">' + (isProfitUsd ? '✓ KÂR ($): ' : '⚠ ZARAR ($): ') + signUsd + (profitPctUsd !== null ? profitPctUsd + '% ' : '') + '(' + signUsd + '$ ' + f(totalProfitUsd) + ')</div>' +
+                '<div style="font-size:10.5px; color:var(--ink-dim); margin-top:6px;">Maliyet ₺: ' + f(totalCost) + ' ₺ &nbsp;·&nbsp; Maliyet $: $ ' + f(totalMaliyetUsd) + ' &nbsp;·&nbsp; Satış Tutarı $: $ ' + f(totalTlUsd) + '</div>' +
+                '<div style="font-size:9.5px; color:var(--ink-dim); margin-top:6px;">$ değerleri, her satışın kendi kayıt anındaki kuruyla hesaplanır.</div>';
         }
 
         // Liste
@@ -4006,8 +4037,12 @@
             const isProfit = r.profitPct >= 0;
             const color = isProfit ? 'var(--success)' : 'var(--rose)';
             const sign = isProfit ? '+' : '';
-            return '<div style="font-size:9.5px; color:var(--ink-dim); margin-top:2px;">Maliyet: ' + f(r.cost) + ' ₺</div>' +
-                '<div style="font-size:10.5px; font-weight:800; color:' + color + '; margin-top:1px;">' + sign + r.profitPct + '% (' + sign + f(r.profitTl) + ' ₺)</div>';
+            const isProfitUsd = r.profitUsd >= 0;
+            const colorUsd = isProfitUsd ? 'var(--success)' : 'var(--rose)';
+            const signUsd = isProfitUsd ? '+' : '';
+            return '<div style="font-size:9.5px; color:var(--ink-dim); margin-top:2px;">Maliyet: ' + f(r.cost) + ' ₺ · Satış: $' + f(r.tlUsd) + '</div>' +
+                '<div style="font-size:10.5px; font-weight:800; color:' + color + '; margin-top:1px;">' + sign + r.profitPct + '% (' + sign + f(r.profitTl) + ' ₺)</div>' +
+                '<div style="font-size:10px; font-weight:800; color:' + colorUsd + ';">' + signUsd + '$' + f(r.profitUsd) + '</div>';
         }
         if(data.mode === 'urun') {
             listEl.innerHTML = data.rows.map(function(r) {
@@ -4030,28 +4065,34 @@
         const data = buildStoreReportData();
         const f = n => Math.round(n).toLocaleString('tr-TR');
 
-        let totalTl = 0, totalEtiket = 0, totalCount = 0;
+        let totalTl = 0, totalEtiket = 0, totalCount = 0, totalTlUsd = 0;
         if(data.mode === 'urun') {
             totalCount = data.rows.length;
-            data.rows.forEach(function(r) { totalTl += r.tl; totalEtiket += r.etiket; });
+            data.rows.forEach(function(r) { totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd; });
         } else {
-            data.rows.forEach(function(r) { totalCount += r.adet; totalTl += r.tl; totalEtiket += r.etiket; });
+            data.rows.forEach(function(r) { totalCount += r.adet; totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd; });
         }
+        const totalMaliyetUsd = totalEtiket / 3;
+        const totalProfitUsd = totalTlUsd - totalMaliyetUsd;
 
         const storeName = document.getElementById('cfgStore').value || 'Mağaza';
         const rangeText = getStoreReportFilterSummaryText() + ' · ' + (data.mode === 'urun' ? 'Ürün Bazlı' : 'Tutar Bazlı') + ' · Oluşturulma: ' + new Date().toLocaleString('tr-TR');
 
         function profitCellPdf(r) {
-            if(r.profitPct === null) return '<td style="padding:7px 6px; text-align:right; color:#9090a0;">—</td>';
+            if(r.profitPct === null) return '<td style="padding:7px 6px; text-align:right; color:#9090a0;">—</td><td style="padding:7px 6px; text-align:right; color:#9090a0;">—</td>';
             const isProfit = r.profitPct >= 0;
             const color = isProfit ? '#1a9c5c' : '#c8244c';
             const sign = isProfit ? '+' : '';
-            return '<td style="padding:7px 6px; text-align:right; color:' + color + '; font-weight:700;">' + sign + r.profitPct + '% (' + sign + f(r.profitTl) + ' ₺)</td>';
+            const isProfitUsd = r.profitUsd >= 0;
+            const colorUsd = isProfitUsd ? '#1a9c5c' : '#c8244c';
+            const signUsd = isProfitUsd ? '+' : '';
+            return '<td style="padding:7px 6px; text-align:right; color:' + color + '; font-weight:700;">' + sign + r.profitPct + '% (' + sign + f(r.profitTl) + ' ₺)</td>' +
+                '<td style="padding:7px 6px; text-align:right; color:' + colorUsd + '; font-weight:700;">' + signUsd + '$' + f(r.profitUsd) + '</td>';
         }
 
         let theadHtml, bodyHtml;
         if(data.mode === 'urun') {
-            theadHtml = '<th style="padding:8px 6px;">Tarih</th><th style="padding:8px 6px;">Müşteri</th><th style="padding:8px 6px;">Ürün Kodu</th><th style="padding:8px 6px; text-align:right;">Etiket $</th><th style="padding:8px 6px; text-align:right;">Maliyet $</th><th style="padding:8px 6px; text-align:right;">Satış Tutarı ₺</th><th style="padding:8px 6px; text-align:right;">Maliyet ₺</th><th style="padding:8px 6px; text-align:right;">Kâr/Zarar</th>';
+            theadHtml = '<th style="padding:8px 6px;">Tarih</th><th style="padding:8px 6px;">Müşteri</th><th style="padding:8px 6px;">Ürün Kodu</th><th style="padding:8px 6px; text-align:right;">Etiket $</th><th style="padding:8px 6px; text-align:right;">Maliyet $</th><th style="padding:8px 6px; text-align:right;">Satış Tutarı ₺</th><th style="padding:8px 6px; text-align:right;">Satış Tutarı $</th><th style="padding:8px 6px; text-align:right;">Maliyet ₺</th><th style="padding:8px 6px; text-align:right;">Kâr/Zarar ₺</th><th style="padding:8px 6px; text-align:right;">Kâr/Zarar $</th>';
             bodyHtml = data.rows.map(function(r) {
                 return '<tr style="border-bottom:1px solid #e8e4ec;">' +
                     '<td style="padding:7px 6px;">' + r.tarih + '</td>' +
@@ -4060,12 +4101,13 @@
                     '<td style="padding:7px 6px; text-align:right;">' + f(r.etiket) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.etiketBolu3) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">' + f(r.tl) + ' ₺</td>' +
+                    '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.tlUsd) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">' + f(r.cost) + ' ₺</td>' +
                     profitCellPdf(r) +
                     '</tr>';
             }).join('');
         } else {
-            theadHtml = '<th style="padding:8px 6px;">Tarih</th><th style="padding:8px 6px; text-align:right;">Adet</th><th style="padding:8px 6px; text-align:right;">Etiket $</th><th style="padding:8px 6px; text-align:right;">Maliyet $</th><th style="padding:8px 6px; text-align:right;">Satış Tutarı ₺</th><th style="padding:8px 6px; text-align:right;">Maliyet ₺</th><th style="padding:8px 6px; text-align:right;">Kâr/Zarar</th>';
+            theadHtml = '<th style="padding:8px 6px;">Tarih</th><th style="padding:8px 6px; text-align:right;">Adet</th><th style="padding:8px 6px; text-align:right;">Etiket $</th><th style="padding:8px 6px; text-align:right;">Maliyet $</th><th style="padding:8px 6px; text-align:right;">Satış Tutarı ₺</th><th style="padding:8px 6px; text-align:right;">Satış Tutarı $</th><th style="padding:8px 6px; text-align:right;">Maliyet ₺</th><th style="padding:8px 6px; text-align:right;">Kâr/Zarar ₺</th><th style="padding:8px 6px; text-align:right;">Kâr/Zarar $</th>';
             bodyHtml = data.rows.map(function(r) {
                 return '<tr style="border-bottom:1px solid #e8e4ec;">' +
                     '<td style="padding:7px 6px;">' + r.tarih + '</td>' +
@@ -4073,6 +4115,7 @@
                     '<td style="padding:7px 6px; text-align:right;">' + f(r.etiket) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.etiketBolu3) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">' + f(r.tl) + ' ₺</td>' +
+                    '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.tlUsd) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">' + f(r.cost) + ' ₺</td>' +
                     profitCellPdf(r) +
                     '</tr>';
@@ -4095,9 +4138,11 @@
             '</div>' +
             '<div style="margin-bottom:20px; display:flex; gap:16px; border:1px solid #e8e4ec; border-radius:10px; padding:14px 18px; flex-wrap:wrap;">' +
             '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ ADEDİ</div><div style="font-size:16px; font-weight:800;">' + totalCount + '</div></div>' +
-            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">TOPLAM SATIŞ TUTARI ₺</div><div style="font-size:16px; font-weight:800;">' + f(totalTl) + ' ₺</div></div>' +
+            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ TUTARI ₺</div><div style="font-size:16px; font-weight:800;">' + f(totalTl) + ' ₺</div></div>' +
+            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ TUTARI $</div><div style="font-size:16px; font-weight:800;">$ ' + f(totalTlUsd) + '</div></div>' +
             '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">ETİKET $</div><div style="font-size:16px; font-weight:800;">' + f(totalEtiket) + '</div></div>' +
-            '<div><div style="font-size:9px; color:#c8244c; font-weight:800;">MALİYET $</div><div style="font-size:16px; font-weight:800; color:#c8244c;">$ ' + f(totalEtiket/3) + '</div></div>' +
+            '<div><div style="font-size:9px; color:#c8244c; font-weight:800;">MALİYET $</div><div style="font-size:16px; font-weight:800; color:#c8244c;">$ ' + f(totalMaliyetUsd) + '</div></div>' +
+            '<div><div style="font-size:9px; color:' + (totalProfitUsd >= 0 ? '#1a9c5c' : '#c8244c') + '; font-weight:800;">KÂR/ZARAR $</div><div style="font-size:16px; font-weight:800; color:' + (totalProfitUsd >= 0 ? '#1a9c5c' : '#c8244c') + ';">' + (totalProfitUsd >= 0 ? '+' : '') + '$ ' + f(totalProfitUsd) + '</div></div>' +
             '</div>' +
             '<table><thead><tr>' + theadHtml + '</tr></thead><tbody>' + bodyHtml + '</tbody></table>' +
             '</body></html>';
@@ -4127,14 +4172,19 @@
             const sign = r.profitPct >= 0 ? '+' : '';
             return sign + r.profitPct + '% (' + sign + r.profitTl.toLocaleString('tr-TR') + ' ₺)';
         }
+        function profitTextUsd(r) {
+            if(r.profitUsd === undefined) return '—';
+            const sign = r.profitUsd >= 0 ? '+' : '';
+            return sign + '$' + r.profitUsd.toLocaleString('tr-TR');
+        }
         let sheetData;
         if(data.mode === 'urun') {
             sheetData = data.rows.map(function(r) {
-                return { 'Tarih': r.tarih, 'Müşteri': r.musteri, 'Ürün Kodu': r.kod, 'Etiket $': r.etiket, 'Maliyet $': r.etiketBolu3, 'Satış Tutarı ₺': r.tl, 'Maliyet ₺': r.cost, 'Kâr/Zarar': profitText(r) };
+                return { 'Tarih': r.tarih, 'Müşteri': r.musteri, 'Ürün Kodu': r.kod, 'Etiket $': r.etiket, 'Maliyet $': r.etiketBolu3, 'Satış Tutarı ₺': r.tl, 'Satış Tutarı $': r.tlUsd, 'Maliyet ₺': r.cost, 'Kâr/Zarar ₺': profitText(r), 'Kâr/Zarar $': profitTextUsd(r) };
             });
         } else {
             sheetData = data.rows.map(function(r) {
-                return { 'Tarih': r.tarih, 'Adet': r.adet, 'Etiket $': r.etiket, 'Maliyet $': r.etiketBolu3, 'Satış Tutarı ₺': r.tl, 'Maliyet ₺': r.cost, 'Kâr/Zarar': profitText(r) };
+                return { 'Tarih': r.tarih, 'Adet': r.adet, 'Etiket $': r.etiket, 'Maliyet $': r.etiketBolu3, 'Satış Tutarı ₺': r.tl, 'Satış Tutarı $': r.tlUsd, 'Maliyet ₺': r.cost, 'Kâr/Zarar ₺': profitText(r), 'Kâr/Zarar $': profitTextUsd(r) };
             });
         }
         const ws = XLSX.utils.json_to_sheet(sheetData);
@@ -4354,7 +4404,8 @@
             soldAt: d.toLocaleDateString('tr-TR'),
             soldAtMillis: d.getTime(),
             closingAmount: closingAmount,
-            paymentNote: paymentNote
+            paymentNote: paymentNote,
+            usdRateAtSave: smartEval(document.getElementById('cfgU').value) || null
         }).then(function() {
             closeModal('markSoldModal');
         }).catch(function(err) {
@@ -4376,6 +4427,7 @@
         const isSold = h.status === 'sold';
         const editDateBtn = (!isAdmin && isSold) ? ' <span onclick="editSaleDate(\'' + key + '\', \'' + h.storeId + '\')" style="font-size:9px; color:var(--success); cursor:pointer; font-weight:700; text-decoration:underline;">✎ tarihi düzelt</span>' : '';
         const editClosingBtn = (!isAdmin && isSold) ? ' <span onclick="editClosingAmount(\'' + key + '\', \'' + h.storeId + '\')" style="font-size:9px; color:var(--success); cursor:pointer; font-weight:700; text-decoration:underline;">✎ kapanışı düzelt</span>' : '';
+        const editCustomerBtn = !isAdmin ? ' <span onclick="editHistoryCustomer(\'' + key + '\', \'' + h.storeId + '\')" style="font-size:9px; color:var(--ink-dim); cursor:pointer; font-weight:700; text-decoration:underline;">✎ müşteri bilgisini düzelt</span>' : '';
         const closingBlock = isSold
             ? '<div style="margin-top:8px; padding:10px 12px; background:var(--success-bg); border-radius:10px;">' +
               '<div style="font-size:9px; color:var(--success); font-weight:800; text-transform:uppercase; letter-spacing:.04em;">KAPANIŞ TUTARI</div>' +
@@ -4384,7 +4436,7 @@
               '</div>'
             : '';
         document.getElementById('prev-title').innerHTML =
-            '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>' +
+            '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>' + editCustomerBtn +
             '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + (h.storeName || 'Mağaza') + '</span>' +
             (isSold ? ' <span style="font-size:10px;color:var(--success);font-weight:800;">✓ SATIŞ OLDU' + (h.soldAt ? ' · '+h.soldAt : '') + '</span>' + editDateBtn : '') +
             closingBlock;
@@ -4398,6 +4450,38 @@
                 '</span></div>';
         }).join('');
         document.getElementById('history-preview').style.display = 'block';
+    }
+
+    // Bir kaydın müşteri adı/telefonunu sonradan düzeltir — teklif ya da satış, her durumda kullanılabilir.
+    // Bu kayıt admin tarafında da aynı yoldan (stores/{storeId}/history) okunduğu için değişiklik otomatik yansır.
+    function editHistoryCustomer(key, storeId) {
+        const h = _historyCache.find(function(x) { return x.key === key; });
+        if(!h) return;
+        sysPrompt('Müşteri adını gir:', {
+            title: 'Müşteri Bilgisini Düzelt',
+            defaultValue: h.cusName || ''
+        }).then(function(nameStr) {
+            if(nameStr === null) return;
+            const newName = nameStr.trim().toUpperCase();
+            if(!newName) { sysAlert('Müşteri adı boş olamaz.', { tone: 'warn' }); return; }
+            sysPrompt('Telefon numarasını gir:', {
+                title: 'Telefon',
+                defaultValue: h.cusPhone || ''
+            }).then(function(phoneStr) {
+                if(phoneStr === null) return;
+                const newPhone = phoneStr.trim();
+                if(!newPhone) { sysAlert('Telefon boş olamaz.', { tone: 'warn' }); return; }
+                fbDb.ref('stores/' + storeId + '/history/' + key).update({
+                    cusName: newName,
+                    cusPhone: newPhone
+                }).then(function() {
+                    previewHistory(key);
+                }).catch(function(err) {
+                    console.error('Güncellenemedi:', err);
+                    sysAlert('Güncellenirken hata oluştu: ' + err.message, { tone: 'danger' });
+                });
+            });
+        });
     }
 
     // Zaten satılmış bir kaydın kapanış tutarını/ödeme açıklamasını sonradan düzeltir.
@@ -4887,6 +4971,7 @@
             soldAtMillis: saleDate.getTime(),
             closingAmount: closingAmount,
             paymentNote: paymentNote,
+            usdRateAtSave: aseSelectedStoreRates.u || null,
             basket: finalBasket,
             enteredByAdmin: true // bu kaydın admin tarafından girildiğini ayırt etmek için (raporlarda gizli, sadece iz amaçlı)
         }).then(function() {
