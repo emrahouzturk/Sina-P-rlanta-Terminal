@@ -808,6 +808,9 @@
         /* ── KOD / MÜŞTERİ MODAL ── */
         .simple-modal-body {
             padding: 26px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
         }
         .simple-modal-body h3 {
             font-family: 'Poppins', sans-serif;
@@ -1255,11 +1258,12 @@
     </div>
 
     <!-- ÜRÜN DEĞİŞİMİ MODAL -->
-    <!-- Müşteri eski bir ürünü geri verip yeni bir ürün alıyor. Yeni satış normal şekilde (kendi etiket/fiyat
-         kartlarıyla) girilir; eski ürünün tutarı otomatik negatif bir kayıt olarak bugünün tarihinde açılır.
-         Eski ürün ya geçmişten seçilir (sistemde kayıtlıysa) ya da elle yazılır (sistem öncesi / başka mağazadan). -->
+    <!-- Müşteri eski bir ürünü geri verip yeni bir/birden fazla ürün alıyor. Yeni ürün(ler) normal şekilde
+         (kendi etiket/fiyat kartlarıyla) tek tek bu modalin kendi mini-sepetine eklenir; eski ürünün tutarı
+         otomatik negatif bir kayıt olarak bugünün tarihinde açılır. Eski ürün ya geçmişten seçilir (sistemde
+         kayıtlıysa) ya da elle yazılır (sistem öncesi / başka mağazadan). -->
     <div id="exchangeModal" class="modal-overlay">
-        <div class="modal" style="max-width:420px;">
+        <div class="modal" style="max-width:440px;">
             <div class="modal-header">
                 <h3>🔄 Ürün Değişimi</h3>
                 <span class="modal-close" onclick="closeModal('exchangeModal')">×</span>
@@ -1289,7 +1293,9 @@
 
                 <div style="height:1px; background:var(--border); margin:16px 0;"></div>
 
-                <label class="field-label">Yeni Ürün — Pırlanta Etiket</label>
+                <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">YENİ ÜRÜN(LER) — bir veya birden fazla ekleyebilirsin</div>
+
+                <label class="field-label">Pırlanta Etiket</label>
                 <input type="text" id="exNewEtiket" class="big-input" oninput="applyThousandsMask(this); exRunCalc();" placeholder="0.00" inputmode="text">
 
                 <div class="price-grid" id="exPriceGrid" style="margin:14px 0; max-width:100%;">
@@ -1311,11 +1317,15 @@
                     </div>
                 </div>
 
-                <label class="field-label">Yeni Ürünün Kodu</label>
-                <input type="text" id="exNewKod" style="font-size:15px; text-align:left; padding:10px 14px; text-transform:uppercase;" placeholder="Model / Stok Kodu">
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="exNewKod" style="font-size:15px; flex:1; text-align:left; padding:10px 14px; text-transform:uppercase;" placeholder="Model / Stok Kodu (opsiyonel)">
+                    <button class="btn-primary" style="flex-shrink:0; padding:10px 16px; border-radius:var(--r-md);" onclick="exAddToBasket()">+ Ekle</button>
+                </div>
 
-                <label class="field-label" style="margin-top:12px;">Nakit Fiyatı (Ekstra İndirim İçin Düzenle)</label>
-                <input type="text" id="exNewManualPrice" class="big-input" style="font-size:18px;" oninput="applyThousandsMask(this); _exUpdateSummary();">
+                <label class="field-label" style="margin-top:12px;">Nakit Fiyatı (Eklemeden Önce İndirim İçin Düzenle)</label>
+                <input type="text" id="exNewManualPrice" class="big-input" style="font-size:18px;" oninput="applyThousandsMask(this);">
+
+                <div id="exNewBasketList" style="margin-top:14px;"></div>
 
                 <label class="field-label" style="margin-top:12px;">Satış Tarihi</label>
                 <input type="date" id="exSaleDate" style="font-size:15px; text-align:left; padding:10px 14px;">
@@ -4576,10 +4586,13 @@
     }
 
     // ── ÜRÜN DEĞİŞİMİ ──
-    // Müşteri eski bir ürünü geri verip yeni bir ürün alıyor. Yeni satış normal şekilde girilir (kendi
-    // etiket/fiyat kartlarıyla); eski ürünün tutarı otomatik NEGATİF bir kayıt olarak bugünün tarihinde
-    // açılır (orijinal satışın kendi tarihi/durumu hiç değişmez — geçmiş aylar geriye dönük bozulmaz).
+    // Müşteri eski bir ürünü geri verip bir veya birden fazla yeni ürün alıyor. Yeni ürün(ler) bu modalin
+    // kendi mini-sepetine (_exNewBasket) tek tek eklenir — her biri kendi etiket/fiyat/kod bilgisiyle, tıpkı
+    // ana sepet ekranındaki gibi. Onaylandığında hepsi TEK bir satışa toplanır (pozitif); eski ürünün tutarı
+    // otomatik NEGATİF bir kayıt olarak bugünün tarihinde açılır (orijinal satışın kendi tarihi/durumu hiç
+    // değişmez — geçmiş aylar geriye dönük bozulmaz).
     let _exOrigSource = null; // 'system' | 'manual'
+    let _exNewBasket = [];    // bu modalde eklenen yeni ürünler — { k, v, _rawP, _manualN }
 
     // Geçmişteki bir satış kartından "🔄 Değiştir" ile açılır — eski ürün sistemde kayıtlı.
     function openExchangeModal(key, storeId) {
@@ -4593,7 +4606,7 @@
         document.getElementById('exOrigInfoBlock').style.display = 'block';
         document.getElementById('exOrigInfoText').innerText = origKodlar + ' — ' + Math.round(origAmount).toLocaleString('tr-TR') + ' ₺ (' + (h.soldAt || h.ts) + ')';
         document.getElementById('exManualBlock').style.display = 'none';
-        _exResetNewProductFields();
+        _exResetModal();
         openModal('exchangeModal');
     }
 
@@ -4609,11 +4622,12 @@
         document.getElementById('exManualEtiket').value = '';
         document.getElementById('exManualTutar').value = '';
         document.getElementById('exManualNote').value = '';
-        _exResetNewProductFields();
+        _exResetModal();
         openModal('exchangeModal');
     }
 
-    function _exResetNewProductFields() {
+    function _exResetModal() {
+        _exNewBasket = [];
         document.getElementById('exNewEtiket').value = '';
         document.getElementById('exNewKod').value = '';
         document.getElementById('exNewManualPrice').value = '';
@@ -4621,11 +4635,12 @@
         document.getElementById('exError').style.display = 'none';
         document.getElementById('exSummaryBlock').style.display = 'none';
         exRunCalc();
+        exRenderBasket();
     }
 
-    let _exCalcResult = null; // exConfirmExchange'in okuyacağı son hesaplama
+    let _exCalcResult = null; // exAddToBasket'ın okuyacağı son hesaplama
 
-    // Yeni ürünün etiketine göre 4 fiyat kartını hesaplar — ana ekrandaki runCalc ile birebir aynı mantık,
+    // Etiket alanındaki değere göre 4 fiyat kartını hesaplar — ana ekrandaki runCalc ile birebir aynı mantık,
     // mağazanın kendi güncel kur/kâr oranlarını kullanır, sadece bu modale özel id'lere yazar.
     function exRunCalc() {
         const u  = smartEval(document.getElementById('cfgU').value),
@@ -4639,20 +4654,78 @@
         document.getElementById('exV1').innerText = f(res.v1) + ' ₺';
         document.getElementById('exVN').innerText = f(res.vN) + ' ₺';
         _exCalcResult = { res: res, labelVal: labelVal, u: u, xU: xU };
-        _exUpdateSummary();
         return _exCalcResult;
     }
 
-    // Eski tutar (sistemden ya da elle) + yeni ürünün Nakit fiyatı (manuel düzeltme varsa o) üzerinden
+    // Etiket alanındaki ürünü (gerekirse manuel Nakit fiyatıyla) mini-sepete ekler. Birden fazla ürün
+    // alınıyorsa bu butona tekrar tekrar basılır — her ürün kendi kodu ve fiyatıyla ayrı satır olur.
+    function exAddToBasket() {
+        const calc = exRunCalc();
+        if(!(calc.labelVal > 0)) { document.getElementById('exError').innerText = 'Önce bir etiket değeri girmelisin.'; document.getElementById('exError').style.display = 'block'; return; }
+        document.getElementById('exError').style.display = 'none';
+
+        const kRaw = document.getElementById('exNewKod').value.trim();
+        const manualRaw = document.getElementById('exNewManualPrice').value.trim();
+        const manualVal = manualRaw ? smartEvalThousands(manualRaw) : 0;
+        let itemRes = calc.res;
+        let isManualN = false;
+        if(manualVal > 0 && Math.round(manualVal) !== Math.round(calc.res.vN)) {
+            const ratio = manualVal / calc.res.vN;
+            const costTl = (calc.labelVal / 3) * calc.u;
+            const codes = getCodes(calc.u, calc.xU);
+            itemRes = { v3: calc.res.v3 * ratio, v2: calc.res.v2 * ratio, v1: calc.res.v1 * ratio, vN: manualVal, old: calc.res.old };
+            itemRes.m3 = codes.getPCode(itemRes.v3, costTl);
+            itemRes.m2 = codes.getPCode(itemRes.v2, costTl);
+            itemRes.m1 = codes.getPCode(itemRes.v1, costTl);
+            itemRes.mN = codes.getPCode(itemRes.vN, costTl);
+            isManualN = true;
+        }
+        const autoName = 'Ürün ' + (_exNewBasket.length + 1);
+        _exNewBasket.push({
+            id: Date.now(), k: kRaw ? kRaw.toUpperCase() : autoName, v: itemRes,
+            d: 'Pırlanta' + (isManualN ? ' · Manuel fiyat' : ''), mode: 'pirlanta',
+            _rawP: String(calc.labelVal), _manualN: isManualN, note: ''
+        });
+
+        document.getElementById('exNewEtiket').value = '';
+        document.getElementById('exNewKod').value = '';
+        document.getElementById('exNewManualPrice').value = '';
+        exRunCalc();
+        exRenderBasket();
+    }
+
+    function exRemoveFromBasket(id) {
+        _exNewBasket = _exNewBasket.filter(function(i){ return i.id !== id; });
+        exRenderBasket();
+    }
+
+    // Mini-sepeti listeler ve canlı net farkı (eski tutar karşısında) gösterir.
+    function exRenderBasket() {
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        const listEl = document.getElementById('exNewBasketList');
+        if(!_exNewBasket.length) {
+            listEl.innerHTML = '<div style="font-size:11px; color:var(--ink-dim); padding:6px 2px;">Henüz yeni ürün eklenmedi.</div>';
+        } else {
+            listEl.innerHTML = '<div style="font-size:10px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; margin-bottom:6px;">Eklenen Yeni Ürünler (' + _exNewBasket.length + ')</div>' +
+                _exNewBasket.map(function(i) {
+                    return '<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:var(--bg); border-radius:8px; margin-bottom:5px;">' +
+                        '<div><b style="font-size:12.5px;">' + i.k + '</b><br><span style="font-size:10px; color:var(--ink-dim);">Etiket: ' + f(smartEval(i._rawP)) + '</span></div>' +
+                        '<div style="text-align:right;"><span style="font-size:13px; font-weight:700; color:var(--rose);">' + f(i.v.vN) + ' ₺</span>' +
+                        '<span onclick="exRemoveFromBasket(' + i.id + ')" style="margin-left:8px; color:var(--ink-dim); cursor:pointer; font-size:13px;">×</span></div>' +
+                        '</div>';
+                }).join('');
+        }
+        _exUpdateSummary();
+    }
+
+    // Eski tutar (sistemden ya da elle) + mini-sepetteki TÜM yeni ürünlerin Nakit toplamı üzerinden
     // net farkı canlı gösterir — mağaza onaylamadan önce "müşteriden ne kadar alınacağını/verileceğini" görür.
     function _exUpdateSummary() {
         const block = document.getElementById('exSummaryBlock');
         const textEl = document.getElementById('exSummaryText');
-        if(!_exCalcResult || !(_exCalcResult.labelVal > 0)) { block.style.display = 'none'; return; }
+        if(!_exNewBasket.length) { block.style.display = 'none'; return; }
 
-        const manualRaw = document.getElementById('exNewManualPrice').value.trim();
-        const newAmount = manualRaw ? smartEvalThousands(manualRaw) : _exCalcResult.res.vN;
-        if(!(newAmount > 0)) { block.style.display = 'none'; return; }
+        const newTotal = Math.round(_exNewBasket.reduce(function(a,i){ return a + i.v.vN; }, 0));
 
         let oldAmount = 0;
         if(_exOrigSource === 'system') {
@@ -4664,7 +4737,7 @@
             oldAmount = smartEvalThousands(document.getElementById('exManualTutar').value);
         }
 
-        const diff = Math.round(newAmount - oldAmount);
+        const diff = Math.round(newTotal - oldAmount);
         block.style.display = 'block';
         if(diff >= 0) {
             textEl.innerHTML = 'Müşteriden alınacak fark: <b>+' + diff.toLocaleString('tr-TR') + ' ₺</b>';
@@ -4677,32 +4750,13 @@
         const errEl = document.getElementById('exError');
         errEl.style.display = 'none';
 
-        const calc = exRunCalc();
-        if(!(calc.labelVal > 0)) { errEl.innerText = 'Yeni ürünün etiket değerini gir.'; errEl.style.display = 'block'; return; }
-        const newKod = document.getElementById('exNewKod').value.trim();
-        if(!newKod) { errEl.innerText = 'Yeni ürünün kodu gerekli.'; errEl.style.display = 'block'; return; }
+        if(!_exNewBasket.length) { errEl.innerText = 'En az bir yeni ürün eklemelisin (+ Ekle ile).'; errEl.style.display = 'block'; return; }
         const dateStr = document.getElementById('exSaleDate').value;
         if(!dateStr) { errEl.innerText = 'Satış tarihi gerekli.'; errEl.style.display = 'block'; return; }
 
-        // Nakit fiyatı manuel düzeltilmişse onu kullan, yoksa otomatik hesaplananı kullan (diğer kartlar da orana göre ölçeklenir).
-        const manualRaw = document.getElementById('exNewManualPrice').value.trim();
-        const manualVal = manualRaw ? smartEvalThousands(manualRaw) : 0;
-        let newItemRes = calc.res;
-        let isManualN = false;
-        if(manualVal > 0 && Math.round(manualVal) !== Math.round(calc.res.vN)) {
-            const ratio = manualVal / calc.res.vN;
-            const costTl = (calc.labelVal / 3) * calc.u;
-            const codes = getCodes(calc.u, calc.xU);
-            newItemRes = {
-                v3: calc.res.v3 * ratio, v2: calc.res.v2 * ratio, v1: calc.res.v1 * ratio, vN: manualVal, old: calc.res.old
-            };
-            newItemRes.m3 = codes.getPCode(newItemRes.v3, costTl);
-            newItemRes.m2 = codes.getPCode(newItemRes.v2, costTl);
-            newItemRes.m1 = codes.getPCode(newItemRes.v1, costTl);
-            newItemRes.mN = codes.getPCode(newItemRes.vN, costTl);
-            isManualN = true;
-        }
-        const newAmount = Math.round(newItemRes.vN);
+        const u = smartEval(document.getElementById('cfgU').value);
+        const newAmount = Math.round(_exNewBasket.reduce(function(a,i){ return a + i.v.vN; }, 0));
+        const newEtiketTotal = _exNewBasket.reduce(function(a,i){ return a + smartEval(i._rawP); }, 0);
 
         // Eski ürün bilgisi: sistemden ya da elle.
         let oldAmount = 0, oldEtiket = 0, oldKod = '', oldNote = '', origKey = null, origStoreId = null;
@@ -4726,20 +4780,15 @@
         const now = new Date();
         const saleDate = new Date(dateStr + 'T12:00:00');
         const dateShort = now.toLocaleDateString('tr-TR');
-        const u = calc.u;
 
-        // 1) Yeni satış — normal bir satış gibi, pozitif tutarla.
+        // 1) Yeni satış — mini-sepetteki TÜM ürünler tek bir satışa toplanır, pozitif tutarla.
         const newRef = dateShort.replace(/\./g,'') + '/' + (Math.floor(Math.random()*9000)+1000);
-        const newBasketItem = {
-            id: Date.now(), k: newKod.toUpperCase(), v: newItemRes, d: 'Pırlanta' + (isManualN ? ' · Manuel fiyat' : ''),
-            mode: 'pirlanta', _rawP: String(calc.labelVal), _manualN: isManualN, note: ''
-        };
         const newSalePayload = {
             ref: newRef, ts: now.toLocaleString('tr-TR'), tsMillis: now.getTime(),
             cusName: 'Müşterimiz', cusPhone: '—', storeName: document.getElementById('cfgStore').value || 'Mağaza',
             status: 'sold', soldAt: saleDate.toLocaleDateString('tr-TR'), soldAtMillis: saleDate.getTime(),
             closingAmount: newAmount, paymentNote: '', usdRateAtSave: u || null,
-            basket: [newBasketItem],
+            basket: JSON.parse(JSON.stringify(_exNewBasket)),
             exchangeFromKey: origKey || null, exchangeFromStoreId: origStoreId || null,
             exchangeFromNote: _exOrigSource === 'manual' ? (oldKod + ' — ' + Math.round(oldAmount).toLocaleString('tr-TR') + ' ₺' + (oldNote ? ' (' + oldNote + ')' : ' (sistem dışı / önceki kayıt)')) : null
         };
@@ -4760,13 +4809,14 @@
             return fbDb.ref('stores/' + currentStoreId + '/history').push(exReturnPayload);
         }).then(function() {
             closeModal('exchangeModal');
-            sysAlert('Değişim tamamlandı: yeni satış ve geri alınan ürünün kaydı geçmişe işlendi.', { title: '🔄 Değişim Tamamlandı' });
+            sysAlert('Değişim tamamlandı: yeni satış (' + _exNewBasket.length + ' ürün) ve geri alınan ürünün kaydı geçmişe işlendi.', { title: '🔄 Değişim Tamamlandı' });
         }).catch(function(err) {
             console.error('Değişim kaydedilemedi:', err);
             errEl.innerText = 'Değişim kaydedilirken hata oluştu: ' + err.message;
             errEl.style.display = 'block';
         });
     }
+
 
     function markHistoryStatus(key, storeId, status) {
         if(status === 'sold') {
