@@ -3202,27 +3202,25 @@
 
     // Çoklu etiket girişinde (örn. 1000+2000+1200), her parça için ayrı kod kutucuğu + o parçanın etiketini gösterir.
     // containerEl: kutucukların çizileceği element. parts: etiket değerleri dizisi.
-    // storeKey: kodların tutulacağı global obje adı — farklı ekranlar (hesap makinesi, hızlı satış, admin satış girişi) çakışmasın diye ayrı tutulur.
-    let _multiCodeValues = {};
+    // storeKey: kodların tutulacağı global obje adı — farklı ekranlar (hızlı satış, admin satış girişi) çakışmasın diye ayrı tutulur.
+    // Not: ana sepet ekranı artık kendi etiket kutusunu canlı senkronize ediyor (syncBasketFromInputBox),
+    // bu yüzden burada onun için ayrı bir kod kutucuğu mekanizması yok.
     let _quickMultiCodeValues = {};
     let _aseMultiCodeValues = {};
 
     // storeKey'e göre ilgili global değişkene ve o ekrana ait tekli/çoklu satır elementlerine ulaşır.
     const MULTI_CODE_CONFIG = {
-        '_multiCodeValues':      { singleRowId: 'single-kod-row',      multiBtnId: 'multi-add-btn' },
         '_quickMultiCodeValues': { singleRowId: 'quick-single-kod-row', multiBtnId: null },
         '_aseMultiCodeValues':   { singleRowId: 'ase-single-kod-row',  multiBtnId: 'ase-multi-add-btn' }
     };
 
     function getMultiCodeStore(storeKey) {
-        if(storeKey === '_multiCodeValues') return _multiCodeValues;
         if(storeKey === '_quickMultiCodeValues') return _quickMultiCodeValues;
         return _aseMultiCodeValues;
     }
 
     function setMultiCodeStore(storeKey, val) {
-        if(storeKey === '_multiCodeValues') _multiCodeValues = val;
-        else if(storeKey === '_quickMultiCodeValues') _quickMultiCodeValues = val;
+        if(storeKey === '_quickMultiCodeValues') _quickMultiCodeValues = val;
         else _aseMultiCodeValues = val;
     }
 
@@ -3766,12 +3764,18 @@
     function generatePDF() {
         const cusName  = document.getElementById('iCus').value.trim().toUpperCase()  || 'Müşterimiz';
         const cusPhone = document.getElementById('iPhone').value.trim() || '—';
+        // Teklif özelliği kapalıyken bu kayıt da diğerleri gibi doğrudan "satış" sayılır — teklif durumu
+        // arayüzde hiç gösterilmediği için, kapanış tutarı olarak sepetteki Nakit toplamı kullanılır.
+        const status = _teklifFeatureEnabled ? 'teklif' : 'sold';
+        const closingAmount = _teklifFeatureEnabled ? null : Math.round(basket.reduce(function(a,b){ return a + b.v.vN; }, 0));
 
-        saveToHistory(cusName, cusPhone).catch(function(err) {
+        saveToHistory(cusName, cusPhone, status, null, closingAmount).catch(function(err) {
             console.error('Geçmiş kaydedilemedi:', err);
+            const retryHint = _teklifFeatureEnabled
+                ? 'Bağlantın düzelince, bu teklifi "👤 Müşteriye Kaydet" butonuyla tekrar kaydetmeni öneririm — yoksa bu satış geçmişte ve raporlarda görünmez.'
+                : 'Bağlantın düzelince, sepeti tekrar oluşturup kaydetmeni öneririm — yoksa bu satış geçmişte ve raporlarda görünmez.';
             sysAlert(
-                'PDF yazdırılacak ama bu teklif geçmişe KAYDEDİLEMEDİ (internet bağlantısı yok ya da zayıf olabilir).\n\n' +
-                'Bağlantın düzelince, bu teklifi "👤 Müşteriye Kaydet" butonuyla tekrar kaydetmeni öneririm — yoksa bu satış geçmişte ve raporlarda görünmez.',
+                'PDF yazdırılacak ama bu kayıt geçmişe KAYDEDİLEMEDİ (internet bağlantısı yok ya da zayıf olabilir).\n\n' + retryHint,
                 { tone: 'danger', title: '⚠ Geçmişe Kaydedilemedi' }
             );
         });
