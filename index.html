@@ -468,16 +468,16 @@
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            align-self: stretch;
-            position: sticky;
-            top: 0;
         }
 
         .basket-header {
             padding: 8px 20px;
             min-height: 64px;
             box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            background: var(--surface);
+            z-index: 10;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -1709,16 +1709,6 @@
 
         </div><!-- /.left-panel -->
 
-        <!-- FOOTER -->
-        <div style="text-align:center; padding:18px 16px 14px; border-top:1px solid var(--border); margin-top:auto;">
-            <div style="font-size:10px; color:var(--ink-dim); font-weight:500; letter-spacing:.06em;">
-                © 2026 Emrah ÖZTÜRK — Tüm hakları saklıdır
-            </div>
-            <div style="font-size:9px; color:var(--ink-dim); opacity:.5; margin-top:3px; font-family:monospace;">
-                Sina Terminal v3
-            </div>
-        </div>
-
         </div><!-- /.left-column -->
 
         <!-- RIGHT BASKET -->
@@ -1749,6 +1739,16 @@
             </div>
         </div>
 
+    </div><!-- /.master-wrapper -->
+
+    <!-- FOOTER — tüm genişlik (sol panel + sepet) boyunca, içeriğin en altında -->
+    <div id="app-footer" style="display:none; text-align:center; padding:18px 16px 14px; border-top:1px solid var(--border);">
+        <div style="font-size:10px; color:var(--ink-dim); font-weight:500; letter-spacing:.06em;">
+            © 2026 Emrah ÖZTÜRK — Tüm hakları saklıdır
+        </div>
+        <div style="font-size:9px; color:var(--ink-dim); opacity:.5; margin-top:3px; font-family:monospace;">
+            Sina Terminal v3
+        </div>
     </div>
 
     <!-- HELP MODAL -->
@@ -2804,6 +2804,7 @@
                 // Admin: hesap makinesi/sepet yok, doğrudan tam ekran dashboard
                 currentStoreId = 'admin';
                 document.getElementById('main-wrapper').style.display = 'none';
+                document.getElementById('app-footer').style.display = 'none';
                 attachHistoryListener();
                 showDashboard();
             } else {
@@ -2817,21 +2818,23 @@
                     }
                     document.getElementById('dashboard-screen').style.display = 'none';
                     document.getElementById('main-wrapper').style.display = 'flex';
+                    document.getElementById('app-footer').style.display = 'block';
                     document.getElementById('user-chip').innerText = '🏪 ' + uname;
                     loadCfg();
                     attachHistoryListener();
                     attachLeaderboardListener(uname);
                     attachTeklifFeatureListener();
-                    setTimeout(adjustPadding, 0); // main-wrapper az önce göründü, top-bar yüksekliği şimdi doğru ölçülebilir
+                    setTimeout(adjustPadding, 100); // main-wrapper az önce göründü, top-bar yüksekliği şimdi doğru ölçülebilir
                 }).catch(function() {
                     document.getElementById('dashboard-screen').style.display = 'none';
                     document.getElementById('main-wrapper').style.display = 'flex';
+                    document.getElementById('app-footer').style.display = 'block';
                     document.getElementById('user-chip').innerText = '🏪 ' + uname;
                     loadCfg();
                     attachHistoryListener();
                     attachLeaderboardListener(uname);
                     attachTeklifFeatureListener();
-                    setTimeout(adjustPadding, 0);
+                    setTimeout(adjustPadding, 100);
                 });
             }
         } else {
@@ -2839,6 +2842,7 @@
             currentStoreId = null;
             isAdmin = false;
             document.getElementById('main-wrapper').style.display = 'none';
+            document.getElementById('app-footer').style.display = 'none';
             document.getElementById('dashboard-screen').style.display = 'none';
             document.getElementById('login-screen').style.display = 'flex';
         }
@@ -5426,6 +5430,7 @@
     // ── ADMIN PANEL ──
     function showDashboard() {
         document.getElementById('main-wrapper').style.display = 'none';
+        document.getElementById('app-footer').style.display = 'none';
         document.getElementById('dashboard-screen').style.display = 'flex';
         populateProvinceDropdowns();
         setDashTab(0);
@@ -7374,7 +7379,17 @@
         updateOfflineBanner();
     });
 
-    window.onload = function() { adjustPadding(); updateOfflineBanner(); };
+    window.onload = function() {
+        adjustPadding();
+        updateOfflineBanner();
+        // top-bar'ın gerçek yüksekliği değiştiğinde (kur verisi yüklendiğinde, mağaza adı satır
+        // sayısını değiştirdiğinde, vb.) left-panel'in üst boşluğu otomatik yeniden hesaplanır —
+        // tek seferlik tahmini bir gecikmeye (setTimeout) güvenmek yerine her zaman güncel kalır.
+        const topBarEl = document.querySelector('.top-bar');
+        if(topBarEl && typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(adjustPadding).observe(topBarEl);
+        }
+    };
     window.addEventListener('resize', adjustPadding);
 </script>
 </body>
