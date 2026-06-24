@@ -1510,7 +1510,6 @@
                 <div id="formP">
                     <label class="field-label">Pırlanta Etiket</label>
                     <input type="text" id="inpP" class="big-input" oninput="applyThousandsMask(this); runCalc();" placeholder="0.00" inputmode="text">
-                    <div id="inpP-parts" style="display:none; margin-top:6px; font-size:10px; color:var(--ink-dim); text-align:center; line-height:1.8;"></div>
                 </div>
             </div>
 
@@ -1567,9 +1566,8 @@
             <div class="action-row" style="flex-direction:column; gap:8px;" id="calc-mode-actions">
                 <div style="display:flex; gap:8px; width:100%;" id="single-kod-row">
                     <input type="text" id="iKod" placeholder="Model / Stok Kodu (opsiyonel)" style="font-size:15px; flex:1; text-align:left; padding:12px 14px; text-transform:uppercase;">
-                    <button class="btn-primary" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
+                    <button class="btn-primary" id="basket-add-btn" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
                 </div>
-                <button class="btn-primary" id="multi-add-btn" style="display:none; width:100%; padding:12px;" onclick="addBasket()">+ Tümünü Sepete Ekle</button>
                 <div id="normal-save-actions" style="display:flex; flex-wrap:wrap; gap:8px; width:100%;">
                     <button class="btn-dark" style="flex:1; min-width:140px; background:var(--success);" onclick="openCusModal('directSale')">✓ Satış Oldu</button>
                     <button class="btn-dark" style="flex:1; min-width:140px;" onclick="openCusModal('save')">👤 Müşteriye Kaydet</button>
@@ -1661,7 +1659,7 @@
                     <p>Sertifika etiket değerini gir.</p>
                     <div class="help-card">
                         <b>Tek ürün:</b> Sadece rakamı yaz → <em>1500</em> (binlik nokta otomatik gelir: 1.500)<br>
-                        <b>Birden fazla ürün tek seferde:</b> Artı ile yaz → <em>1000+2000+500</em> — input'un altında her ürün için ayrı bir <b>kod kutucuğu</b> çıkar, yanında o ürünün etiketi görünür (hangi kodun hangi ürüne ait olduğunu şaşırmamak için). Her kutucuğa ilgili ürünün kodunu yaz, sonra <b>+ Tümünü Sepete Ekle</b>'ye bas — hepsi ayrı ayrı ürün olarak sepete girer.<br><br>
+                        <b>Birden fazla ürün tek seferde:</b> Artı ile yaz → <em>1000+2000+500</em> — kod kutucuğu burada çıkmaz, <b>+ Ekle</b>'ye basınca her parça otomatik "Ürün 1", "Ürün 2" gibi sepete girer, etiket değeriyle birlikte görünür. Hangisinin hangisi olduğunu sepetteki etiket rakamına bakarak ayırt edip ✎ ile kodunu sepette yazarsın — sepet etikete göre büyükten küçüğe sıralı durur, karışmaz.<br><br>
                         4 fiyat kartı anında hesaplanır: <em>3 Taksit, 2 Taksit, Tek Çekim, Nakit.</em><br><br>
                         <b>K kodu:</b> Her kartın köşesindeki gizli kod sadece senin için. Baştaki <b>1</b> = kârlı, <b>0</b> = zararlı. Ortaki rakam yüzde. Müşteri anlamaz.<br>
                         <em>K<b>1</b>50 → %50 kâr &nbsp;|&nbsp; K<b>0</b>8 → %8 zarar</em>
@@ -1670,7 +1668,7 @@
 
                 <div class="help-section">
                     <h4>3. Sepete Ekle</h4>
-                    <p>Teklif aşamasında <em>Model / Stok Kodu</em> alanı <b>opsiyonel</b> — boş bırakırsan "Ürün 1", "Ürün 2" gibi otomatik isim verilir. <strong>Ama satış olacaksa (✓ Satış Oldu / Bu Satışı Tamamla) kod kesinlikle dolu olmalı</strong> — otomatik isimle satış kapatılamaz, sistem uyarır.</p>
+                    <p>Sepete eklerken <em>Model / Stok Kodu</em> alanı <b>her durumda opsiyonel</b> — boş bırakırsan (özellikle çoklu girişte) "Ürün 1", "Ürün 2" gibi otomatik isim verilir, yanında etiket değeri görünür. Sepet etikete göre büyükten küçüğe sıralı durduğu için hangisinin hangisi olduğunu karıştırmazsın. <strong>Satış olacaksa (✓ Satış Oldu / Bu Satışı Tamamla) kod kesinlikle dolu olmalı</strong> — ama bunu sepete geri dönüp düzeltmene gerek yok: kodu eksikse, aynı satış ekranında küçük bir kutucuk çıkar, orada yazıp aynı butonla devam edersin.</p>
                     <div class="help-card">
                         <b>✎ Tek ürün düzenle:</b> Sepetteki bir ürüne basınca açılan ekranda, Nakit fiyatı zaten o ürünün şu anki fiyatıyla dolu gelir, kodu da buradan değiştirebilirsin. Değiştirirsen anında <b>KÂR/ZARAR yüzdesi</b> gösterilir, hesap makinesine gerek kalmaz.<br><br>
                         <b>✎ Toplamı Düzenle (sepet altında):</b> Birden fazla ürün varken hepsinin toplam Nakit tutarını tek seferde değiştirebilirsin — fark tüm ürünlere otomatik orantılı dağıtılır, burada da kâr/zarar görünür.
@@ -1681,8 +1679,8 @@
                     <h4>4. Satış / Kayıt Seçenekleri</h4>
                     <p>Sepet doluyken üç buton var:</p>
                     <div class="help-card">
-                        <b>✓ Satış Oldu:</b> Müşteri o an alıyorsa kullan. Sepetteki <b>tüm ürünlerin kodu dolu olmalı</b> (otomatik "Ürün N" yetmez), yoksa sistem hangi ürünlerin kodu eksik olduğunu söyleyip durdurur. İsim+telefon ile birlikte <b>Satış Tarihi</b> (varsayılan bugün, geçmiş bir tarih de seçilebilir) ve isteğe bağlı <b>Ödeme Açıklaması</b> sorulur (örn: "10.000 nakit + 5.000 altın değişim"). Kapanış tutarı için ayrıca bir şey yazmana gerek yok — sepetteki Nakit fiyatı zaten kapanış tutarı olarak kaydedilir, indirim yaptıysan ✎ ile sepette düzelt, otomatik yansır. Kayıt direkt <b>"Satış Oldu"</b> durumunda geçmişe yazılır.<br><br>
-                        <b>👤 Müşteriye Kaydet:</b> Müşteri düşünüyor/kararsızsa kullan, kod zorunlu değildir. Aynı bilgiyi alır ama kayıt <b>"Teklif"</b> durumunda kalır — sonra satışa dönerse Geçmiş'ten işaretlersin (o an kod zorunluluğu devreye girer).<br><br>
+                        <b>✓ Satış Oldu:</b> Müşteri o an alıyorsa kullan. Sepetteki ürünlerden kodu hâlâ otomatik "Ürün N" kalan varsa, açılan ekranda etiketiyle birlikte küçük bir kutucuk çıkar — orada kodu yazıp aynı ekrandan devam edersin, sepete geri dönmen gerekmez. İsim+telefon ile birlikte <b>Satış Tarihi</b> (varsayılan bugün, geçmiş bir tarih de seçilebilir) ve isteğe bağlı <b>Ödeme Açıklaması</b> sorulur (örn: "10.000 nakit + 5.000 altın değişim"). Kapanış tutarı için ayrıca bir şey yazmana gerek yok — sepetteki Nakit fiyatı zaten kapanış tutarı olarak kaydedilir, indirim yaptıysan ✎ ile sepette düzelt, otomatik yansır. Kayıt direkt <b>"Satış Oldu"</b> durumunda geçmişe yazılır.<br><br>
+                        <b>👤 Müşteriye Kaydet:</b> Müşteri düşünüyor/kararsızsa kullan, kod zorunlu değildir. Aynı bilgiyi alır ama kayıt <b>"Teklif"</b> durumunda kalır — sonra satışa dönerse Geçmiş'ten işaretlersin (o an, eksikse, aynı ekranda kod kutucuğu çıkar).<br><br>
                         <b>📄 PDF Teklif:</b> Aynı şekilde bilgi alır, hem kaydeder hem yazdırır, kod zorunlu değildir.
                     </div>
                     <p style="margin-top:8px;">İsim ve telefon zorunludur — geçmişte "bu müşteriye ne zaman ne fiyat verildiğini" arayabilmen için.</p>
@@ -3011,13 +3009,25 @@
 
         let rawInpP = document.getElementById('inpP').value;
         let labelVal = smartEvalThousands(rawInpP);
-        // Çoklu giriş: her parça için ayrı kod giriş kutucuğu gösterilir (hangi etikete hangi kodun gideceği net olsun diye)
-        const partsElP = document.getElementById('inpP-parts');
+        // Çoklu giriş (1000+2000 gibi): artık burada ayrı kod kutucuğu istenmiyor —
+        // her parça otomatik "Ürün N" adıyla sepete girer, kodu sepette ✎ ile (etikete bakarak) düzeltilir.
         const partsP = rawInpP ? rawInpP.toString().replace(/\./g,'').replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
-        renderMultiCodeInputs(partsElP, partsP, '_multiCodeValues');
 
         const res = calcForLabelValue(labelVal, u, xU);
         if(labelVal > 0) details = 'Pırlanta';
+
+        // Çoklu girişte (1+'lı) kod alanı kullanılmaz — placeholder ve buton metniyle bunu netleştir.
+        const kodInput = document.getElementById('iKod');
+        const addBtn = document.getElementById('basket-add-btn');
+        if(partsP.length > 1) {
+            kodInput.placeholder = 'Çoklu girişte kod sepette düzenlenir';
+            kodInput.disabled = true;
+            if(addBtn) addBtn.innerText = '+ ' + partsP.length + ' Ürünü Sepete Ekle';
+        } else {
+            kodInput.placeholder = 'Model / Stok Kodu (opsiyonel)';
+            kodInput.disabled = false;
+            if(addBtn) addBtn.innerText = '+ Ekle';
+        }
 
         updateBox('3', res.old, res.v3, 3, res.m3);
         updateBox('2', res.old, res.v2, 2, res.m2);
@@ -3098,7 +3108,6 @@
     }
 
     function addBasket() {
-        const rawP = document.getElementById('inpP').value;
         const calc = runCalc(); // partsP, u, xU buradan gelir
         const kRaw = document.getElementById('iKod').value.trim();
         const parts = calc.partsP; // [] | [tek değer] | [değer1, değer2, ...]
@@ -3110,23 +3119,16 @@
 
         parts.forEach(function(labelVal, idx) {
             const itemRes = calcForLabelValue(labelVal, calc.u, calc.xU);
-            // Kod boşsa otomatik "Ürün N" adı ver (N, sepetteki mevcut ürün sayısına göre devam eder)
-            const autoName = 'Ürün ' + (basket.length + 1);
-            let kod;
-            if(parts.length > 1) {
-                // Çoklu giriş: her parçanın kendi kod kutucuğundaki değeri kullanılır
-                const multiVal = (_multiCodeValues[idx] || '').trim();
-                kod = multiVal ? multiVal.toUpperCase() : autoName;
-            } else {
-                kod = kRaw ? kRaw.toUpperCase() : autoName;
-            }
+            // Kod boşsa (çoklu girişte her zaman, tekli girişte de boş bırakılırsa) otomatik "Ürün N" adı verilir —
+            // N, sepetteki mevcut ürün sayısına göre artar, böylece her parça kendi benzersiz adını alır.
+            const autoName = 'Ürün ' + (basket.length + idx + 1);
+            const kod = (parts.length === 1 && kRaw) ? kRaw.toUpperCase() : autoName;
             basket.push({
                 id: Date.now() + idx, k: kod, v: itemRes, d: calc.details, mode: calc.mode,
                 _rawP: String(labelVal), _manualN: false, note: ''
             });
         });
 
-        _multiCodeValues = {};
         document.getElementById('iKod').value  = '';
         document.getElementById('inpP').value  = '';
         runCalc();
@@ -3249,6 +3251,9 @@
               gSum2 = f(items.reduce((a,b)=>a+b.v.v2,0)),
               gSum1 = f(items.reduce((a,b)=>a+b.v.v1,0)),
               gSumN = f(items.reduce((a,b)=>a+b.v.vN,0));
+        // Görüntüleme sırası: etiket değerine göre büyükten küçüğe. Gerçek 'basket' dizisi değişmez
+        // (id'ler ve diğer işlemler index'e değil id'ye dayanır), sadece kartların gösterim sırası değişir.
+        const sortedItems = items.slice().sort(function(a, b) { return smartEval(b._rawP) - smartEval(a._rawP); });
         return `
         <div class="basket-group">
             <div class="group-header" onclick="toggleGroup('${mode}')">
@@ -3256,11 +3261,11 @@
                 <span style="font-size:10px; opacity:.5;">▾</span>
             </div>
             <div id="group-${mode}" class="group-content">
-                ${items.map(i => `
+                ${sortedItems.map(i => `
                 <div class="basket-item">
                     <span class="item-remove" onclick="removeItem(${i.id})">×</span>
                     <div class="basket-item-title">${i.k} <span onclick="openEdit(${i.id})" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;margin-left:4px;">✎</span> ${i._manualN ? '<span style="font-size:9px;background:var(--rose-pale);color:var(--rose);font-weight:800;padding:1px 6px;border-radius:100px;margin-left:4px;">MANUEL</span>' : ''}</div>
-                    <span class="basket-item-detail">${i.d}</span>
+                    <span class="basket-item-detail">${i.d}${i._rawP ? ' · Etiket: ' + f(smartEval(i._rawP)) : ''}</span>
                     ${i.note ? '<span style="font-size:10px;color:var(--ink-mid);display:block;margin-top:2px;font-style:italic;">'+i.note+'</span>' : ''}
                     <div class="mini-grid">
                         <div class="mini-grid-item">3T <b>${f(i.v.v3)} ₺</b><span style="font-size:9px;color:var(--ink-dim);font-family:monospace;display:block;">${i.v.m3}</span></div>
