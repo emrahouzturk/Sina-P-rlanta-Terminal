@@ -55,7 +55,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 14px;
+            padding: 8px 14px;
+            min-height: 64px;
             background: var(--surface);
             border-bottom: 1px solid var(--border);
             width: 100%;
@@ -467,13 +468,16 @@
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            min-height: 100vh;
+            align-self: stretch;
             position: sticky;
             top: 0;
         }
 
         .basket-header {
-            padding: 20px 20px 16px;
+            padding: 8px 20px;
+            min-height: 64px;
+            box-sizing: border-box;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -1121,6 +1125,21 @@
                 position: static;
             }
             #basket-container { max-height: 380px; }
+            #live-basket-summary {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                margin: 0 0 12px;
+                padding: 10px 14px;
+                background: var(--rose-pale);
+                border: 1px solid var(--rose-soft);
+                border-radius: 100px;
+                font-size: 12px;
+                font-weight: 700;
+                color: var(--rose);
+                text-align: center;
+            }
             .price-grid { grid-template-columns: 1fr 1fr; }
 
             /* Kur chip'i + butonlar mobilde üst üste: kur tam genişlik, butonlar altında */
@@ -1641,6 +1660,12 @@
                     <div class="price-sub">EN İYİ FİYAT</div>
                     <span class="price-code" id="smN"></span>
                 </div>
+            </div>
+
+            <!-- Mobilde sepet aşağıda kaldığı için, etiket yazınca "gerçekten eklendi mi" güvencesi versin diye
+                 küçük bir canlı özet — masaüstünde/tablet yatayda sepet zaten görünür olduğu için gizli kalır. -->
+            <div id="live-basket-summary" style="display:none;">
+                <span id="live-basket-summary-text">🛒 Sepet boş</span>
             </div>
 
             <!-- HIZLI SATIŞ GİRİŞİ — Hesap Makinesi Modu kapalıyken görünür -->
@@ -2797,6 +2822,7 @@
                     attachHistoryListener();
                     attachLeaderboardListener(uname);
                     attachTeklifFeatureListener();
+                    setTimeout(adjustPadding, 0); // main-wrapper az önce göründü, top-bar yüksekliği şimdi doğru ölçülebilir
                 }).catch(function() {
                     document.getElementById('dashboard-screen').style.display = 'none';
                     document.getElementById('main-wrapper').style.display = 'flex';
@@ -2805,6 +2831,7 @@
                     attachHistoryListener();
                     attachLeaderboardListener(uname);
                     attachTeklifFeatureListener();
+                    setTimeout(adjustPadding, 0);
                 });
             }
         } else {
@@ -3416,6 +3443,7 @@
             document.getElementById('sum-box').style.display = 'none';
             if(countEl) countEl.innerText = '';
             updateLinkedHistoryBanner();
+            updateLiveBasketSummary();
             return;
         }
         document.getElementById('sum-box').style.display = 'block';
@@ -3426,6 +3454,20 @@
         document.getElementById('sum1').innerText = Math.round(basket.reduce((a,b)=>a+b.v.v1, 0)).toLocaleString('tr-TR');
         document.getElementById('sumN').innerText = Math.round(basket.reduce((a,b)=>a+b.v.vN, 0)).toLocaleString('tr-TR');
         updateLinkedHistoryBanner();
+        updateLiveBasketSummary();
+    }
+
+    // Mobilde sepet ekranın aşağısında kaldığı için, etiket yazınca "gerçekten sepete eklendi mi" güvencesini
+    // bu küçük şerit verir — kullanıcı aşağı kaydırmadan kaç ürün olduğunu ve toplam Nakit tutarını görür.
+    function updateLiveBasketSummary() {
+        const el = document.getElementById('live-basket-summary-text');
+        if(!el) return;
+        if(!basket.length) {
+            el.innerText = '🛒 Sepet boş';
+            return;
+        }
+        const totalN = Math.round(basket.reduce((a,b)=>a+b.v.vN, 0));
+        el.innerText = '🛒 ' + basket.length + ' ürün sepette · Nakit: ' + totalN.toLocaleString('tr-TR') + ' ₺';
     }
 
 
@@ -7218,13 +7260,15 @@
         XLSX.writeFile(wb, fname);
     }
 
+    // top-bar position:sticky olduğu için içerik onun altına kayıp görünmez kalmamalı diye left-panel'in
+    // üst boşluğu her zaman top-bar'ın GERÇEK yüksekliğine göre ayarlanır — sabit bir sayı kullanılmaz,
+    // çünkü top-bar mobilde/tablet dik ekranda (flex-wrap nedeniyle) tek satırdan iki satıra çıkabiliyor.
     function adjustPadding() {
-        if(window.innerWidth >= 951) {
-            const h = document.querySelector('.top-bar').offsetHeight;
-            document.querySelector('.left-panel').style.paddingTop = (h + 16) + 'px';
-        } else {
-            document.querySelector('.left-panel').style.paddingTop = '28px';
-        }
+        const topBar = document.querySelector('.top-bar');
+        const leftPanel = document.querySelector('.left-panel');
+        if(!topBar || !leftPanel) return;
+        const h = topBar.offsetHeight;
+        leftPanel.style.paddingTop = (h > 0 ? h + 16 : 28) + 'px';
     }
 
     function toggleGroup(m)  { document.getElementById('group-'+m).classList.toggle('hidden'); }
