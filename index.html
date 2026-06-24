@@ -1127,7 +1127,7 @@
             }
             #basket-container { max-height: 380px; }
             #live-basket-summary {
-                display: flex !important;
+                display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 6px;
@@ -1464,10 +1464,11 @@
                     <h4>1. Genel Bakış</h4>
                     <div class="help-card">
                         <b>🏆 Mağaza Sıralama Ekranı:</b> Açık/Kapalı anahtarıyla, mağazaların kendi Türkiye/bölge sıralamasını görüp görmeyeceğini tek tıkla kontrol edersin. Hiçbir ciro/tutar/adet rakamı paylaşılmaz, mağaza sadece kendi sıra numarasını (örn. "2 / 5") görür — yüzde fark bile gösterilmez, çünkü mağaza kendi cirosunu bildiği için üsttekinin cirosunu geri hesaplayabilirdi. Sıralama her ay için ayrı hesaplanır — mağaza geçmiş 6 aya kadar gidip karşılaştırabilir. Bu hesaplama, sen Genel Bakış'a her girdiğinde otomatik tazelenir.<br><br>
-                        <b>Üst kartlar:</b> Toplam mağaza sayısı, bu ay satılan ürün adedi, bu ayki etiket÷3 toplamı (prim hesap tabanı, $).<br><br>
+                        <b>Üst kartlar:</b> Toplam mağaza sayısı, bu ay satılan ürün adedi, bu ayki etiket÷3 toplamı (prim hesap tabanı, $) — ikisinin altında <b>geçen aya göre % fark</b> (▲ arttı / ▼ azaldı) görünür, geçen ay hiç veri yoksa bu kısım boş kalır.<br><br>
                         <b>Mağaza Performansı:</b> Bu ay hangi mağaza ne kadar satmış — Etiket÷3'e veya Ürün Adedine göre sıralayabilirsin.<br><br>
                         <b>⚠ Hareketsiz Mağazalar:</b> Son 14 gündür hiç teklif/satış girmemiş mağazalar burada otomatik listelenir — varsa kırmızı kutu görünür.<br><br>
-                        <b>Trend Grafiği:</b> Son 6 ayın toplam etiket÷3 gidişi, tüm mağazalar birlikte.
+                        <b>📉 Azalan Mağazalar:</b> Hareketsiz olmayan (yani son 14 gün içinde en az 1 satışı olan) ama bu ay geçen aya göre <b>%40 ve üzeri düşüş</b> gösteren mağazalar burada listelenir. Geçen ay çok düşük hacimliyse (500$'ın altı) gürültü sayılır, listelenmez. Bu, tamamen durmayan ama yavaşlayan mağazaları yakalamak için var — "hareketsiz" uyarısı tam sıfıra inmeden hiç tetiklenmez, bu liste o boşluğu kapatır.<br><br>
+                        <b>Trend Grafiği:</b> Son 6 ayın toplam etiket÷3 gidişi, tüm mağazalar birlikte. Tek bir mağazanın kendi trendini görmek için Satış Raporu'nda o mağazayı seç — orada aynı grafiğin mağazaya özel hâli çıkar.
                     </div>
                 </div>
 
@@ -1476,7 +1477,8 @@
                     <p>Yeni mağaza/satış noktası oluşturma, mevcutları yönetme.</p>
                     <div class="help-card">
                         <b>Oluştururken:</b> Tür (Mağaza/Satış Noktası) ve İl seçimi zorunlu — bölge otomatik hesaplanır.<br><br>
-                        <b>Her mağaza satırında:</b> ✎ Bilgileri Düzenle, 🔑 Şifre Sıfırla, 🗑 Arşivle (30 gün sonra otomatik kalıcı silinir, içinde geri yükleyebilirsin).<br><br>
+                        <b>Her mağaza satırında:</b> "X kayıt" yanında <b>"Bu ay $X · 3 ay $Y"</b> özeti görünür (etiket÷3 üzerinden) — Satış Raporu'na hiç girmeden, listeyi tararken hangi mağazanın zayıf olduğunu tek bakışta görürsün.<br><br>
+                        <b>İşlem butonları:</b> ✎ Bilgileri Düzenle, 🔑 Şifre Sıfırla, 🗑 Arşivle (30 gün sonra otomatik kalıcı silinir, içinde geri yükleyebilirsin).<br><br>
                         <b>Şifre sıfırlama:</b> Tarayıcı güvenliği nedeniyle tek bir ek adım gerekir — sana Firebase Console'da kullanıcıyı silmen için net talimat gösterilir, sonra yeni şifre otomatik oluşturulur. Mağazanın verisi bu işlemden hiç etkilenmez.<br><br>
                         <b>☑ Tümünü Seç + ✎ Toplu Kâr/xU Düzenle:</b> Birden fazla (ya da tüm) mağazayı seçip, xU payını ve Nakit kâr oranını <b>tek seferde</b> güncelleyebilirsin. Sadece doldurduğun alanlar değişir. <b>Nakit Kâr %</b> yazınca 3 Taksit/2 Taksit/Tek Çekim kâr oranları otomatik hesaplanır — her kademe bir öncekinin fiyat olarak <b>%5 eksiği</b> olacak şekilde (Nakit en ucuz, 3 Taksit en pahalı). Bu dört oranı admin ekranından tek tek görmezsin/girmezsin, sadece Nakit'i yazarsın; mağaza isterse kendi ekranından bu oranların herhangi birini sonradan elle değiştirebilir.<br><br>
                         <b>📋 Boş Şablonu İndir:</b> Mağaza Adı, Tür, İl, Kullanıcı Adı, Şifre, Telefon sütunlu boş bir Excel iner — Tür ve İl sütunları açılır liste (dropdown) olarak gelir, serbest yazılamaz, yazım hatası imkansızdır.<br><br>
@@ -1490,6 +1492,7 @@
                     <h4>3. Satış Raporu</h4>
                     <p>Bölge → İl → Mağaza şeklinde zincirleme filtreleme, tarih aralığı, tür (Mağaza/Satış Noktası) ve durum (Satış/Teklif) filtreleri.</p>
                     <div class="help-card">
+                        <b>Tek bir mağaza seçtiğinde:</b> Filtrelerin altında o mağazaya özel <b>son 6 aylık trend grafiği</b> belirir — "bu mağaza son aylarda artıyor mu, azalıyor mu" sorusunu doğrudan, görsel olarak cevaplar. "Tüm Mağazalar" seçiliyken bu grafik gizlenir (Genel Bakış'taki grafik zaten tüm mağazaların toplamını gösteriyor).<br><br>
                         <b>💰 Tutar Bazlı:</b> Mağaza başına toplam adet + etiket÷3 ($). Etikete ya da adede göre sıralanabilir.<br><br>
                         <b>📦 Ürün Bazlı:</b> Her satılan ürün kendi satırında, kodu + etiketiyle, en yüksek etiketten en düşüğe sıralı.<br><br>
                         <b>📊 Excel İndir:</b> Aktif filtrelere ve seçili moda göre .xlsx dosyası iner.<br><br>
@@ -1813,7 +1816,7 @@
                         <p>Sepet doluyken iki buton var:</p>
                         <div class="help-card">
                             <b>✓ Satış Oldu:</b> Sepetteki ürünlerden kodu hâlâ otomatik "Ürün N" kalan varsa, açılan ekranda etiketiyle birlikte küçük bir kutucuk çıkar — orada kodu yazıp aynı ekrandan devam edersin, sepete geri dönmen gerekmez. İsim+telefon ile birlikte <b>Kapanış Tutarı</b> (sepetteki Nakit fiyatı varsayılan gelir, indirim/pazarlık olduysa burada doğrudan değiştirebilirsin), <b>Satış Tarihi</b> (varsayılan bugün, geçmiş bir tarih de seçilebilir) ve isteğe bağlı <b>Ödeme Açıklaması</b> sorulur. Kayıt geçmişe direkt satış olarak yazılır.<br><br>
-                            <b>📄 PDF Teklif:</b> Aynı bilgiyi alır, hem kaydeder hem yazdırır, kod zorunlu değildir.
+                            <b>📄 PDF Teklif:</b> Müşteriye fiyat kağıdı yazdırır — <b>geçmişe hiçbir kayıt eklemez.</b> Müşteri henüz almadığı için ne satış ne teklif sayılır; sepet de temizlenmez, müşteri kabul ederse aynı sepeti <b>✓ Satış Oldu</b> ile tamamlarsın.
                         </div>
                         <p style="margin-top:8px;">İsim ve telefon zorunludur — geçmişte "bu müşteriye ne zaman ne fiyat verildiğini" arayabilmen için.</p>
                     </div>
@@ -2189,11 +2192,13 @@
                         <div class="eyebrow">Bu Ay Satılan Ürün Adedi</div>
                         <div class="stat-value" id="dash-month-count">—</div>
                         <div class="stat-sub" id="dash-month-label">—</div>
+                        <div class="stat-sub" id="dash-month-count-vs-prev" style="margin-top:2px;"></div>
                     </div>
                     <div class="dash-stat-card">
                         <div class="eyebrow">Bu Ay Etiket Toplamı (÷3)</div>
                         <div class="stat-value" id="dash-month-etiket" style="font-size:26px; color:var(--dash-gold);">—</div>
                         <div class="stat-sub">prim hesap tabanı ($)</div>
+                        <div class="stat-sub" id="dash-month-etiket-vs-prev" style="margin-top:2px;"></div>
                     </div>
                 </div>
 
@@ -2211,6 +2216,13 @@
                     <div class="dash-section-title" style="color:var(--dash-rose);">⚠ Hareketsiz Mağazalar</div>
                     <div class="dash-panel" style="border-color:rgba(232,83,122,.3);">
                         <div id="inactive-store-list"></div>
+                    </div>
+                </div>
+
+                <div id="declining-store-section" style="display:none; margin-top:26px;">
+                    <div class="dash-section-title" style="color:var(--dash-rose);">📉 Azalan Mağazalar (bu ay vs geçen ay)</div>
+                    <div class="dash-panel" style="border-color:rgba(232,83,122,.3);">
+                        <div id="declining-store-list"></div>
                     </div>
                 </div>
 
@@ -2311,6 +2323,18 @@
                 </div>
 
                 <div id="rep-summary" style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:14px;"></div>
+
+                <!-- Sadece tek bir mağaza seçiliyken görünür: o mağazanın kendi son 6 ay trendi.
+                     "Genel Bakış"taki trend tüm mağazaların toplamı olduğu için, tek bir mağazanın kendi
+                     gidişatını (artıyor mu, azalıyor mu) görmek için buraya, mağaza bazlı bir grafik gerekiyordu. -->
+                <div id="rep-store-trend-section" style="display:none; margin-bottom:16px;">
+                    <div class="dash-section-title" id="rep-store-trend-title">Mağaza Trendi</div>
+                    <div class="dash-panel">
+                        <div style="overflow-x:auto;">
+                            <svg id="rep-store-trend-svg" width="100%" height="200" style="display:block; min-width:280px;"></svg>
+                        </div>
+                    </div>
+                </div>
 
                 <div id="rep-sort-bar" style="display:flex; gap:6px; margin-bottom:16px;"></div>
 
@@ -2424,7 +2448,6 @@
                 <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" style="height:32px;">
             </div>
             <div id="rep-pdf-summary" style="margin-bottom:20px;"></div>
-            <div id="rep-pdf-charts" style="margin-bottom:24px; page-break-inside:avoid;"></div>
             <table style="width:100%; border-collapse:collapse; font-size:11px;">
                 <thead>
                     <tr id="rep-pdf-thead" style="border-bottom:2px solid #1a1a24; text-align:left;">
@@ -2928,11 +2951,15 @@
         const calcActions = document.getElementById('calc-mode-actions');
         const quickSection = document.getElementById('quick-sale-section');
         const quickActions = document.getElementById('quick-sale-actions');
+        const liveSummary = document.getElementById('live-basket-summary');
         if(calcSection) calcSection.style.display = enabled ? 'block' : 'none';
         if(calcPricegrid) calcPricegrid.style.display = enabled ? 'grid' : 'none';
         if(calcActions) calcActions.style.display = enabled ? 'flex' : 'none';
         if(quickSection) quickSection.style.display = enabled ? 'none' : 'block';
         if(quickActions) quickActions.style.display = enabled ? 'none' : 'flex';
+        // Canlı sepet özeti (mobil) sadece Hesap Makinesi Modu açıkken anlamlı — kapalıyken basket[]
+        // hiç kullanılmadığı için sürekli "Sepet boş" yazıp kalır, kafa karıştırır.
+        if(liveSummary) liveSummary.style.display = enabled ? '' : 'none';
     }
 
     // ── TEKLİF ÖZELLİĞİ (açık/kapalı) ──
@@ -3470,8 +3497,16 @@
     // Mobilde sepet ekranın aşağısında kaldığı için, etiket yazınca "gerçekten sepete eklendi mi" güvencesini
     // bu küçük şerit verir — kullanıcı aşağı kaydırmadan kaç ürün olduğunu ve toplam Nakit tutarını görür.
     function updateLiveBasketSummary() {
+        const wrap = document.getElementById('live-basket-summary');
         const el = document.getElementById('live-basket-summary-text');
-        if(!el) return;
+        if(!el || !wrap) return;
+        // HTML'deki başlangıç inline style'ı (display:none) CSS class kuralından her zaman daha
+        // yüksek önceliklidir, bu yüzden görünürlüğü burada JS'in kendisi belirler:
+        // - Hesap Makinesi Modu kapalıysa hiç gösterilmez (applyCalcModeUI zaten 'none' atar, dokunmuyoruz).
+        // - Açıksa, masaüstünde/tablet yatayda gizli kalması CSS media query'sine bırakılır (boş string).
+        const calcModeInput = document.getElementById('cfgCalcMode');
+        const calcModeOff = calcModeInput && calcModeInput.value === '0';
+        wrap.style.display = calcModeOff ? 'none' : '';
         if(!basket.length) {
             el.innerText = '🛒 Sepet boş';
             return;
@@ -3816,23 +3851,25 @@
     function generatePDF() {
         const cusName  = document.getElementById('iCus').value.trim().toUpperCase()  || 'Müşterimiz';
         const cusPhone = document.getElementById('iPhone').value.trim() || '—';
-        // Teklif özelliği kapalıyken bu kayıt da diğerleri gibi doğrudan "satış" sayılır — teklif durumu
-        // arayüzde hiç gösterilmediği için, kapanış tutarı olarak sepetteki Nakit toplamı kullanılır.
-        const status = _teklifFeatureEnabled ? 'teklif' : 'sold';
-        const closingAmount = _teklifFeatureEnabled ? null : Math.round(basket.reduce(function(a,b){ return a + b.v.vN; }, 0));
 
-        saveToHistory(cusName, cusPhone, status, null, closingAmount).catch(function(err) {
-            console.error('Geçmiş kaydedilemedi:', err);
-            const retryHint = _teklifFeatureEnabled
-                ? 'Bağlantın düzelince, bu teklifi "👤 Müşteriye Kaydet" butonuyla tekrar kaydetmeni öneririm — yoksa bu satış geçmişte ve raporlarda görünmez.'
-                : 'Bağlantın düzelince, sepeti tekrar oluşturup kaydetmeni öneririm — yoksa bu satış geçmişte ve raporlarda görünmez.';
-            sysAlert(
-                'PDF yazdırılacak ama bu kayıt geçmişe KAYDEDİLEMEDİ (internet bağlantısı yok ya da zayıf olabilir).\n\n' + retryHint,
-                { tone: 'danger', title: '⚠ Geçmişe Kaydedilemedi' }
-            );
-        });
+        if(_teklifFeatureEnabled) {
+            // Teklif özelliği açıkken eski davranış: PDF yazdırılır VE bu bir teklif olarak geçmişe kaydedilir,
+            // mağaza sonradan "Satışa Çevir" ile gerçek satışa dönüştürebilir.
+            saveToHistory(cusName, cusPhone, 'teklif').catch(function(err) {
+                console.error('Geçmiş kaydedilemedi:', err);
+                sysAlert(
+                    'PDF yazdırılacak ama bu teklif geçmişe KAYDEDİLEMEDİ (internet bağlantısı yok ya da zayıf olabilir).\n\n' +
+                    'Bağlantın düzelince, bu teklifi "👤 Müşteriye Kaydet" butonuyla tekrar kaydetmeni öneririm — yoksa bu teklif geçmişte ve raporlarda görünmez.',
+                    { tone: 'danger', title: '⚠ Geçmişe Kaydedilemedi' }
+                );
+            });
+        }
+        // Teklif özelliği kapalıyken: SADECE yazdırma yapılır, geçmişe HİÇBİR kayıt eklenmez.
+        // Müşteri henüz almadığı için bu ne "teklif" ne de "satış" sayılabilir — kayıt oluşturmak
+        // raporları gerçekte olmayan bir satışla şişirirdi. Sepet de temizlenmez; mağaza isterse
+        // aynı sepeti gerçek bir "Satış Oldu" ile tamamlayabilir.
         printCurrentBasketPdf(cusName, cusPhone);
-        clearBasketAfterSave();
+        if(_teklifFeatureEnabled) clearBasketAfterSave();
     }
 
     // Sadece yazdırma ekranını hazırlar ve yazdırır (geçmişe ayrıca yazmaz — bu, çağıran fonksiyonun işidir)
@@ -4129,6 +4166,10 @@
                         renderHistory();
                         if(typeof renderAdminPanel === 'function') renderAdminPanel();
                         if(typeof renderDashOverview === 'function') renderDashOverview();
+                        // Mağazalar sekmesindeki "Bu ay $X · 3 ay $Y" özetini günceller — renderAdminStoreList'i
+                        // tekrar çağırmak yerine (o, mağaza listesini Firebase'den baştan çeker, maliyetlidir),
+                        // sadece zaten DOM'da olan özet metinlerini günceller.
+                        if(typeof updateStoreListSummaries === 'function') updateStoreListSummaries();
                     });
                 });
             });
@@ -6231,6 +6272,38 @@
         });
     }
 
+    // Bir mağazanın "Bu ay $X · 3 ay $Y" özet metnini _historyCache'ten hesaplar.
+    // Hem renderAdminStoreList (ilk çizim) hem updateStoreListSummaries (hafif güncelleme) kullanır.
+    function computeStoreSummaryText(sid) {
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const threeMoStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).getTime();
+        let monthEtiket = 0, threeMoEtiket = 0;
+        _historyCache.forEach(function(h) {
+            if(h.storeId !== sid || h.status !== 'sold') return;
+            const t = h.soldAtMillis || h.tsMillis || 0;
+            // Değişimde geri alınan ürünün etiketi negatiftir (smartEval negatif string'i negatif sayıya
+            // çevirir) — bu kasıtlı olarak DAHİL edilir, çünkü ürün geri geldiğinde gerçek ciro düşer.
+            // Genel Bakış'taki "Bu Ay Etiket Toplamı" da aynı mantıkla hesaplanır, ikisi tutarlı kalsın diye.
+            const et = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0) / 3;
+            if(t >= monthStart) monthEtiket += et;
+            if(t >= threeMoStart) threeMoEtiket += et;
+        });
+        const f2 = n => Math.round(n).toLocaleString('tr-TR');
+        return 'Bu ay $' + f2(monthEtiket) + ' · 3 ay $' + f2(threeMoEtiket);
+    }
+
+    // _historyCache her güncellendiğinde (herhangi bir mağazada yeni satış geldiğinde) çağrılır.
+    // renderAdminStoreList'i tekrar çağırmak yerine (o, mağaza listesini Firebase'den baştan çeker,
+    // çok mağazalı sistemde maliyetli olur), sadece DOM'da zaten var olan özet metinlerini günceller.
+    function updateStoreListSummaries() {
+        if(!document.getElementById('admin-store-list')) return; // Mağazalar sekmesi açık değilse hiç çalışma
+        document.querySelectorAll('[id^="store-summary-"]').forEach(function(el) {
+            const sid = el.id.replace('store-summary-', '');
+            el.innerText = computeStoreSummaryText(sid);
+        });
+    }
+
     function renderAdminStoreList() {
         const el = document.getElementById('admin-store-list');
         if(!el) return;
@@ -6257,6 +6330,14 @@
                 const safeName = (cfg.cfgStore || sid).replace(/'/g,"\\'");
                 const daysLeft = isArchived && cfg.archivedAt ? Math.max(0, 30 - Math.floor((Date.now() - new Date(cfg.archivedAt).getTime()) / 86400000)) : null;
                 const typeLabel = cfg.storeType === 'satis_noktasi' ? 'Satış Noktası' : 'Mağaza';
+
+                // Bu ay ve son 3 ay etiket÷3 özeti — admin, listeyi tararken hangi mağazanın zayıf
+                // olduğunu Satış Raporu'na geçmeden, tek bakışta görsün diye buraya eklendi.
+                // id="store-summary-<sid>" ile işaretlenir: updateStoreListSummaries() bu metni,
+                // tüm listeyi yeniden çekmeden (maliyetli) günceller.
+                const summaryHtml = isArchived ? '' :
+                    '<div id="store-summary-' + sid + '" style="font-size:10.5px; color:var(--dash-ink-dim); white-space:nowrap;">' + computeStoreSummaryText(sid) + '</div>';
+
                 const actionsHtml = isArchived
                     ? '<button onclick="event.stopPropagation(); restoreStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-ghost" style="flex:1;">↩ Geri Yükle</button>' +
                       '<button onclick="event.stopPropagation(); permanentlyDeleteStore(\'' + sid + '\', \'' + safeName + '\')" class="dash-btn-danger" style="flex:1;">🗑 Kalıcı Sil</button>'
@@ -6275,6 +6356,7 @@
                     '</div>' +
                     '</div>' +
                     '<div style="display:flex; align-items:center; gap:10px;">' +
+                    summaryHtml +
                     '<div style="font-size:11px; color:var(--dash-ink-dim);">' + histCount + ' kayıt</div>' +
                     '<span style="font-size:10px; color:var(--dash-ink-dim);">▾</span>' +
                     '</div>' +
@@ -6621,13 +6703,31 @@
         renderDashOverview();
     }
 
+    // Bu ay ile geçen ayı ADİL kıyaslamak için sınırları hesaplar: geçen ayın TAMAMI değil, geçen ayın
+    // bugüne kadarki AYNI GÜN SAYISI kadarki kesiti alınır (örn. bugün ayın 2'siyse, geçen ayın sadece
+    // 1-2. günleri). Geçen ay daha kısaysa (örn. bu ay Mart, geçen ay 28 günlük Şubat) taşma olmaz,
+    // geçen ayın tamamı ile sınırlı kalır. Hem renderDashOverview hem renderDecliningStores kullanır.
+    function getFairMonthComparisonRange(now) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const dayOfMonth = now.getDate();
+        const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+        const prevMonthDaysTotal = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+        const prevMonthCapDay = Math.min(dayOfMonth, prevMonthDaysTotal);
+        const prevMonthEnd = new Date(now.getFullYear(), now.getMonth() - 1, prevMonthCapDay + 1).getTime();
+        return { monthStart: monthStart, prevMonthStart: prevMonthStart, prevMonthEnd: prevMonthEnd };
+    }
+
     function renderDashOverview() {
         if(!isAdmin || !document.getElementById('dash-total-stores')) return;
 
         const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
         const monthLabel = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
         document.getElementById('dash-month-label').innerText = monthLabel;
+        // Geçen ayla ADİL kıyas: geçen ayın TAMAMI değil, geçen ayın bugüne kadarki AYNI GÜN SAYISI
+        // kadarki kesiti alınır (bkz. getFairMonthComparisonRange) — yoksa ayın başında geçen ayın TAM
+        // toplamıyla kıyaslamak "%95 azaldı" gibi yanıltıcı bir sonuç verirdi.
+        const range = getFairMonthComparisonRange(now);
+        const monthStart = range.monthStart, prevMonthStart = range.prevMonthStart, prevMonthEnd = range.prevMonthEnd;
 
         fbDb.ref('stores').once('value').then(function(snap) {
             const stores = snap.val() || {};
@@ -6637,6 +6737,10 @@
 
         const f = n => Math.round(n).toLocaleString('tr-TR');
         const monthRows = _historyCache.filter(function(h) { return h.status === 'sold' && (h.soldAtMillis || h.tsMillis || 0) >= monthStart; });
+        const prevMonthRows = _historyCache.filter(function(h) {
+            const t = h.soldAtMillis || h.tsMillis || 0;
+            return h.status === 'sold' && t >= prevMonthStart && t < prevMonthEnd;
+        });
 
         // count/etiket: gerçek satışlar (değişimde geri alınanlar hariç). exchangeCount: o ay değişimde
         // geri alınan ürün adedi — ayrı tutulur, "ay içinde X ürün satıldı" rakamına karıştırılmaz.
@@ -6657,8 +6761,30 @@
             byStore[h.storeId].etiket += et;
         });
 
+        // Geçen ayın aynı rakamları — sadece toplam karşılaştırma için, mağaza bazlı dökülmez.
+        let prevTotalEtiket = 0, prevMonthProductCount = 0;
+        prevMonthRows.forEach(function(h) {
+            if(h.isExchangeReturn) return;
+            prevTotalEtiket += h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            prevMonthProductCount += h.basket.length;
+        });
+
         document.getElementById('dash-month-count').innerText = monthProductCount + (monthExchangeCount > 0 ? ' (+' + monthExchangeCount + ' 🔄)' : '');
         document.getElementById('dash-month-etiket').innerText = '$ ' + f(totalEtiket/3);
+
+        // Geçen aya göre % fark — pozitifse yeşil ok yukarı, negatifse kırmızı ok aşağı, geçen ay hiç
+        // veri yoksa (yeni başlangıç ya da çok eski mağazalar) karşılaştırma hiç gösterilmez.
+        function renderVsPrev(elId, current, previous) {
+            const el = document.getElementById(elId);
+            if(!el) return;
+            if(!(previous > 0)) { el.innerText = ''; return; }
+            const pct = Math.round(((current - previous) / previous) * 100);
+            const up = pct >= 0;
+            el.innerHTML = '<span style="color:' + (up ? 'var(--dash-success, #1a7a4a)' : 'var(--dash-rose)') + '; font-weight:700;">' +
+                (up ? '▲ +' : '▼ ') + pct + '%</span> geçen aya göre';
+        }
+        renderVsPrev('dash-month-count-vs-prev', monthProductCount, prevMonthProductCount);
+        renderVsPrev('dash-month-etiket-vs-prev', totalEtiket/3, prevTotalEtiket/3);
 
         const ranked = Object.keys(byStore).map(function(sid) { return Object.assign({ storeId: sid, il: (_storesInfo[sid]||{}).il || '' }, byStore[sid]); })
             .sort(function(a,b) {
@@ -6693,6 +6819,7 @@
         }
 
         renderInactiveStores();
+        renderDecliningStores();
         renderTrendChart();
 
         // Sıralama: bu ay + geçmiş 5 ay (toplam 6 ay) hesaplanır, mağazalar geçmiş ayları da görüp karşılaştırabilsin.
@@ -6800,9 +6927,86 @@
         }).join('');
     }
 
+    // ── AZALAN MAĞAZA UYARISI ──
+    // "Hareketsiz Mağazalar" sadece TAMAMEN sessiz kalan mağazaları yakalar (14 gündür hiç hareket yok).
+    // Bir mağaza tamamen durmadan, sadece YAVAŞLAYABİLİR — ayda 50 ürün satarken aniden 5'e düşebilir,
+    // bu durumda "hareketsiz" sayılmaz (son 14 gün içinde en az 1 satış olduğu için) ama gerçek bir sorun
+    // işareti olabilir. Bu fonksiyon, geçen ayda anlamlı bir hacmi olup bu ay belirgin düşüş gösteren
+    // (>=%40 azalma) mağazaları ayrıca listeler — admin'in "satmışlar ama bana bildirmemişler" şüphesinin
+    // en sık ortaya çıkacağı yer tam burası, çünkü tam sıfıra inmeden fark edilmesi gerekir.
+    const DECLINE_THRESHOLD_PCT = 40;       // bu yüzdenin üzerindeki düşüşler listelenir
+    const DECLINE_MIN_PREV_ETIKET_USD = 500; // geçen ay bu tutarın altında satmışsa gürültü sayılır, listelenmez
+
+    function renderDecliningStores() {
+        const sectionEl = document.getElementById('declining-store-section');
+        const listEl = document.getElementById('declining-store-list');
+        if(!sectionEl || !listEl) return;
+
+        const now = new Date();
+        // Adil kıyas: geçen ayın TAMAMI değil, bugüne kadarki aynı gün sayısı (bkz. getFairMonthComparisonRange).
+        const range = getFairMonthComparisonRange(now);
+        const monthStart = range.monthStart, prevMonthStart = range.prevMonthStart, prevMonthEnd = range.prevMonthEnd;
+
+        // Zaten "Hareketsiz Mağazalar"da görünen (14+ gündür hiç hareketi olmayan) mağazalar burada
+        // tekrar listelenmez — onlar zaten daha ciddi bir uyarıyla işaretli, aynı mağazanın iki kutuda
+        // birden çıkması ("zaten hareketsiz diyordu, neden burada da var" gibi) kafa karıştırır.
+        const inactiveThresholdMillis = Date.now() - (INACTIVE_DAYS_THRESHOLD * 24 * 60 * 60 * 1000);
+        const lastActivity = {};
+        _historyCache.forEach(function(h) {
+            const t = h.tsMillis || 0;
+            if(!lastActivity[h.storeId] || t > lastActivity[h.storeId]) lastActivity[h.storeId] = t;
+        });
+
+        const activeStoreIds = Object.keys(_storesInfo).filter(function(sid) {
+            if(_storesInfo[sid].archived) return false;
+            const last = lastActivity[sid] || 0;
+            return last >= inactiveThresholdMillis; // hareketsiz olanları burada eler
+        });
+
+        const curByStore = {}, prevByStore = {};
+        _historyCache.forEach(function(h) {
+            if(h.status !== 'sold') return;
+            // Değişimde geri alınan ürünün etiketi negatiftir, kasıtlı olarak DAHİL edilir (sistemin genel
+            // kuralı: bkz. Genel Bakış'taki "Bu Ay Etiket Toplamı", computeStoreSummaryText, renderTrendChart).
+            const t = h.soldAtMillis || h.tsMillis || 0;
+            const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0) / 3;
+            if(t >= monthStart) { curByStore[h.storeId] = (curByStore[h.storeId]||0) + et; }
+            else if(t >= prevMonthStart && t < prevMonthEnd) { prevByStore[h.storeId] = (prevByStore[h.storeId]||0) + et; }
+        });
+
+        const declining = activeStoreIds.filter(function(sid) {
+            const prev = prevByStore[sid] || 0;
+            if(prev < DECLINE_MIN_PREV_ETIKET_USD) return false; // geçen ay anlamlı hacim yoksa gürültü
+            const cur = curByStore[sid] || 0;
+            const pct = ((cur - prev) / prev) * 100;
+            return pct <= -DECLINE_THRESHOLD_PCT;
+        }).map(function(sid) {
+            const prev = prevByStore[sid] || 0;
+            const cur = curByStore[sid] || 0;
+            const pct = Math.round(((cur - prev) / prev) * 100);
+            return { sid: sid, name: _storesInfo[sid].cfgStore || sid, il: _storesInfo[sid].il || '—', pct: pct, prev: prev, cur: cur };
+        }).sort(function(a,b) { return a.pct - b.pct; }); // en büyük düşüş en üstte
+
+        if(!declining.length) {
+            sectionEl.style.display = 'none';
+            return;
+        }
+        sectionEl.style.display = 'block';
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        listEl.innerHTML = declining.map(function(s) {
+            return '<div class="dash-store-row">' +
+                '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' +
+                '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">Geçen ay $' + f(s.prev) + ' → Bu ay $' + f(s.cur) + '</span></div>' +
+                '<div style="font-size:14px; font-weight:800; color:var(--dash-rose);">▼ ' + s.pct + '%</div>' +
+                '</div>';
+        }).join('');
+    }
+
     // ── SON 6 AY TREND GRAFİĞİ (basit SVG çizgi grafik, kütüphane gerektirmez) ──
-    function renderTrendChart() {
-        const svg = document.getElementById('trend-chart-svg');
+    // svgId verilmezse 'trend-chart-svg' (Genel Bakış, tüm mağazalar) kullanılır.
+    // storeIdFilter verilirse sadece o mağazanın satışları sayılır (Satış Raporu'ndaki mağaza trendi).
+    function renderTrendChart(svgId, storeIdFilter) {
+        const svg = document.getElementById(svgId || 'trend-chart-svg');
         if(!svg) return;
 
         const now = new Date();
@@ -6815,6 +7019,10 @@
         const totals = months.map(function(m) {
             const rows = _historyCache.filter(function(h) {
                 if(h.status !== 'sold') return false;
+                // Değişimde geri alınan ürünün etiketi negatiftir, kasıtlı olarak DAHİL edilir (sistemin
+                // genel kuralı: adet sayımında ayrı tutulur, ama etiket/ciro toplamında her zaman dahildir
+                // — bkz. Genel Bakış'taki "Bu Ay Etiket Toplamı"). Hariç tutmak sahte yüksek bir rakam verirdi.
+                if(storeIdFilter && h.storeId !== storeIdFilter) return false;
                 const d = h.soldAtMillis || h.tsMillis || 0;
                 return d >= m.start && d < m.end;
             });
@@ -6927,6 +7135,18 @@
         updateRepStoreOptions();
         const rows = getFilteredHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
+
+        // Tek bir mağaza seçiliyken o mağazanın kendi son 6 ay trendini göster — Genel Bakış'taki
+        // grafik tüm mağazaların toplamı olduğu için, tek bir mağazanın gidişatını orada göremezsin.
+        const selectedStoreId = document.getElementById('repStore').value;
+        const trendSection = document.getElementById('rep-store-trend-section');
+        if(selectedStoreId) {
+            trendSection.style.display = 'block';
+            document.getElementById('rep-store-trend-title').innerText = (_storesInfo[selectedStoreId]||{}).cfgStore || selectedStoreId;
+            renderTrendChart('rep-store-trend-svg', selectedStoreId);
+        } else {
+            trendSection.style.display = 'none';
+        }
 
         // soldProductCount: gerçek satılan ürün adedi (değişimde geri alınanlar hariç).
         // exchangeProductCount: değişimde geri alınan ürün adedi — ayrı tutulur, toplanıp karıştırılmaz.
@@ -7104,85 +7324,6 @@
         return parts.join(' · ');
     }
 
-    // PDF raporuna eklenecek bar chart (mağaza bazlı etiket÷3) ve trend (zaman bazlı toplam) SVG'lerini üretir.
-    function renderPdfCharts(reportData, filteredRows) {
-        const container = document.getElementById('rep-pdf-charts');
-        if(!container) return;
-
-        // 1) BAR CHART: mağaza bazlı etiket÷3 toplamı
-        const byStoreEtiket = {};
-        filteredRows.filter(function(h) { return h.status === 'sold'; }).forEach(function(h) {
-            const et = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0) / 3;
-            const name = h.storeName || h.storeId;
-            byStoreEtiket[name] = (byStoreEtiket[name] || 0) + et;
-        });
-        const barData = Object.keys(byStoreEtiket).map(function(name) { return { name: name, val: byStoreEtiket[name] }; })
-            .sort(function(a,b) { return b.val - a.val; }).slice(0, 10); // en fazla 10 mağaza göster, taşma olmasın
-
-        // 2) TREND: filtre tarih aralığına göre günlük ya da aylık toplam (aralık 45 günden büyükse aylık grupla)
-        // Gerçek satış tarihi (soldAtMillis) esas alınır — geçmişe dönük girilen satışlar doğru aya/güne düşsün.
-        const dates = filteredRows.filter(function(h) { return h.status === 'sold'; }).map(function(h) { return h.soldAtMillis || h.tsMillis || 0; }).filter(function(t) { return t > 0; });
-        const minD = dates.length ? Math.min.apply(null, dates) : Date.now();
-        const maxD = dates.length ? Math.max.apply(null, dates) : Date.now();
-        const spanDays = Math.max(1, Math.round((maxD - minD) / 86400000));
-        const groupByMonth = spanDays > 45;
-
-        const trendBuckets = {}; // key -> total
-        filteredRows.filter(function(h) { return h.status === 'sold'; }).forEach(function(h) {
-            const d = new Date(h.soldAtMillis || h.tsMillis || 0);
-            const key = groupByMonth ? (d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')) : d.toLocaleDateString('tr-TR');
-            const et = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0) / 3;
-            trendBuckets[key] = (trendBuckets[key] || 0) + et;
-        });
-        const trendKeys = Object.keys(trendBuckets).sort();
-        const trendData = trendKeys.map(function(k) { return { label: k, val: trendBuckets[k] }; });
-
-        const f = n => Math.round(n).toLocaleString('tr-TR');
-
-        // Bar chart SVG (yatay çubuklar, basılı sayfada daha okunaklı)
-        let barSvg = '';
-        if(barData.length) {
-            const maxVal = Math.max.apply(null, barData.map(function(b){return b.val;}).concat([1]));
-            const rowH = 26, chartW = 760, labelW = 150, barAreaW = chartW - labelW - 70;
-            const svgH = barData.length * rowH + 20;
-            const bars = barData.map(function(b, i) {
-                const y = 10 + i * rowH;
-                const barW = (b.val / maxVal) * barAreaW;
-                return '<text x="' + (labelW-8) + '" y="' + (y+15) + '" font-size="10.5" text-anchor="end" fill="#1a1a24">' + b.name + '</text>' +
-                       '<rect x="' + labelW + '" y="' + y + '" width="' + barW.toFixed(1) + '" height="18" fill="#c8244c" opacity="0.85" rx="3"/>' +
-                       '<text x="' + (labelW + barW + 6) + '" y="' + (y+14) + '" font-size="10" fill="#1a1a24" font-weight="700">$' + f(b.val) + '</text>';
-            }).join('');
-            barSvg = '<div style="margin-bottom:18px;"><div style="font-size:11px; font-weight:800; color:#9090a0; margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em;">Mağaza Bazlı Etiket÷3 ($)</div>' +
-                '<svg width="100%" viewBox="0 0 ' + chartW + ' ' + svgH + '" style="max-width:100%;">' + bars + '</svg></div>';
-        }
-
-        // Trend çizgi grafik SVG
-        let trendSvg = '';
-        if(trendData.length > 1) {
-            const w = 760, h = 160, padL = 50, padR = 20, padT = 15, padB = 30;
-            const plotW = w - padL - padR, plotH = h - padT - padB;
-            const maxVal = Math.max.apply(null, trendData.map(function(t){return t.val;}).concat([1]));
-            const pts = trendData.map(function(t, i) {
-                const x = padL + (trendData.length === 1 ? 0 : (i / (trendData.length - 1)) * plotW);
-                const y = padT + plotH - (t.val / maxVal) * plotH;
-                return { x: x, y: y, label: t.label, val: t.val };
-            });
-            const pathD = pts.map(function(p, i) { return (i===0?'M':'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1); }).join(' ');
-            // Çok fazla nokta varsa etiketleri seyrekleştir (en fazla ~10 etiket göster)
-            const labelStep = Math.max(1, Math.ceil(pts.length / 10));
-            const labels = pts.map(function(p, i) {
-                if(i % labelStep !== 0 && i !== pts.length-1) return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="2.5" fill="#c8244c"/>';
-                return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="#c8244c"/>' +
-                    '<text x="'+p.x.toFixed(1)+'" y="'+(h-8)+'" font-size="9" fill="#9090a0" text-anchor="middle">'+p.label+'</text>';
-            }).join('');
-            trendSvg = '<div><div style="font-size:11px; font-weight:800; color:#9090a0; margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em;">' + (groupByMonth ? 'Aylık' : 'Günlük') + ' Etiket÷3 Trendi ($)</div>' +
-                '<svg width="100%" viewBox="0 0 ' + w + ' ' + h + '" style="max-width:100%;">' +
-                '<path d="' + pathD + '" fill="none" stroke="#c8244c" stroke-width="2"/>' + labels +
-                '</svg></div>';
-        }
-
-        container.innerHTML = barSvg + trendSvg;
-    }
 
     function generateAdminReportPDF() {
         const data = buildReportData();
@@ -7207,7 +7348,9 @@
             '<div><div style="font-size:9px; color:#c8244c; font-weight:800;">ETİKET TOPLAMI (÷3, $)</div><div style="font-size:16px; font-weight:800; color:#c8244c;">$ ' + f(totalEtiket) + '</div></div>' +
             '</div>';
 
-        renderPdfCharts(data, filteredRows);
+        // Not: PDF raporunda daha önce burada bar chart + trend grafiği vardı (renderPdfCharts).
+        // Kaldırıldı — admin bu grafikleri zaten ekranda (Genel Bakış, Satış Raporu'ndaki mağaza trendi)
+        // görebiliyor, PDF'in amacı sade, paylaşılabilir bir tablo olması; grafik dosyayı şişiriyordu.
 
         const theadRow = document.getElementById('rep-pdf-thead');
         if(data.mode === 'urun') {
