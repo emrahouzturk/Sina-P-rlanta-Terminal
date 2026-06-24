@@ -1415,15 +1415,9 @@
             </div>
             <div class="simple-modal-body">
                 <div id="bulkEditStoreCount" style="font-size:11.5px; color:var(--ink-dim); margin-bottom:12px;">0 mağaza seçili</div>
-                <div style="font-size:10px; color:var(--ink-dim); margin-bottom:10px;">Sadece doldurduğun alanlar güncellenir, boş bıraktıkların dokunulmadan kalır.</div>
+                <div style="font-size:10px; color:var(--ink-dim); margin-bottom:10px;">Sadece doldurduğun alanlar güncellenir, boş bıraktıkların dokunulmadan kalır. Nakit Kâr % yazınca 3 Taksit/2 Taksit/Tek Çekim kâr oranları otomatik hesaplanır (her kademe öncekinin %5 eksiği) — mağaza isterse kendi ekranından bunları sonradan değiştirebilir.</div>
                 <label class="field-label">xU (%)</label>
                 <input type="text" id="bulkXU" placeholder="Değiştirme" style="font-size:15px; text-align:left; padding:10px 14px;">
-                <label class="field-label" style="margin-top:12px;">3 Taksit Kâr %</label>
-                <input type="text" id="bulkPk3" placeholder="Değiştirme" style="font-size:15px; text-align:left; padding:10px 14px;">
-                <label class="field-label" style="margin-top:12px;">2 Taksit Kâr %</label>
-                <input type="text" id="bulkPk2" placeholder="Değiştirme" style="font-size:15px; text-align:left; padding:10px 14px;">
-                <label class="field-label" style="margin-top:12px;">Tek Çekim Kâr %</label>
-                <input type="text" id="bulkPk1" placeholder="Değiştirme" style="font-size:15px; text-align:left; padding:10px 14px;">
                 <label class="field-label" style="margin-top:12px;">Nakit Kâr %</label>
                 <input type="text" id="bulkPkN" placeholder="Değiştirme" style="font-size:15px; text-align:left; padding:10px 14px;">
                 <div id="bulkEditError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
@@ -1459,7 +1453,7 @@
                         <b>Oluştururken:</b> Tür (Mağaza/Satış Noktası) ve İl seçimi zorunlu — bölge otomatik hesaplanır.<br><br>
                         <b>Her mağaza satırında:</b> ✎ Bilgileri Düzenle, 🔑 Şifre Sıfırla, 🗑 Arşivle (30 gün sonra otomatik kalıcı silinir, içinde geri yükleyebilirsin).<br><br>
                         <b>Şifre sıfırlama:</b> Tarayıcı güvenliği nedeniyle tek bir ek adım gerekir — sana Firebase Console'da kullanıcıyı silmen için net talimat gösterilir, sonra yeni şifre otomatik oluşturulur. Mağazanın verisi bu işlemden hiç etkilenmez.<br><br>
-                        <b>☑ Tümünü Seç + ✎ Toplu Kâr/xU Düzenle:</b> Birden fazla (ya da tüm) mağazayı seçip, xU payını ve 3T/2T/Tek/Nakit kâr oranlarını <b>tek seferde</b> güncelleyebilirsin. Sadece doldurduğun alanlar değişir.<br><br>
+                        <b>☑ Tümünü Seç + ✎ Toplu Kâr/xU Düzenle:</b> Birden fazla (ya da tüm) mağazayı seçip, xU payını ve Nakit kâr oranını <b>tek seferde</b> güncelleyebilirsin. Sadece doldurduğun alanlar değişir. <b>Nakit Kâr %</b> yazınca 3 Taksit/2 Taksit/Tek Çekim kâr oranları otomatik hesaplanır — her kademe bir öncekinin fiyat olarak <b>%5 eksiği</b> olacak şekilde (Nakit en ucuz, 3 Taksit en pahalı). Bu dört oranı admin ekranından tek tek görmezsin/girmezsin, sadece Nakit'i yazarsın; mağaza isterse kendi ekranından bu oranların herhangi birini sonradan elle değiştirebilir.<br><br>
                         <b>📋 Boş Şablonu İndir:</b> Mağaza Adı, Tür, İl, Kullanıcı Adı, Şifre, Telefon sütunlu boş bir Excel iner — Tür ve İl sütunları açılır liste (dropdown) olarak gelir, serbest yazılamaz, yazım hatası imkansızdır.<br><br>
                         <b>📤 Excel'den Toplu Yükle:</b> Doldurduğun şablonu (ya da "Mevcut Mağazaları Excel'e Aktar" ile indirip üzerine eklediğin dosyayı) yükle. Yeni kullanıcı adları sıfırdan oluşturulur; <b>var olan kullanıcı adları</b> ise sadece bilgi (ad/tür/il/telefon) olarak güncellenir — <b>şifre Excel'den asla değiştirilmez</b>. İşlem bitince kaç mağazanın oluşturulduğu/güncellendiği/hata verdiği özet olarak gösterilir.<br><br>
                         <b>📥 Mevcut Mağazaları Excel'e Aktar:</b> Tüm aktif mağazaları aynı sütun düzeniyle indirir — yeni mağaza eklemek istediğinde bu dosyanın altına ekleyip tekrar yükleyebilirsin. Şifre sütunu, sadece daha önce "Şifre (not)" olarak kaydettiysen dolu gelir.<br><br>
@@ -1540,7 +1534,7 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     Ayarlar
                 </button>
-                <button class="btn-ghost" onclick="openModal('helpModal')">
+                <button class="btn-ghost" onclick="openHelpModal()">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                     Yardım
                 </button>
@@ -1665,13 +1659,9 @@
             </div>
 
             <div class="action-row" style="flex-direction:column; gap:8px;" id="calc-mode-actions">
-                <div style="display:flex; gap:8px; width:100%;" id="single-kod-row">
-                    <input type="text" id="iKod" placeholder="Model / Stok Kodu (opsiyonel)" style="font-size:15px; flex:1; text-align:left; padding:12px 14px; text-transform:uppercase;">
-                    <button class="btn-primary" id="basket-add-btn" style="flex-shrink:0; padding:12px 18px; border-radius:var(--r-md);" onclick="addBasket()">+ Ekle</button>
-                </div>
                 <div id="normal-save-actions" style="display:flex; flex-wrap:wrap; gap:8px; width:100%;">
                     <button class="btn-dark" style="flex:1; min-width:140px; background:var(--success);" onclick="openCusModal('directSale')">✓ Satış Oldu</button>
-                    <button class="btn-dark" style="flex:1; min-width:140px;" onclick="openCusModal('save')">👤 Müşteriye Kaydet</button>
+                    <button class="btn-dark" id="btn-musteriye-kaydet" style="flex:1; min-width:140px;" onclick="openCusModal('save')">👤 Müşteriye Kaydet</button>
                     <button class="btn-ghost" style="flex:1; min-width:140px;" onclick="openCusModal('pdf')">📄 PDF Teklif</button>
                 </div>
                 <div id="linked-save-actions" style="display:none; gap:8px; width:100%;">
@@ -1759,8 +1749,9 @@
                     <h4>2. Pırlanta Fiyatı Hesapla</h4>
                     <p>Sertifika etiket değerini gir.</p>
                     <div class="help-card">
-                        <b>Tek ürün:</b> Sadece rakamı yaz → <em>1500</em> (binlik nokta otomatik gelir: 1.500)<br>
-                        <b>Birden fazla ürün tek seferde:</b> Artı ile yaz → <em>1000+2000+500</em> — kod kutucuğu burada çıkmaz, <b>+ Ekle</b>'ye basınca her parça otomatik "Ürün 1", "Ürün 2" gibi sepete girer, etiket değeriyle birlikte görünür. Hangisinin hangisi olduğunu sepetteki etiket rakamına bakarak ayırt edip ✎ ile kodunu sepette yazarsın — sepet etikete göre büyükten küçüğe sıralı durur, karışmaz.<br><br>
+                        <b>Tek ürün:</b> Rakamı yaz → <em>1500</em> (binlik nokta otomatik gelir: 1.500) — yazdığın anda sepette otomatik bir kart belirir, ayrıca bir "Ekle" butonuna basman gerekmez.<br><br>
+                        <b>Birden fazla ürün tek seferde:</b> Artı ile yaz → <em>1000+2000+500</em> — her parça yazdığın anda sepette ayrı bir kart olarak görünür ("Ürün 1", "Ürün 2" gibi), etiket değeriyle birlikte. Hangisinin hangisi olduğunu sepetteki etiket rakamına bakarak ayırt edip ✎ ile kodunu sepette yazarsın — sepet etikete göre büyükten küçüğe sıralı durur, karışmaz.<br><br>
+                        <b>Kutu = sepetin aynası:</b> Kutudaki yazıyı değiştirdiğinde sepet de anında değişir. Sepetten bir kartı × ile silersen, kutudaki ilgili kısım da otomatik silinir — ikisi her zaman birbiriyle uyumlu kalır. <b>İstisna:</b> bir ürünü ✎ ile manuel fiyatlandırırsan (indirim/pazarlık), o kart kutudan bağımsızlaşır — kutuya ne yazarsan yaz, o kartın fiyatı asla otomatik ezilmez, sadece × ile elle silersen kalkar.<br><br>
                         4 fiyat kartı anında hesaplanır: <em>3 Taksit, 2 Taksit, Tek Çekim, Nakit.</em><br><br>
                         <b>K kodu:</b> Her kartın köşesindeki gizli kod sadece senin için. Baştaki <b>1</b> = kârlı, <b>0</b> = zararlı. Ortaki rakam yüzde. Müşteri anlamaz.<br>
                         <em>K<b>1</b>50 → %50 kâr &nbsp;|&nbsp; K<b>0</b>8 → %8 zarar</em>
@@ -1768,44 +1759,62 @@
                 </div>
 
                 <div class="help-section">
-                    <h4>3. Sepete Ekle</h4>
-                    <p>Sepete eklerken <em>Model / Stok Kodu</em> alanı <b>her durumda opsiyonel</b> — boş bırakırsan (özellikle çoklu girişte) "Ürün 1", "Ürün 2" gibi otomatik isim verilir, yanında etiket değeri görünür. Sepet etikete göre büyükten küçüğe sıralı durduğu için hangisinin hangisi olduğunu karıştırmazsın. <strong>Satış olacaksa (✓ Satış Oldu / Bu Satışı Tamamla) kod kesinlikle dolu olmalı</strong> — ama bunu sepete geri dönüp düzeltmene gerek yok: kodu eksikse, aynı satış ekranında küçük bir kutucuk çıkar, orada yazıp aynı butonla devam edersin.</p>
+                    <h4>3. Sepet</h4>
+                    <p>Etiket yazdığında sepet otomatik dolar — <em>Model / Stok Kodu</em> her durumda opsiyonel, boş bırakırsan "Ürün 1", "Ürün 2" gibi otomatik isim verilir, yanında etiket değeri görünür. Sepet etikete göre büyükten küçüğe sıralı durduğu için hangisinin hangisi olduğunu karıştırmazsın. <strong>Satış olacaksa (✓ Satış Oldu / Bu Satışı Tamamla) kod kesinlikle dolu olmalı</strong> — ama bunu sepete geri dönüp düzeltmene gerek yok: kodu eksikse, aynı satış ekranında küçük bir kutucuk çıkar, orada yazıp aynı butonla devam edersin.</p>
                     <div class="help-card">
-                        <b>✎ Tek ürün düzenle:</b> Sepetteki bir ürüne basınca açılan ekranda, Nakit fiyatı zaten o ürünün şu anki fiyatıyla dolu gelir, kodu da buradan değiştirebilirsin. Değiştirirsen anında <b>KÂR/ZARAR yüzdesi</b> gösterilir, hesap makinesine gerek kalmaz.<br><br>
+                        <b>✎ Tek ürün düzenle (müşteri pazarlık ederse):</b> Sepetteki bir ürüne basınca açılan ekranda, Nakit fiyatı zaten o ürünün şu anki fiyatıyla dolu gelir, kodu da buradan değiştirebilirsin. Fiyatı değiştirip kaydedersen, o ürün kutudan bağımsızlaşır — etiket kutusunda her ne yazılırsa yazılsın, verdiğin indirim sabit kalır. Değiştirirsen anında <b>KÂR/ZARAR yüzdesi</b> gösterilir, hesap makinesine gerek kalmaz.<br><br>
                         <b>✎ Toplamı Düzenle (sepet altında):</b> Birden fazla ürün varken hepsinin toplam Nakit tutarını tek seferde değiştirebilirsin — fark tüm ürünlere otomatik orantılı dağıtılır, burada da kâr/zarar görünür.
                     </div>
                 </div>
 
                 <div class="help-section">
                     <h4>4. Satış / Kayıt Seçenekleri</h4>
-                    <p>Sepet doluyken üç buton var:</p>
-                    <div class="help-card">
-                        <b>✓ Satış Oldu:</b> Müşteri o an alıyorsa kullan. Sepetteki ürünlerden kodu hâlâ otomatik "Ürün N" kalan varsa, açılan ekranda etiketiyle birlikte küçük bir kutucuk çıkar — orada kodu yazıp aynı ekrandan devam edersin, sepete geri dönmen gerekmez. İsim+telefon ile birlikte <b>Kapanış Tutarı</b> (sepetteki Nakit fiyatı varsayılan gelir, indirim/pazarlık olduysa burada doğrudan değiştirebilirsin — sepete geri dönmene gerek yok), <b>Satış Tarihi</b> (varsayılan bugün, geçmiş bir tarih de seçilebilir) ve isteğe bağlı <b>Ödeme Açıklaması</b> sorulur (örn: "10.000 nakit + 5.000 altın değişim"). Kayıt direkt <b>"Satış Oldu"</b> durumunda geçmişe yazılır.<br><br>
-                        <b>👤 Müşteriye Kaydet:</b> Müşteri düşünüyor/kararsızsa kullan, kod zorunlu değildir. Aynı bilgiyi alır ama kayıt <b>"Teklif"</b> durumunda kalır — sonra satışa dönerse Geçmiş'ten işaretlersin (o an, eksikse, aynı ekranda kod kutucuğu çıkar).<br><br>
-                        <b>📄 PDF Teklif:</b> Aynı şekilde bilgi alır, hem kaydeder hem yazdırır, kod zorunlu değildir.
+                    <div id="help-sec4-teklif-on">
+                        <p>Sepet doluyken üç buton var:</p>
+                        <div class="help-card">
+                            <b>✓ Satış Oldu:</b> Müşteri o an alıyorsa kullan. Sepetteki ürünlerden kodu hâlâ otomatik "Ürün N" kalan varsa, açılan ekranda etiketiyle birlikte küçük bir kutucuk çıkar — orada kodu yazıp aynı ekrandan devam edersin, sepete geri dönmen gerekmez. İsim+telefon ile birlikte <b>Kapanış Tutarı</b> (sepetteki Nakit fiyatı varsayılan gelir, indirim/pazarlık olduysa burada doğrudan değiştirebilirsin — sepete geri dönmene gerek yok), <b>Satış Tarihi</b> (varsayılan bugün, geçmiş bir tarih de seçilebilir) ve isteğe bağlı <b>Ödeme Açıklaması</b> sorulur (örn: "10.000 nakit + 5.000 altın değişim"). Kayıt direkt <b>"Satış Oldu"</b> durumunda geçmişe yazılır.<br><br>
+                            <b>👤 Müşteriye Kaydet:</b> Müşteri düşünüyor/kararsızsa kullan, kod zorunlu değildir. Aynı bilgiyi alır ama kayıt <b>"Teklif"</b> durumunda kalır — sonra satışa dönerse Geçmiş'ten işaretlersin (o an, eksikse, aynı ekranda kod kutucuğu çıkar).<br><br>
+                            <b>📄 PDF Teklif:</b> Aynı şekilde bilgi alır, hem kaydeder hem yazdırır, kod zorunlu değildir.
+                        </div>
+                        <p style="margin-top:8px;">İsim ve telefon zorunludur — geçmişte "bu müşteriye ne zaman ne fiyat verildiğini" arayabilmen için.</p>
                     </div>
-                    <p style="margin-top:8px;">İsim ve telefon zorunludur — geçmişte "bu müşteriye ne zaman ne fiyat verildiğini" arayabilmen için.</p>
+                    <div id="help-sec4-teklif-off" style="display:none;">
+                        <p>Sepet doluyken iki buton var:</p>
+                        <div class="help-card">
+                            <b>✓ Satış Oldu:</b> Sepetteki ürünlerden kodu hâlâ otomatik "Ürün N" kalan varsa, açılan ekranda etiketiyle birlikte küçük bir kutucuk çıkar — orada kodu yazıp aynı ekrandan devam edersin, sepete geri dönmen gerekmez. İsim+telefon ile birlikte <b>Kapanış Tutarı</b> (sepetteki Nakit fiyatı varsayılan gelir, indirim/pazarlık olduysa burada doğrudan değiştirebilirsin), <b>Satış Tarihi</b> (varsayılan bugün, geçmiş bir tarih de seçilebilir) ve isteğe bağlı <b>Ödeme Açıklaması</b> sorulur. Kayıt geçmişe direkt satış olarak yazılır.<br><br>
+                            <b>📄 PDF Teklif:</b> Aynı bilgiyi alır, hem kaydeder hem yazdırır, kod zorunlu değildir.
+                        </div>
+                        <p style="margin-top:8px;">İsim ve telefon zorunludur — geçmişte "bu müşteriye ne zaman ne fiyat verildiğini" arayabilmen için.</p>
+                    </div>
                 </div>
 
                 <div class="help-section">
                     <h4>5. Geçmiş — Teklifler ve Satışa Dönenler</h4>
-                    <p>Sağ üstteki <b>☰ Geçmiş / Rapor</b> menüsünden ya da sepet altındaki <strong>🕐 Geçmiş</strong> kısayolundan tam ekran geçmiş ekranı açılır, iki sekmesi var:</p>
-                    <div class="help-card">
-                        <b>📝 Teklifler:</b> Henüz satışa dönmemiş, bekleyen teklifler. Bir karta tıklayınca sağda detay açılır.<br><br>
-                        <b>✓ Satışa Dönenler:</b> Satış olarak işaretlenmiş kayıtlar, kapanış tutarı ve ödeme açıklamasıyla birlikte görünür. Tarih, tutar ve adet aralığına göre filtreleyebilirsin.
+                    <div id="help-sec5-teklif-on">
+                        <p>Sağ üstteki <b>☰ Geçmiş / Rapor</b> menüsünden ya da sepet altındaki <strong>🕐 Geçmiş</strong> kısayolundan tam ekran geçmiş ekranı açılır, iki sekmesi var:</p>
+                        <div class="help-card">
+                            <b>📝 Teklifler:</b> Henüz satışa dönmemiş, bekleyen teklifler. Bir karta tıklayınca sağda detay açılır.<br><br>
+                            <b>✓ Satışa Dönenler:</b> Satış olarak işaretlenmiş kayıtlar, kapanış tutarı ve ödeme açıklamasıyla birlikte görünür. Tarih, tutar ve adet aralığına göre filtreleyebilirsin.
+                        </div>
+                        <p style="margin-top:8px;">Bir müşteri geri dönüp satın aldıysa: Teklifler'den o kaydı bul → <b>↩ Sepete Yükle (Düzenle)</b> de → istersen fiyatta son bir değişiklik/indirim yap → sepetteki <b>✓ Bu Satışı Tamamla</b> butonuna bas.<br><br>
+                        <b>Müşteri tekliftekilerin hepsini aldıysa</b> (hiçbir ürün sepetten çıkarılmadıysa): aynı kayıt güncellenir, mükerrer kayıt oluşmaz.<br><br>
+                        <b>Müşteri tekliftekilerin sadece bir kısmını aldıysa</b> (sepetten bazı ürünleri çıkardıysan): orijinal teklif <b>olduğu gibi, dokunulmadan kalır</b> (alınmayan ürünler kaybolmaz, hâlâ teklif olarak görünür) — sepettekiler için <b>yeni, ayrı bir satış kaydı</b> açılır. "Satış Oldu" derken de gerçek satış tarihi ve ödeme açıklaması sorulur.</p>
+                        <p style="margin-top:8px;"><b>📄 O Günkü Fiyatla PDF:</b> Unuttuğun bir teklifin PDF'ini, o gün kaydedildiği fiyatlarla (güncel kura göre değil) tekrar basabilirsin.</p>
+                        <p style="margin-top:8px;"><b>✎ Müşteri Bilgisini Düzelt:</b> Bir kaydı önizlerken, müşteri adının yanındaki bu linkten isim/telefon yanlış girilmişse sonradan düzeltebilirsin — hem teklif hem satış kayıtlarında çalışır.</p>
                     </div>
-                    <p style="margin-top:8px;">Bir müşteri geri dönüp satın aldıysa: Teklifler'den o kaydı bul → <b>↩ Sepete Yükle (Düzenle)</b> de → istersen fiyatta son bir değişiklik/indirim yap → sepetteki <b>✓ Bu Satışı Tamamla</b> butonuna bas.<br><br>
-                    <b>Müşteri tekliftekilerin hepsini aldıysa</b> (hiçbir ürün sepetten çıkarılmadıysa): aynı kayıt güncellenir, mükerrer kayıt oluşmaz.<br><br>
-                    <b>Müşteri tekliftekilerin sadece bir kısmını aldıysa</b> (sepetten bazı ürünleri çıkardıysan): orijinal teklif <b>olduğu gibi, dokunulmadan kalır</b> (alınmayan ürünler kaybolmaz, hâlâ teklif olarak görünür) — sepettekiler için <b>yeni, ayrı bir satış kaydı</b> açılır. "Satış Oldu" derken de gerçek satış tarihi ve ödeme açıklaması sorulur.</p>
-                    <p style="margin-top:8px;"><b>📄 O Günkü Fiyatla PDF:</b> Unuttuğun bir teklifin PDF'ini, o gün kaydedildiği fiyatlarla (güncel kura göre değil) tekrar basabilirsin.</p>
-                    <p style="margin-top:8px;"><b>✎ Müşteri Bilgisini Düzelt:</b> Bir kaydı önizlerken, müşteri adının yanındaki bu linkten isim/telefon yanlış girilmişse sonradan düzeltebilirsin — hem teklif hem satış kayıtlarında çalışır.</p>
+                    <div id="help-sec5-teklif-off" style="display:none;">
+                        <p>Sağ üstteki <b>☰ Geçmiş / Rapor</b> menüsünden ya da sepet altındaki <strong>🕐 Geçmiş</strong> kısayolundan tam ekran geçmiş ekranı açılır — tüm satışların tek listesi, sekme ayrımı yok (teklif özelliği kapalı olduğu için her kayıt zaten satıştır).</p>
+                        <div class="help-card">Bir karta tıklayınca sağda detay açılır: ürünler, kapanış tutarı, ödeme açıklaması. Tarih, tutar ve adet aralığına göre filtreleyebilirsin.</div>
+                        <p style="margin-top:8px;"><b>📄 O Günkü Fiyatla PDF:</b> Geçmişteki bir satışın PDF'ini, o gün kaydedildiği fiyatlarla (güncel kura göre değil) tekrar basabilirsin.</p>
+                        <p style="margin-top:8px;"><b>✎ Müşteri Bilgisini Düzelt:</b> Bir kaydı önizlerken, müşteri adının yanındaki bu linkten isim/telefon yanlış girilmişse sonradan düzeltebilirsin.</p>
+                    </div>
                 </div>
 
                 <div class="help-section">
                     <h4>5b. Satış Raporu</h4>
                     <p>Sağ üstteki <b>☰ Geçmiş / Rapor</b> menüsünden <b>📊 Satış Raporu</b>'na girince, kendi mağazanın satışlarını filtreleyip indirebilirsin — admin panelindeki rapora benzer ama sadece senin verilerin.</p>
                     <div class="help-card">
-                        <b>Filtreler:</b> Tarih aralığı, durum (satış/teklif), tutar ve adet aralığı.<br><br>
+                        <b>Filtreler:</b> Tarih aralığı, <span id="help-sec5b-durum-on">durum (satış/teklif), </span>tutar ve adet aralığı.<br><br>
                         <b>💰 Tutar Bazlı / 📦 Ürün Bazlı:</b> Tutar bazlı günlere göre gruplar; ürün bazlı her satılan ürünü kendi satırında gösterir.<br><br>
                         <b>Rakamlar:</b> Her satırda <b>Satış Tutarı ₺</b>, <b>Satış Tutarı $</b>, <b>Etiket $</b> (ham etiket değeri), <b>Maliyet $</b> (etiket÷3) ve <b>Maliyet ₺</b> (etiket÷3 × kur) birlikte görünür.<br><br>
                         <b>Kâr/Zarar:</b> Hem ₺ hem $ bazında, her satırda ve genel özette — <span style="color:var(--success); font-weight:700;">kâr yeşille</span>, <span style="color:var(--rose); font-weight:700;">zarar kırmızıyla</span>, parantez içinde TL/USD farkıyla gösterilir (örn. <em>+24% (+8.500 ₺)</em> ve <em>+$120</em>).<br><br>
@@ -1832,7 +1841,7 @@
                     <h4>6. Geriye Dönük Düzeltmeler</h4>
                     <p>Bir satışın <b>tarihini</b>, <b>kapanış tutarını/ödeme açıklamasını</b>, <b>müşteri bilgisini</b> ya da bir ürünün <b>kodunu</b> sonradan yanlış girdiğini fark edersen, kaydı silmene gerek yok:</p>
                     <div class="help-card">
-                        <b>Müşteri adını/telefonunu düzelt:</b> Bir kaydı önizlerken üst kısımda isminin yanındaki <b>✎ müşteri bilgisini düzelt</b> linkine bas — hem teklif hem satış kayıtlarında çalışır.<br><br>
+                        <b>Müşteri adını/telefonunu düzelt:</b> Bir kaydı önizlerken üst kısımda isminin yanındaki <b>✎ müşteri bilgisini düzelt</b> linkine bas<span id="help-sec6-durum-on"> — hem teklif hem satış kayıtlarında çalışır</span>.<br><br>
                         <b>Satış tarihini düzelt:</b> Geçmiş → Satışa Dönenler'den kaydı aç, "✓ SATIŞ OLDU · [tarih]" yazısının yanındaki <b>✎ tarihi düzelt</b> linkine bas, doğru tarihi seç.<br><br>
                         <b>Kapanış tutarını/ödeme açıklamasını düzelt:</b> Aynı ekranda, kapanış tutarının yanındaki <b>✎ kapanışı düzelt</b> linkine bas.<br><br>
                         <b>Ürün kodunu düzelt:</b> Kaydı açtığında her ürünün yanındaki ✎ ikonuna bas, kodu/açıklamayı düzelt.
@@ -1843,10 +1852,10 @@
                 <div class="help-section">
                     <h4>7. Aylık Performansım</h4>
                     <p>Ana ekranda <b>📅 Aylık Performansım</b> kartı, Geçmiş'e girip filtre yapmana gerek kalmadan, o ay kaç ürün sattığını, toplam ₺ tutarını ve etiket toplamını anında gösterir.</p>
-                    <div class="help-card">‹ › okları ile geçmiş aylara gidip karşılaştırabilirsin (gelecek aya gidilemez). Sadece <b>gerçekten satılmış</b> kayıtlar sayılır, bekleyen teklifler dahil değildir.</div>
+                    <div class="help-card">‹ › okları ile geçmiş aylara gidip karşılaştırabilirsin (gelecek aya gidilemez). Sadece <b>gerçekten satılmış</b> kayıtlar sayılır<span id="help-sec7-durum-on">, bekleyen teklifler dahil değildir</span>.</div>
                 </div>
 
-                <div class="help-section">
+                <div class="help-section" id="help-sec8-siralama">
                     <h4>8. Mağaza Sıralaması</h4>
                     <p>Eğer ekranda <b>🏆 Sıralamam</b> kartı görünüyorsa, seçtiğin ay için Türkiye genelinde ve kendi bölgende kaçıncı sırada olduğunu gösterir (örn. "2 / 5").</p>
                     <div class="help-card">‹ › okları ile geçmiş aylara (son 6 ay) gidip "geçen ay kaçıncıydım, bu ay neredeyim" diye karşılaştırabilirsin. Bu kart sadece bilgilendirme amaçlıdır, hiçbir ciro/tutar/adet rakamı ya da yüzdesel fark paylaşılmaz — sadece sıra numarası görünür. Yönetim bu ekranı istediği zaman kapatabilir, kapalıysa kart hiç görünmez.</div>
@@ -1989,7 +1998,7 @@
             <h3 style="margin:0; font-size:16px;">Teklif Geçmişi</h3>
             <button onclick="closeHistoryScreen()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; color:var(--ink-mid); cursor:pointer;">✕ Kapat</button>
         </div>
-        <div style="display:flex; gap:4px; padding:0 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
+        <div id="hist-tabs-row" style="display:flex; gap:4px; padding:0 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
             <button class="hist-tab active" data-tab="teklif" onclick="setHistTab('teklif')" style="background:none; border:none; cursor:pointer; padding:13px 16px 11px; font-size:13px; font-weight:700; color:var(--ink-dim); border-bottom:2px solid transparent;">📝 Teklifler</button>
             <button class="hist-tab" data-tab="sold" onclick="setHistTab('sold')" style="background:none; border:none; cursor:pointer; padding:13px 16px 11px; font-size:13px; font-weight:700; color:var(--ink-dim); border-bottom:2px solid transparent;">✓ Satışa Dönenler</button>
         </div>
@@ -2131,6 +2140,13 @@
                         <div style="font-size:10.5px; color:var(--dash-ink-dim); margin-top:2px;">Açıksa mağazalar kendi Türkiye/bölge sıralamasını görür (tutar/adet paylaşılmaz, sadece sıra).</div>
                     </div>
                     <button id="leaderboard-toggle-btn" class="dash-btn-ghost" onclick="toggleLeaderboardVisibility()">Yükleniyor…</button>
+                </div>
+                <div class="dash-panel" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding:14px 20px;">
+                    <div>
+                        <div style="font-size:12.5px; font-weight:700; color:var(--dash-ink);">📝 Teklif Özelliği</div>
+                        <div style="font-size:10.5px; color:var(--dash-ink-dim); margin-top:2px;">Açıksa mağazalar "Müşteriye Kaydet" ile teklif girip sonradan satışa çevirebilir. Kapalıyken her satış doğrudan kaydedilir, geçmiş hep "Satış" olarak görünür.</div>
+                    </div>
+                    <button id="teklif-toggle-btn" class="dash-btn-ghost" onclick="toggleTeklifVisibility()">Yükleniyor…</button>
                 </div>
                 <div class="dash-stat-grid" style="grid-template-columns:repeat(3,1fr);">
                     <div class="dash-stat-card accent-gold">
@@ -2780,6 +2796,7 @@
                     loadCfg();
                     attachHistoryListener();
                     attachLeaderboardListener(uname);
+                    attachTeklifFeatureListener();
                 }).catch(function() {
                     document.getElementById('dashboard-screen').style.display = 'none';
                     document.getElementById('main-wrapper').style.display = 'flex';
@@ -2787,6 +2804,7 @@
                     loadCfg();
                     attachHistoryListener();
                     attachLeaderboardListener(uname);
+                    attachTeklifFeatureListener();
                 });
             }
         } else {
@@ -2880,6 +2898,7 @@
         if(quickActions) quickActions.style.display = enabled ? 'none' : 'flex';
     }
 
+    // ── TEKLİF ÖZELLİĞİ (açık/kapalı) ──
     function saveCfg() {
         if(_applyingRemote || !currentStoreId) return;
         const data = {};
@@ -2987,11 +3006,15 @@
         loadLeaderboardForCurrentMonth();
     }
 
+    let _leaderboardFeatureEnabled = true; // varsayılan: açık — yardım kılavuzu görünürlüğü için ayrıca tutulur
+
     function attachLeaderboardListener(storeId) {
         _leaderboardStoreId = storeId;
         fbDb.ref('globalSettings/leaderboardEnabled').on('value', function(snap) {
             const enabled = snap.val() !== false; // varsayılan: açık
+            _leaderboardFeatureEnabled = enabled;
             document.getElementById('leaderboard-card').style.display = enabled ? 'block' : 'none';
+            applyHelpSectionVisibility();
         });
         loadLeaderboardForCurrentMonth();
     }
@@ -3087,7 +3110,7 @@
     }
 
     // Tek bir etiket değeri (örn. 2500) için 3T/2T/Tek/Nakit fiyatlarını hesaplar.
-    // runCalc (canlı önizleme) ve addBasket (her + parçası için ayrı satır) ortak kullanır.
+    // runCalc (canlı önizleme) ve syncBasketFromInputBox (her + parçası için ayrı satır) ortak kullanır.
     // pkRates verilmezse mevcut ekrandaki (mağaza) pk3/pk2/pk1/pkN inputlarından okur (eski davranış, bozulmaz).
     // Admin'in başka bir mağaza adına hesap yaparken kendi oranlarını parametre olarak geçmesi için eklendi.
     function calcForLabelValue(labelVal, u, xU, pkRates) {
@@ -3126,32 +3149,56 @@
 
         let rawInpP = document.getElementById('inpP').value;
         let labelVal = smartEvalThousands(rawInpP);
-        // Çoklu giriş (1000+2000 gibi): artık burada ayrı kod kutucuğu istenmiyor —
-        // her parça otomatik "Ürün N" adıyla sepete girer, kodu sepette ✎ ile (etikete bakarak) düzeltilir.
         const partsP = rawInpP ? rawInpP.toString().replace(/\./g,'').replace(/,/g,'.').split('+').map(p=>parseFloat(p.trim())).filter(n=>!isNaN(n)&&n>0) : [];
 
         const res = calcForLabelValue(labelVal, u, xU);
         if(labelVal > 0) details = 'Pırlanta';
 
-        // Çoklu girişte (1+'lı) kod alanı kullanılmaz — placeholder ve buton metniyle bunu netleştir.
-        const kodInput = document.getElementById('iKod');
-        const addBtn = document.getElementById('basket-add-btn');
-        if(partsP.length > 1) {
-            kodInput.placeholder = 'Çoklu girişte kod sepette düzenlenir';
-            kodInput.disabled = true;
-            if(addBtn) addBtn.innerText = '+ ' + partsP.length + ' Ürünü Sepete Ekle';
-        } else {
-            kodInput.placeholder = 'Model / Stok Kodu (opsiyonel)';
-            kodInput.disabled = false;
-            if(addBtn) addBtn.innerText = '+ Ekle';
-        }
-
         updateBox('3', res.old, res.v3, 3, res.m3);
         updateBox('2', res.old, res.v2, 2, res.m2);
         updateBox('1', res.old, res.v1, 1, res.m1);
         updateBox('N', res.old, res.vN, 0, res.mN);
+
+        syncBasketFromInputBox(partsP, u, xU, details);
+        renderBasket();
         return { res, details, mode: currentMode, partsP, u, xU };
     }
+
+    // Kutudaki ("+ ile ayrılmış") her parçayı sepette canlı tutar — "Ekle" butonuna basmaya gerek kalmaz.
+    // Sepetteki "kutudan gelen" (_fromInputBox: true) ürünler, kutu her değiştiğinde bu parçalarla
+    // yeniden eşleştirilir: sayı azaldıysa fazlalıklar silinir, çoğaldıysa yeni satır eklenir, etiket
+    // değeri değiştiyse fiyat yeniden hesaplanır. ÖNEMLİ İSTİSNA: ✎ ile manuel fiyatlandırılmış
+    // (_manualN: true) bir ürün, sırası kutudaki parça sayısına dahil edilir (yani kutudaki "+" sayısı
+    // hâlâ doğru ürün sayısını temsil eder) AMA o ürünün fiyatı/etiketi senkronizasyonda hiç ezilmez —
+    // müşteri pazarlığıyla verilen indirim bu sayede asla sessizce sıfırlanmaz.
+    function syncBasketFromInputBox(partsP, u, xU, details) {
+        const fromBoxItems = basket.filter(function(i) { return i._fromInputBox; });
+        const otherItems = basket.filter(function(i) { return !i._fromInputBox; });
+
+        const newFromBoxItems = partsP.map(function(labelVal, idx) {
+            const existing = fromBoxItems[idx];
+            if(existing && existing._manualN) {
+                // Manuel fiyatlandırılmış — pozisyonu korunur, hiçbir alanı güncellenmez (indirim sabit kalır).
+                return existing;
+            }
+            const itemRes = calcForLabelValue(labelVal, u, xU);
+            if(existing) {
+                // Aynı sırada zaten bir kart vardı — kodu ve notu korur, sadece fiyatı/etiketini güncelle.
+                existing.v = itemRes;
+                existing._rawP = String(labelVal);
+                existing.d = details;
+                return existing;
+            }
+            // Yeni bir parça — otomatik isim verilir, sepette ✎ ile kod sonradan yazılabilir.
+            return {
+                id: Date.now() + idx, k: 'Ürün ' + (idx + 1), v: itemRes, d: details, mode: currentMode,
+                _rawP: String(labelVal), _manualN: false, note: '', _fromInputBox: true
+            };
+        });
+
+        basket = otherItems.concat(newFromBoxItems);
+    }
+
 
     // Çoklu etiket girişinde (örn. 1000+2000+1200), her parça için ayrı kod kutucuğu + o parçanın etiketini gösterir.
     // containerEl: kutucukların çizileceği element. parts: etiket değerleri dizisi.
@@ -3222,35 +3269,6 @@
         document.getElementById('sm'+id).innerHTML  = old > 0 ? mCode : '';
         const diff = old > 0 ? Math.round(((v - old) / old) * 100) : 0;
         document.getElementById('stk'+id).innerText = (diff > 0 ? '+' : '') + diff + '%';
-    }
-
-    function addBasket() {
-        const calc = runCalc(); // partsP, u, xU buradan gelir
-        const kRaw = document.getElementById('iKod').value.trim();
-        const parts = calc.partsP; // [] | [tek değer] | [değer1, değer2, ...]
-
-        if(!parts.length) {
-            sysAlert('Önce bir etiket değeri girmelisin.', { tone: 'warn' });
-            return;
-        }
-
-        parts.forEach(function(labelVal, idx) {
-            const itemRes = calcForLabelValue(labelVal, calc.u, calc.xU);
-            // Kod boşsa (çoklu girişte her zaman, tekli girişte de boş bırakılırsa) otomatik "Ürün N" adı verilir —
-            // N, sepetteki mevcut ürün sayısına göre artar, böylece her parça kendi benzersiz adını alır.
-            const autoName = 'Ürün ' + (basket.length + idx + 1);
-            const kod = (parts.length === 1 && kRaw) ? kRaw.toUpperCase() : autoName;
-            basket.push({
-                id: Date.now() + idx, k: kod, v: itemRes, d: calc.details, mode: calc.mode,
-                _rawP: String(labelVal), _manualN: false, note: ''
-            });
-        });
-
-        document.getElementById('iKod').value  = '';
-        document.getElementById('inpP').value  = '';
-        runCalc();
-        renderBasket();
-        setTimeout(() => { const c = document.getElementById('basket-container'); c.scrollTop = c.scrollHeight; }, 100);
     }
 
     function updateLinkedHistoryBanner() {
@@ -3741,6 +3759,7 @@
         _linkedHistoryOrigCount = 0;
         document.getElementById('iCus').value = '';
         document.getElementById('iPhone').value = '';
+        document.getElementById('inpP').value = '';
         renderBasket();
     }
 
@@ -4492,16 +4511,59 @@
         XLSX.writeFile(wb, 'satis-raporu-' + storeName + '-' + new Date().toISOString().slice(0,10) + '.xlsx');
     }
 
+    // Admin tarafından globalSettings/teklifEnabled ile açılıp kapatılır (varsayılan kapalı).
+    // Kapalıyken: "Müşteriye Kaydet", "Teklifler" sekmesi, "Teklife Çevir" gizlenir — her satış
+    // doğrudan kaydedilir, geçmiş tek bir liste olarak (hep "Satış") görünür.
+    let _teklifFeatureEnabled = false;
+
+    function applyTeklifFeatureUI() {
+        const btn = document.getElementById('btn-musteriye-kaydet');
+        if(btn) btn.style.display = _teklifFeatureEnabled ? '' : 'none';
+        const tabsRow = document.getElementById('hist-tabs-row');
+        if(tabsRow) tabsRow.style.display = _teklifFeatureEnabled ? 'flex' : 'none';
+        applyHelpSectionVisibility();
+    }
+
+    function attachTeklifFeatureListener() {
+        fbDb.ref('globalSettings/teklifEnabled').on('value', function(snap) {
+            _teklifFeatureEnabled = snap.val() === true; // varsayılan: kapalı
+            applyTeklifFeatureUI();
+        });
+    }
+
+    // Yardım kılavuzundaki, teklif özelliğine ve sıralama ekranına bağlı bölümlerin görünürlüğünü
+    // o anki ayar durumuna göre tazeler. Hem teklif hem sıralama dinleyicisi bu fonksiyonu çağırır,
+    // ikisi de yüklenmeden önce çağrılırsa zararsızdır (elementler henüz DOM'da olmasa da sessizce çıkar).
+    function applyHelpSectionVisibility() {
+        const teklifOn = !!_teklifFeatureEnabled;
+        const siralamaOn = _leaderboardFeatureEnabled !== false;
+
+        ['help-sec4-teklif-on', 'help-sec5-teklif-on'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if(el) el.style.display = teklifOn ? '' : 'none';
+        });
+        ['help-sec4-teklif-off', 'help-sec5-teklif-off'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if(el) el.style.display = teklifOn ? 'none' : '';
+        });
+        ['help-sec5b-durum-on', 'help-sec6-durum-on', 'help-sec7-durum-on'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if(el) el.style.display = teklifOn ? '' : 'none';
+        });
+        const siralamaSec = document.getElementById('help-sec8-siralama');
+        if(siralamaSec) siralamaSec.style.display = siralamaOn ? '' : 'none';
+    }
+
     function openHistoryScreen() {
         document.getElementById('histSearch').value = '';
         document.getElementById('history-preview').style.display = 'none';
         document.getElementById('btnClearHistory').style.display = isAdmin ? 'none' : 'inline-block';
         _previewKey = null;
-        _histTab = 'teklif';
+        _histTab = _teklifFeatureEnabled ? 'teklif' : 'sold'; // teklif kapalıyken doğrudan tüm geçmiş (satış) listesi açılır
         document.querySelectorAll('.hist-tab').forEach(function(btn) {
-            btn.classList.toggle('active', btn.dataset.tab === 'teklif');
+            btn.classList.toggle('active', btn.dataset.tab === _histTab);
         });
-        document.getElementById('sold-filters').style.display = 'none';
+        document.getElementById('sold-filters').style.display = _histTab === 'sold' ? 'flex' : 'none';
         attachHistoryListener();
         renderHistory();
         document.getElementById('history-screen').style.display = 'flex';
@@ -4638,9 +4700,11 @@
                 }).join('') +
                 '</div>' +
                 '<div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">' +
-                (isSold
-                    ? '<button onclick="markHistoryStatus(\'' + realKey + '\', \'' + h.storeId + '\', \'teklif\')" style="flex:1; min-width:90px; background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">↩ Teklife Çevir</button>'
-                    : '<button onclick="markHistoryStatus(\'' + realKey + '\', \'' + h.storeId + '\', \'sold\')" style="flex:1; min-width:90px; background:var(--success-bg); border:1.5px solid var(--success); color:var(--success); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:800; cursor:pointer;">✓ Satış Oldu İşaretle</button>') +
+                (_teklifFeatureEnabled
+                    ? (isSold
+                        ? '<button onclick="markHistoryStatus(\'' + realKey + '\', \'' + h.storeId + '\', \'teklif\')" style="flex:1; min-width:90px; background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">↩ Teklife Çevir</button>'
+                        : '<button onclick="markHistoryStatus(\'' + realKey + '\', \'' + h.storeId + '\', \'sold\')" style="flex:1; min-width:90px; background:var(--success-bg); border:1.5px solid var(--success); color:var(--success); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:800; cursor:pointer;">✓ Satış Oldu İşaretle</button>')
+                    : '') +
                 (exchangeCounterpart
                     ? '<button onclick="undoExchange(\'' + realKey + '\', \'' + h.storeId + '\', \'' + (exchangeCounterpart.key||'') + '\', \'' + (exchangeCounterpart.storeId||'') + '\')" style="flex:1; min-width:90px; background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">🗑 Değişimi Geri Al</button>'
                     : '<button onclick="deleteHistory(\'' + realKey + '\', \'' + h.storeId + '\')" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">🗑 Sil</button>') +
@@ -5322,6 +5386,7 @@
         renderAdminStoreList();
         refreshStoresInfo().then(function() { renderAdminPanel(); renderDashOverview(); });
         attachLeaderboardToggleListener();
+        attachTeklifToggleListener();
     }
 
     // ── MAĞAZA SIRALAMA EKRANI AÇMA/KAPAMA (admin kontrolü) ──
@@ -5339,6 +5404,28 @@
         fbDb.ref('globalSettings/leaderboardEnabled').once('value').then(function(snap) {
             const current = snap.val() !== false;
             fbDb.ref('globalSettings/leaderboardEnabled').set(!current);
+        }).catch(function(err) {
+            console.error('Ayar değiştirilemedi:', err);
+            sysAlert('Ayar değiştirilemedi: ' + err.message, { tone: 'danger' });
+        });
+    }
+
+    // ── TEKLİF ÖZELLİĞİ AÇMA/KAPAMA (admin kontrolü) ──
+    // Sıralama anahtarıyla aynı mantık, sadece varsayılan KAPALI (=== true testiyle).
+    function attachTeklifToggleListener() {
+        fbDb.ref('globalSettings/teklifEnabled').on('value', function(snap) {
+            const enabled = snap.val() === true; // varsayılan: kapalı
+            const btn = document.getElementById('teklif-toggle-btn');
+            if(btn) {
+                btn.innerText = enabled ? '🟢 Açık — Kapat' : '⚪ Kapalı — Aç';
+            }
+        });
+    }
+
+    function toggleTeklifVisibility() {
+        fbDb.ref('globalSettings/teklifEnabled').once('value').then(function(snap) {
+            const current = snap.val() === true;
+            fbDb.ref('globalSettings/teklifEnabled').set(!current);
         }).catch(function(err) {
             console.error('Ayar değiştirilemedi:', err);
             sysAlert('Ayar değiştirilemedi: ' + err.message, { tone: 'danger' });
@@ -6210,9 +6297,19 @@
         const selected = getBulkSelectedStoreIds();
         if(!selected.length) { sysAlert('Önce en az bir mağaza seç.', { tone: 'warn' }); return; }
         document.getElementById('bulkEditStoreCount').innerText = selected.length + ' mağaza seçili';
-        ['bulkXU','bulkPk3','bulkPk2','bulkPk1','bulkPkN'].forEach(function(id) { document.getElementById(id).value = ''; });
+        ['bulkXU','bulkPkN'].forEach(function(id) { document.getElementById(id).value = ''; });
         document.getElementById('bulkEditError').style.display = 'none';
         openModal('bulkEditModal');
+    }
+
+    // Nakit kâr yüzdesinden, her kademe öncekinin %5 eksiği olacak şekilde 3T/2T/1T kâr yüzdelerini türetir.
+    // Mantık: Nakit = TekÇekim × 0.95  →  TekÇekim = Nakit / 0.95, vb. — fiyat oranı üzerinden geriye doğru hesaplanır,
+    // sonra her adımın kendi kâr yüzdesine çevrilir (kâr yüzdeleri direkt %5 farklı değildir, fiyatlar %5 farklıdır).
+    function deriveProfitRatesFromCash(pkN) {
+        const pk1 = ((1 + pkN/100) / 0.95 - 1) * 100;
+        const pk2 = ((1 + pk1/100) / 0.95 - 1) * 100;
+        const pk3 = ((1 + pk2/100) / 0.95 - 1) * 100;
+        return { pk3: pk3, pk2: pk2, pk1: pk1, pkN: pkN };
     }
 
     function applyBulkEdit() {
@@ -6220,11 +6317,21 @@
         if(!selected.length) { closeModal('bulkEditModal'); return; }
 
         const updates = {};
-        const fieldMap = { bulkXU: 'cfgU_plus', bulkPk3: 'pk3', bulkPk2: 'pk2', bulkPk1: 'pk1', bulkPkN: 'pkN' };
-        Object.keys(fieldMap).forEach(function(inputId) {
-            const val = document.getElementById(inputId).value.trim();
-            if(val !== '') updates[fieldMap[inputId]] = val;
-        });
+        const xUVal = document.getElementById('bulkXU').value.trim();
+        if(xUVal !== '') updates.cfgU_plus = xUVal;
+
+        const pkNVal = document.getElementById('bulkPkN').value.trim();
+        let summaryNote = '';
+        if(pkNVal !== '') {
+            const pkN = smartEval(pkNVal);
+            const rates = deriveProfitRatesFromCash(pkN);
+            // Firebase'e ondalıksız, 2 hane yuvarlanmış string olarak yazılır (diğer alanlarla aynı format).
+            updates.pkN = String(Math.round(rates.pkN * 100) / 100);
+            updates.pk1 = String(Math.round(rates.pk1 * 100) / 100);
+            updates.pk2 = String(Math.round(rates.pk2 * 100) / 100);
+            updates.pk3 = String(Math.round(rates.pk3 * 100) / 100);
+            summaryNote = 'Nakit %' + updates.pkN + ' → 1T %' + updates.pk1 + ', 2T %' + updates.pk2 + ', 3T %' + updates.pk3 + ' (otomatik hesaplandı)';
+        }
 
         if(!Object.keys(updates).length) {
             document.getElementById('bulkEditError').innerText = 'En az bir alanı doldurman gerekiyor.';
@@ -6239,7 +6346,7 @@
         Promise.all(promises).then(function() {
             closeModal('bulkEditModal');
             clearBulkSelection();
-            const summary = Object.keys(updates).map(function(k) { return k + '=' + updates[k]; }).join(', ');
+            const summary = (xUVal !== '' ? 'xU=' + xUVal + (summaryNote ? ' · ' : '') : '') + summaryNote;
             selected.forEach(function(sid) {
                 logAdminAction('edit_info', sid, (_storesInfo[sid]||{}).cfgStore || sid, 'Toplu düzenleme: ' + summary);
             });
@@ -7123,8 +7230,25 @@
         document.querySelectorAll('.pane').forEach(function(p,idx) { p.classList.toggle('active', idx===i); });
     }
 
-    function removeItem(id)  { basket = basket.filter(i=>i.id!==id); renderBasket(); }
-    function clearBasket()   { basket = []; renderBasket(); }
+    // Bir ürünü sepetten siler. Ürün "kutudan geliyorsa" (_fromInputBox — manuel fiyatlandırılmış olsa da
+    // hâlâ bu işarete sahiptir, sadece korumalıdır), inpP kutusundaki ilgili "+" parçası da çıkarılır —
+    // yoksa bir sonraki tuş vuruşunda (runCalc tekrar çalışınca) kutuda hâlâ yazılı olduğu için aynı
+    // sırada otomatik (indirimsiz) bir ürün geri gelirdi.
+    function removeItem(id) {
+        const item = basket.find(function(i) { return i.id === id; });
+        if(item && item._fromInputBox) {
+            const inpP = document.getElementById('inpP');
+            const rawVal = inpP.value;
+            const parts = rawVal ? rawVal.toString().replace(/\./g,'').replace(/,/g,'.').split('+').map(function(p){return parseFloat(p.trim());}).filter(function(n){return !isNaN(n)&&n>0;}) : [];
+            const fromBoxIds = basket.filter(function(i){ return i._fromInputBox; }).map(function(i){ return i.id; });
+            const removedIdx = fromBoxIds.indexOf(id);
+            if(removedIdx !== -1) parts.splice(removedIdx, 1);
+            inpP.value = parts.map(function(n){ return formatThousands(String(n)); }).join('+');
+        }
+        basket = basket.filter(i=>i.id!==id);
+        renderBasket();
+    }
+    function clearBasket()   { basket = []; document.getElementById('inpP').value = ''; renderBasket(); }
 
     // Sepet toplamından (Nakit) düzenleme: yeni tutarı tüm ürünlere orantılı dağıtır.
     // Her ürünün 3T/2T/Tek/Nakit fiyatı aynı oranla ölçeklenir, _manualN=true işaretlenir.
@@ -7177,6 +7301,9 @@
     }
 
     function openModal(id)   { document.getElementById(id).style.display='flex'; }
+    // Mağaza tarafı Yardım butonu bunu çağırır — modalı açmadan önce teklif/sıralama durumuna
+    // göre ilgili bölümlerin görünürlüğünü tazeler, böylece kılavuz her zaman o anki ayarla tutarlı görünür.
+    function openHelpModal() { applyHelpSectionVisibility(); openModal('helpModal'); }
     function closeModal(id)  { document.getElementById(id).style.display='none'; }
     // ── BAĞLANTI DURUMU İZLEME ──
     // navigator.onLine sadece ağ arayüzünün açık olduğunu gösterir (yanıltıcı olabilir);
