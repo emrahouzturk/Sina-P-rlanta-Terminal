@@ -1268,31 +1268,24 @@
     <div id="exchangeModal" class="modal-overlay">
         <div class="modal" style="max-width:440px;">
             <div class="modal-header">
-                <h3>🔄 Ürün Değişimi</h3>
+                <h3>🔄 Değişim Gir</h3>
                 <span class="modal-close" onclick="closeModal('exchangeModal')">×</span>
             </div>
             <div class="simple-modal-body">
-                <input type="hidden" id="exOrigKey">
-                <input type="hidden" id="exOrigStoreId">
-
-                <div id="exOrigInfoBlock" style="display:none; margin-bottom:14px; padding:10px 12px; background:var(--bg); border-radius:10px; border:1px solid var(--border);">
-                    <div style="font-size:10px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px;">Geri Verilen Ürün</div>
-                    <div id="exOrigInfoText" style="font-size:13px; font-weight:700; color:var(--ink);"></div>
-                </div>
-
-                <!-- Sistem dışı / başka mağaza senaryosunda eski ürün elle girilir -->
-                <div id="exManualBlock" style="display:none;">
-                    <label class="field-label">Geri Verilen Ürünün Kodu (varsa)</label>
-                    <input type="text" id="exManualKod" style="font-size:15px; text-align:left; padding:10px 14px; text-transform:uppercase;" placeholder="Opsiyonel">
-                    <label class="field-label" style="margin-top:12px;">Geri Verilen Ürünün Tutarı (₺)</label>
-                    <input type="text" id="exManualTutar" class="big-input" style="font-size:20px;" oninput="applyThousandsMask(this);" placeholder="0.00">
-                    <div style="font-size:10px; color:var(--ink-dim); margin-top:4px;">Müşteriye o gün satılan/iade edilen gerçek ₺ tutarı.</div>
-                    <label class="field-label" style="margin-top:12px;">Geri Verilen Ürünün Etiket Değeri (biliyorsan, opsiyonel)</label>
-                    <input type="text" id="exManualEtiket" class="big-input" style="font-size:18px;" oninput="applyThousandsMask(this);" placeholder="0.00">
-                    <div style="font-size:10px; color:var(--ink-dim); margin-top:4px;">Etiket değerini bilmiyorsan boş bırak — bu durumda raporda "Etiket $" alanı boş kalır, sadece tutarın bugünün kuruyla USD karşılığı (Maliyet $ yerine) düşülür.</div>
-                    <label class="field-label" style="margin-top:12px;">Not (opsiyonel)</label>
-                    <input type="text" id="exManualNote" style="font-size:13px; text-align:left; padding:10px 14px;" placeholder="Örn: Programdan önce alınmıştı / X mağazasından">
-                </div>
+                <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">GERİ ALINAN ÜRÜN(LER)</div>
+                <label class="field-label">Kodu (varsa, opsiyonel)</label>
+                <input type="text" id="exManualKod" style="font-size:15px; text-align:left; padding:10px 14px; text-transform:uppercase;" placeholder="Opsiyonel">
+                <label class="field-label" style="margin-top:12px;">Adet</label>
+                <input type="text" id="exManualAdet" class="big-input" style="font-size:18px;" placeholder="1" inputmode="numeric">
+                <div style="font-size:10px; color:var(--ink-dim); margin-top:4px;">Müşteri birden fazla ürün geri veriyorsa (farklı tarihlerde alınmış olsalar da) buraya toplam adedi yaz.</div>
+                <label class="field-label" style="margin-top:12px;">Toplam Tutarı (₺)</label>
+                <input type="text" id="exManualTutar" class="big-input" style="font-size:20px;" oninput="applyThousandsMask(this);" placeholder="0.00">
+                <div style="font-size:10px; color:var(--ink-dim); margin-top:4px;">Geri alınan ürün(ler)in toplam ₺ tutarı.</div>
+                <label class="field-label" style="margin-top:12px;">Etiket Değeri (biliyorsan, opsiyonel)</label>
+                <input type="text" id="exManualEtiket" class="big-input" style="font-size:18px;" oninput="applyThousandsMask(this);" placeholder="0.00">
+                <div style="font-size:10px; color:var(--ink-dim); margin-top:4px;">Etiket değerini bilmiyorsan boş bırak — bu durumda raporda "Etiket $" alanı boş kalır, sadece tutarın bugünün kuruyla USD karşılığı düşülür.</div>
+                <label class="field-label" style="margin-top:12px;">Not (opsiyonel)</label>
+                <input type="text" id="exManualNote" style="font-size:13px; text-align:left; padding:10px 14px;" placeholder="Örn: 12.03 ve 18.04 tarihli iki ayrı alışveriş">
 
                 <div style="height:1px; background:var(--border); margin:16px 0;"></div>
 
@@ -1484,7 +1477,7 @@
                         <b>📄 PDF Rapor Al:</b> Aynı veriyle, üstte mağaza bazlı bar chart ve zaman bazlı trend grafiği olan bir PDF basılır.
                     </div>
                     <p style="margin-top:8px; font-size:11px; color:var(--ink-dim);">Not: Tüm rakamlar $ (etiket÷3) üzerinden gösterilir, TL/nakit tutarı admin tarafında hiç gösterilmez — TL rakamlarını sadece mağaza kendi ekranında görür. Tüm tarih filtreleri gerçek satış tarihine göre çalışır, bir mağaza geçmiş bir satışı geriye dönük girse de doğru aya/güne düşer.</p>
-                    <p style="margin-top:8px; font-size:11px; color:var(--ink-dim);"><b>Ürün Değişimi:</b> Bir mağaza ürün değişimi yaptığında raporda iki satır görürsün — yeni ürün pozitif etiket değeriyle, geri alınan eski ürün negatif etiket değeriyle (örn. −3.333 $). Bu kasıtlıdır: ikisi toplandığında net fark otomatik çıkar, ekstra bir hesap yapmana gerek yok. Negatif satırlar her zaman <b>değişimin yapıldığı günün ayına</b> düşer — eski satışın orijinal ayına değil, çünkü düzeltme o gün yapılmıştır.</p>
+                    <p style="margin-top:8px; font-size:11px; color:var(--ink-dim);"><b>Ürün Değişimi:</b> Bir mağaza ürün değişimi yaptığında raporda iki satır görürsün — yeni ürün pozitif etiket değeriyle, geri alınan eski ürün(ler) negatif etiket değeriyle (örn. −3.333 $, ürün kodunun yanında 🔄 işaretiyle). Bu kasıtlıdır: ikisi toplandığında net fark otomatik çıkar, ekstra bir hesap yapmana gerek yok. <b>Satış Adedi ile değişimde geri alınan ürün adedi her zaman ayrı gösterilir</b> (örn. "7 +1 🔄" gibi) — ikisi toplanıp tek bir rakam olarak karıştırılmaz. Negatif satırlar her zaman <b>değişimin girildiği günün ayına</b> düşer.</p>
                 </div>
 
                 <div class="help-section">
@@ -1824,13 +1817,13 @@
 
                 <div class="help-section">
                     <h4>5c. Ürün Değişimi</h4>
-                    <p>Müşteri daha önce aldığı bir ürünü geri verip başka bir (veya birden fazla) ürün alıyorsa, bunun için ayrı bir akış var — eski satışı silmene veya elle "fark" hesaplamana gerek yok.</p>
+                    <p>Müşteri daha önce aldığı bir veya birden fazla ürünü geri verip başka bir (veya birden fazla) ürün alıyorsa, bunun için ayrı bir akış var — eski satışı bulup silmene veya elle "fark" hesaplamana gerek yok. Hangi tarihte/tarihlerde alınmış olduğu önemli değil; isterse müşteri farklı günlerde aldığı birden fazla ürünü birlikte getirebilir.</p>
                     <div class="help-card">
-                        <b>Eski ürün sistemde kayıtlıysa:</b> Geçmiş → Satışa Dönenler'den o satışı bul, kartındaki <b>🔄 Değiştir</b> butonuna bas. Açılan ekranda yeni ürünün etiketini gir, kod yaz (opsiyonel), <b>+ Ekle</b> de — ürün altta listeye düşer. İndirim yapacaksan önce ekle, <b>sonra listedeki ✎ ile Nakit fiyatını düzelt</b> (tıpkı normal sepette olduğu gibi — önce eklersin, sonra düzenlersin, kafanı karıştırmasın). <b>Birden fazla ürün alınıyorsa</b> (1 ürün verip 2-3 ürün alınması gibi) "etiket gir → + Ekle" adımını her ürün için tekrarla, "Net Fark" eklediğin tüm ürünlerin toplamına göre güncellenir. Bitince tarih seç, <b>🔄 Değişimi Tamamla</b> de.<br><br>
-                        <b>Eski ürün sistemde yoksa</b> (bu programdan önce satılmış ya da başka bir mağazandan alınmışsa): Geçmiş ekranının üstündeki <b>🔄 Sistem Dışı Değişim</b> butonunu kullan. Eski ürünün kodunu ve <b>tutarını</b> yazman yeterli — <b>etiket değeri artık opsiyonel</b>, bilmiyorsan boş bırakabilirsin. Etiketi yazarsan rapor maliyet/kâr hesabını tam yapar; boş bırakırsan rapor "Etiket $" alanını "—" gösterir, sadece tutarın o günün kuruyla USD karşılığını düşer.<br><br>
-                        <b>Arka planda ne olur:</b> Yeni ürün(ler) normal bir satış olarak (pozitif tutarla) kaydedilir. Eski ürün için otomatik olarak <b>negatif bir kayıt</b> açılır — bugünün tarihiyle, "🔄 DEĞİŞİM" rozetiyle işaretlenmiş halde. Orijinal satışın kendi tarihi/durumu hiç değişmez (geçmiş ayların raporu geriye dönük bozulmaz), sadece bugünün raporuna negatif bir düzeltme satırı eklenir.<br><br>
-                        <b>Raporda nasıl görünür:</b> Yeni ürün tam tutarıyla, eski ürün negatif olarak ayrı satırlarda görünür — ürün kodunun yanında 🔄 işareti olur, PDF raporunda bu satırın <b>tamamı kırmızı</b> vurgulanır (Excel'de de aynı işaretle, satır rengi olmadan görünür). Toplandığında net fark otomatik çıkar, sen hiçbir ekstra hesap yapmazsın. İki kayıt birbirine bağlıdır: birinin önizlemesini açtığında diğerine tek tıkla gidebilirsin.<br><br>
-                        <b>Hata yaptıysan:</b> Değişimle ilgili her iki kartta da (yeni satış ve değişim kaydı) normal "Sil" yerine <b>🗑 Değişimi Geri Al</b> butonu çıkar — hangisinden basarsan bas, ikisini birden siler. Orijinal eski satışa hiç dokunulmamıştı, o otomatik olarak değişmemiş hâline geri döner.<br><br>
+                        <b>Nasıl başlanır:</b> Geçmiş ekranının üstündeki <b>🔄 Değişim Gir</b> butonuna bas. Eski ürün(ler) için kod (opsiyonel), <b>adet</b> (birden fazla ürün geri veriliyorsa toplam adedi yaz) ve toplam tutarı gir. <b>Etiket değeri opsiyonel</b> — biliyorsan yaz, bilmiyorsan boş bırak.<br><br>
+                        <b>Yeni ürün(ler):</b> Etiket gir, kod yaz (opsiyonel), <b>+ Ekle</b> de — ürün altta listeye düşer. <b>Birden fazla ürün alınıyorsa</b> "+" ile birlikte yaz (örn. 1000+2000) ya da "etiket gir → + Ekle" adımını her ürün için tekrarla — ikisi de çalışır, her ürün ayrı satır olarak eklenir. İndirim yapacaksan önce ekle, <b>sonra listedeki ✎ ile Nakit fiyatını düzelt</b> (tıpkı normal sepette olduğu gibi). "Net Fark" eklediğin tüm ürünlerin toplamına göre canlı güncellenir. Bitince tarih seç, <b>🔄 Değişimi Tamamla</b> de.<br><br>
+                        <b>Arka planda ne olur:</b> Yeni ürün(ler) normal bir satış olarak (pozitif tutarla) kaydedilir. Eski ürün(ler) için otomatik olarak <b>negatif bir kayıt</b> açılır — bugünün tarihiyle, "🔄 DEĞİŞİM" rozetiyle işaretlenmiş halde. Sistemde varsa orijinal eski satışa hiçbir şekilde dokunulmaz, ona referans da verilmez — değişim tamamen bağımsız, kendi başına bir kayıttır.<br><br>
+                        <b>Raporda nasıl görünür:</b> Yeni ürün tam tutarıyla, eski ürün(ler) negatif olarak ayrı satırlarda görünür — ürün kodunun yanında 🔄 işareti olur, PDF raporunda bu satırın <b>tamamı kırmızı</b> vurgulanır. <b>Satış Adedi ile değişimde geri alınan ürün adedi raporlarda her zaman ayrı gösterilir</b> (örn. "7 +1 🔄" gibi) — ikisi asla toplanıp tek bir sayı olarak karıştırılmaz. Net fark toplandığında otomatik çıkar, sen hiçbir ekstra hesap yapmazsın.<br><br>
+                        <b>Hata yaptıysan:</b> Değişimle ilgili her iki kartta da (yeni satış ve değişim kaydı) normal "Sil" yerine <b>🗑 Değişimi Geri Al</b> butonu çıkar — hangisinden basarsan bas, ikisini birden siler.<br><br>
                         <b>Not:</b> Müşteriye verilen PDF teklif/fiş çıktısında değişim bilgisi görünmez — o PDF her zaman sadece o anki satışın kendi içeriğini gösterir, değişim ilişkisi sadece geçmiş ve raporlarda görünür.
                     </div>
                 </div>
@@ -2015,7 +2008,7 @@
             <div id="history-list-pane" style="flex:1; min-width:0; display:flex; flex-direction:column; border-right:1px solid var(--border); overflow:hidden;">
                 <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; gap:8px; background:var(--surface); flex-shrink:0;">
                     <input type="text" id="histSearch" placeholder="Ad, soyad, numara veya mağaza ara..." style="font-size:13px; padding:9px 12px; flex:1; text-align:left;" oninput="renderHistory()">
-                    <button onclick="openManualExchangeModal()" style="background:none; border:1.5px solid var(--rose-soft); color:var(--rose); border-radius:8px; padding:9px 12px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;">🔄 Sistem Dışı Değişim</button>
+                    <button onclick="openExchangeModal()" style="background:none; border:1.5px solid var(--rose-soft); color:var(--rose); border-radius:8px; padding:9px 12px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;">🔄 Değişim Gir</button>
                     <button id="btnClearHistory" onclick="clearHistory()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:9px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer; white-space:nowrap;">Tümünü Sil</button>
                 </div>
                 <div id="history-list" style="flex:1; overflow-y:scroll; -webkit-overflow-scrolling:touch; min-height:0;">
@@ -4216,6 +4209,8 @@
         } else {
             // Tutar bazlı: tek mağaza olduğu için tarih bazlı (gün) gruplama anlamlı.
             // USD toplamı, her satışın KENDİ kuruyla ayrı ayrı USD'ye çevrilip sonra toplanır (TL toplamından bölünmez).
+            // adet: gerçek satılan ürün sayısı (değişimde geri alınanlar hariç). exchangeAdet: o gün değişimde
+            // geri alınan ürün sayısı — ikisi raporda ayrı gösterilir, toplanıp "X adet" diye karıştırılmaz.
             const byDate = {};
             rows.forEach(function(h) {
                 const rate = rateFor(h);
@@ -4223,14 +4218,18 @@
                 // closingAmount değişim kayıtlarında negatif olabilir, sadece null/0 ise sepete düşülür.
                 const sN = h.closingAmount ? h.closingAmount : h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
-                if(!byDate[dateKey]) byDate[dateKey] = { tarih: dateKey, adet: 0, tl: 0, etiket: 0, tlUsdSum: 0 };
-                byDate[dateKey].adet += h.basket.length;
+                if(!byDate[dateKey]) byDate[dateKey] = { tarih: dateKey, adet: 0, exchangeAdet: 0, tl: 0, etiket: 0, tlUsdSum: 0 };
+                if(h.isExchangeReturn) {
+                    byDate[dateKey].exchangeAdet += (h.exchangeAdet || h.basket.length);
+                } else {
+                    byDate[dateKey].adet += h.basket.length;
+                }
                 byDate[dateKey].tl += sN;
                 byDate[dateKey].etiket += et;
                 byDate[dateKey].tlUsdSum += (rate > 0 ? (sN / rate) : 0);
             });
             let dateRows = Object.values(byDate).map(function(d) {
-                const row = withProfit({ tarih: d.tarih, adet: d.adet, tl: Math.round(d.tl), etiket: Math.round(d.etiket), etiketBolu3: Math.round(d.etiket/3) }, currentU);
+                const row = withProfit({ tarih: d.tarih, adet: d.adet, exchangeAdet: d.exchangeAdet, tl: Math.round(d.tl), etiket: Math.round(d.etiket), etiketBolu3: Math.round(d.etiket/3) }, currentU);
                 // Tutar bazlı modda USD toplamı zaten gün içindeki her satıştan ayrı ayrı toplandı (tlUsdSum) —
                 // withProfit'in tek kur ile hesapladığı tlUsd/profitUsd'nin üzerine bu daha doğru toplamı yazıyoruz.
                 row.tlUsd = Math.round(d.tlUsdSum);
@@ -4247,18 +4246,26 @@
         const rows = getFilteredStoreHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
 
-        let totalTl = 0, totalEtiket = 0, totalCount = 0, totalTlUsd = 0;
+        // Satış Adedi yalnızca gerçek satışları sayar; değişimde geri alınan ürünler (isExchangeReturn)
+        // ayrı bir "Değişim" sayacında tutulur — ikisi toplanıp tek bir "adet" olarak gösterilmez.
+        let totalTl = 0, totalEtiket = 0, totalCount = 0, exchangeCount = 0, totalTlUsd = 0;
         if(data.mode === 'urun') {
-            totalCount = data.rows.length;
-            data.rows.forEach(function(r) { totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd; });
+            data.rows.forEach(function(r) {
+                if(r.isExchangeReturn) { exchangeCount += 1; } else { totalCount += 1; }
+                totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd;
+            });
         } else {
-            data.rows.forEach(function(r) { totalCount += r.adet; totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd; });
+            data.rows.forEach(function(r) {
+                totalCount += r.adet;
+                exchangeCount += (r.exchangeAdet||0);
+                totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd;
+            });
         }
         const totalMaliyetUsd = totalEtiket / 3;
         const totalProfitUsd = totalTlUsd - totalMaliyetUsd;
 
         document.getElementById('sr-summary').innerHTML =
-            '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Satış Adedi</div><div style="font-size:20px; font-weight:800; color:var(--success);">' + totalCount + '</div></div>' +
+            '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Satış Adedi</div><div style="font-size:20px; font-weight:800; color:var(--success);">' + totalCount + (exchangeCount > 0 ? ' <span style="font-size:11px; color:var(--rose); font-weight:700;">+' + exchangeCount + ' 🔄</span>' : '') + '</div></div>' +
             '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Satış Tutarı ₺</div><div style="font-size:18px; font-weight:800; color:var(--ink);">' + f(totalTl) + '</div></div>' +
             '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Satış Tutarı $</div><div style="font-size:18px; font-weight:800; color:var(--ink);">$ ' + f(totalTlUsd) + '</div></div>' +
             '<div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px;"><div style="font-size:9px; color:var(--ink-dim); font-weight:800; text-transform:uppercase;">Etiket $</div><div style="font-size:18px; font-weight:800; color:var(--ink);">' + f(totalEtiket) + '</div></div>' +
@@ -4322,8 +4329,9 @@
             }).join('');
         } else {
             listEl.innerHTML = data.rows.map(function(r) {
+                const adetLine = r.adet + ' ürün' + (r.exchangeAdet > 0 ? ' <span style="color:var(--rose);">+' + r.exchangeAdet + ' 🔄 değişim</span>' : '');
                 return '<div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">' +
-                    '<div><b style="font-size:13px;">' + r.tarih + '</b><br><span style="font-size:10.5px; color:var(--ink-dim);">' + r.adet + ' ürün</span></div>' +
+                    '<div><b style="font-size:13px;">' + r.tarih + '</b><br><span style="font-size:10.5px; color:var(--ink-dim);">' + adetLine + '</span></div>' +
                     '<div style="text-align:right;"><div style="font-weight:700; color:var(--ink);">' + f(r.tl) + ' ₺</div><div style="font-size:10px; color:var(--ink-dim);">Etiket $: ' + f(r.etiket) + ' · Maliyet $: ' + f(r.etiketBolu3) + '</div>' + profitBadge(r) + '</div>' +
                     '</div>';
             }).join('');
@@ -4334,12 +4342,17 @@
         const data = buildStoreReportData();
         const f = n => Math.round(n).toLocaleString('tr-TR');
 
-        let totalTl = 0, totalEtiket = 0, totalCount = 0, totalTlUsd = 0;
+        let totalTl = 0, totalEtiket = 0, totalCount = 0, exchangeCount = 0, totalTlUsd = 0;
         if(data.mode === 'urun') {
-            totalCount = data.rows.length;
-            data.rows.forEach(function(r) { totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd; });
+            data.rows.forEach(function(r) {
+                if(r.isExchangeReturn) { exchangeCount += 1; } else { totalCount += 1; }
+                totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd;
+            });
         } else {
-            data.rows.forEach(function(r) { totalCount += r.adet; totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd; });
+            data.rows.forEach(function(r) {
+                totalCount += r.adet; exchangeCount += (r.exchangeAdet||0);
+                totalTl += r.tl; totalEtiket += r.etiket; totalTlUsd += r.tlUsd;
+            });
         }
         const totalMaliyetUsd = totalEtiket / 3;
         const totalProfitUsd = totalTlUsd - totalMaliyetUsd;
@@ -4391,9 +4404,10 @@
         } else {
             theadHtml = '<th style="padding:8px 6px;">Tarih</th><th style="padding:8px 6px; text-align:right;">Adet</th><th style="padding:8px 6px; text-align:right;">Etiket $</th><th style="padding:8px 6px; text-align:right;">Maliyet $</th><th style="padding:8px 6px; text-align:right;">Satış Tutarı ₺</th><th style="padding:8px 6px; text-align:right;">Satış Tutarı $</th><th style="padding:8px 6px; text-align:right;">Maliyet ₺</th><th style="padding:8px 6px; text-align:right;">Kâr/Zarar ₺</th><th style="padding:8px 6px; text-align:right;">Kâr/Zarar $</th>';
             bodyHtml = data.rows.map(function(r) {
+                const adetCell = r.adet + (r.exchangeAdet > 0 ? ' (+' + r.exchangeAdet + ' 🔄)' : '');
                 return '<tr style="border-bottom:1px solid #e8e4ec;">' +
                     '<td style="padding:7px 6px;">' + r.tarih + '</td>' +
-                    '<td style="padding:7px 6px; text-align:right;">' + r.adet + '</td>' +
+                    '<td style="padding:7px 6px; text-align:right;">' + adetCell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">' + f(r.etiket) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.etiketBolu3) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">' + f(r.tl) + ' ₺</td>' +
@@ -4419,7 +4433,7 @@
             '<div style="font-size:11px; color:#9090a0; text-align:right;">Sina Pırlanta<br>Satış Raporu</div>' +
             '</div>' +
             '<div style="margin-bottom:20px; display:flex; gap:16px; border:1px solid #e8e4ec; border-radius:10px; padding:14px 18px; flex-wrap:wrap;">' +
-            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ ADEDİ</div><div style="font-size:16px; font-weight:800;">' + totalCount + '</div></div>' +
+            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ ADEDİ</div><div style="font-size:16px; font-weight:800;">' + totalCount + (exchangeCount > 0 ? ' <span style="font-size:11px; color:#c8244c;">+' + exchangeCount + ' 🔄</span>' : '') + '</div></div>' +
             '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ TUTARI ₺</div><div style="font-size:16px; font-weight:800;">' + f(totalTl) + ' ₺</div></div>' +
             '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ TUTARI $</div><div style="font-size:16px; font-weight:800;">$ ' + f(totalTlUsd) + '</div></div>' +
             '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">ETİKET $</div><div style="font-size:16px; font-weight:800;">' + f(totalEtiket) + '</div></div>' +
@@ -4468,7 +4482,7 @@
             });
         } else {
             sheetData = data.rows.map(function(r) {
-                return { 'Tarih': r.tarih, 'Adet': r.adet, 'Etiket $': r.etiket, 'Maliyet $': r.etiketBolu3, 'Satış Tutarı ₺': r.tl, 'Satış Tutarı $': r.tlUsd, 'Maliyet ₺': r.cost, 'Kâr/Zarar ₺': profitText(r), 'Kâr/Zarar $': profitTextUsd(r) };
+                return { 'Tarih': r.tarih, 'Adet': r.adet, 'Değişim Adedi': r.exchangeAdet||0, 'Etiket $': r.etiket, 'Maliyet $': r.etiketBolu3, 'Satış Tutarı ₺': r.tl, 'Satış Tutarı $': r.tlUsd, 'Maliyet ₺': r.cost, 'Kâr/Zarar ₺': profitText(r), 'Kâr/Zarar $': profitTextUsd(r) };
             });
         }
         const ws = XLSX.utils.json_to_sheet(sheetData);
@@ -4627,9 +4641,6 @@
                 (isSold
                     ? '<button onclick="markHistoryStatus(\'' + realKey + '\', \'' + h.storeId + '\', \'teklif\')" style="flex:1; min-width:90px; background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">↩ Teklife Çevir</button>'
                     : '<button onclick="markHistoryStatus(\'' + realKey + '\', \'' + h.storeId + '\', \'sold\')" style="flex:1; min-width:90px; background:var(--success-bg); border:1.5px solid var(--success); color:var(--success); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:800; cursor:pointer;">✓ Satış Oldu İşaretle</button>') +
-                (isSold && !isExchangeReturn && !cameFromExchange
-                    ? '<button onclick="openExchangeModal(\'' + realKey + '\', \'' + h.storeId + '\')" style="flex:1; min-width:90px; background:none; border:1.5px solid var(--rose-soft); color:var(--rose); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">🔄 Değiştir</button>'
-                    : '') +
                 (exchangeCounterpart
                     ? '<button onclick="undoExchange(\'' + realKey + '\', \'' + h.storeId + '\', \'' + (exchangeCounterpart.key||'') + '\', \'' + (exchangeCounterpart.storeId||'') + '\')" style="flex:1; min-width:90px; background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">🗑 Değişimi Geri Al</button>'
                     : '<button onclick="deleteHistory(\'' + realKey + '\', \'' + h.storeId + '\')" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:6px 10px; font-size:10px; font-weight:700; cursor:pointer;">🗑 Sil</button>') +
@@ -4662,46 +4673,21 @@
 
     // ── ÜRÜN DEĞİŞİMİ ──
     // Müşteri eski bir ürünü geri verip bir veya birden fazla yeni ürün alıyor. Yeni ürün(ler) bu modalin
-    // kendi mini-sepetine (_exNewBasket) tek tek eklenir — her biri kendi etiket/fiyat/kod bilgisiyle, tıpkı
-    // ana sepet ekranındaki gibi. Onaylandığında hepsi TEK bir satışa toplanır (pozitif); eski ürünün tutarı
-    // otomatik NEGATİF bir kayıt olarak bugünün tarihinde açılır (orijinal satışın kendi tarihi/durumu hiç
-    // değişmez — geçmiş aylar geriye dönük bozulmaz).
-    let _exOrigSource = null; // 'system' | 'manual'
-    let _exNewBasket = [];    // bu modalde eklenen yeni ürünler — { k, v, _rawP, _manualN }
+    // ── ÜRÜN DEĞİŞİMİ ──
+    // Müşteri eski bir/birden fazla ürünü geri verip bir/birden fazla yeni ürün alıyor. Eski ürün(ler) HER
+    // ZAMAN elle girilir (kod, adet, tutar, opsiyonel etiket) — sistemde kayıtlı bir satışa otomatik referans
+    // verilmez, eski satışa hiç dokunulmaz. Yeni ürün(ler) bu modalin kendi mini-sepetine (_exNewBasket) eklenir.
+    // Onaylandığında: yeni ürünler tek bir pozitif satışa toplanır, eski ürün(ler) için ayrı bir NEGATİF kayıt
+    // bugünün tarihinde açılır. İki kayıt birbirine referans taşır (geri alma için), ama üçüncü bir kayda
+    // (varsa orijinal satışa) hiç dokunulmaz.
+    let _exNewBasket = []; // bu modalde eklenen yeni ürünler — { k, v, _rawP, _manualN }
 
-    // Geçmişteki bir satış kartından "🔄 Değiştir" ile açılır — eski ürün sistemde kayıtlı.
-    function openExchangeModal(key, storeId) {
-        const h = _historyCache.find(function(x) { return x.key === key; });
-        if(!h) return;
-        _exOrigSource = 'system';
-        document.getElementById('exOrigKey').value = key;
-        document.getElementById('exOrigStoreId').value = storeId;
-        const origAmount = Math.round(h.closingAmount || h.basket.reduce(function(a,b){ return a + b.v.vN; }, 0));
-        const origKodlar = h.basket.map(function(i){ return i.k; }).join(', ');
-        document.getElementById('exOrigInfoBlock').style.display = 'block';
-        document.getElementById('exOrigInfoText').innerText = origKodlar + ' — ' + Math.round(origAmount).toLocaleString('tr-TR') + ' ₺ (' + (h.soldAt || h.ts) + ')';
-        document.getElementById('exManualBlock').style.display = 'none';
-        _exResetModal();
-        openModal('exchangeModal');
-    }
-
-    // Geçmiş ekranındaki genel "🔄 Sistem Dışı Değişim Gir" butonundan açılır — eski ürün sistemde yok,
-    // bu programdan önce ya da başka bir mağazadan alınmış olabilir, bilgi elle girilir.
-    function openManualExchangeModal() {
-        _exOrigSource = 'manual';
-        document.getElementById('exOrigKey').value = '';
-        document.getElementById('exOrigStoreId').value = '';
-        document.getElementById('exOrigInfoBlock').style.display = 'none';
-        document.getElementById('exManualBlock').style.display = 'block';
+    function openExchangeModal() {
         document.getElementById('exManualKod').value = '';
-        document.getElementById('exManualEtiket').value = '';
+        document.getElementById('exManualAdet').value = '';
         document.getElementById('exManualTutar').value = '';
+        document.getElementById('exManualEtiket').value = '';
         document.getElementById('exManualNote').value = '';
-        _exResetModal();
-        openModal('exchangeModal');
-    }
-
-    function _exResetModal() {
         _exNewBasket = [];
         document.getElementById('exNewEtiket').value = '';
         document.getElementById('exNewKod').value = '';
@@ -4710,17 +4696,20 @@
         document.getElementById('exSummaryBlock').style.display = 'none';
         exRunCalc();
         exRenderBasket();
+        openModal('exchangeModal');
     }
 
     let _exCalcResult = null; // exAddToBasket'ın okuyacağı son hesaplama
 
     // Etiket alanındaki değere göre 4 fiyat kartını hesaplar — ana ekrandaki runCalc ile birebir aynı mantık,
-    // mağazanın kendi güncel kur/kâr oranlarını kullanır, sadece bu modale özel id'lere yazar.
+    // mağazanın kendi güncel kur/kâr oranlarını kullanır, sadece bu modale özel id'lere yazar. Çoklu giriş
+    // (1000+2000 gibi) burada SADECE önizleme amaçlı toplanır; gerçek ayrıştırma exAddToBasket'ta yapılır.
     function exRunCalc() {
         const u  = smartEval(document.getElementById('cfgU').value),
               up = smartEval(document.getElementById('cfgU_plus').value);
         const xU = u * (1 + up/100);
-        const labelVal = smartEvalThousands(document.getElementById('exNewEtiket').value);
+        const rawVal = document.getElementById('exNewEtiket').value;
+        const labelVal = smartEvalThousands(rawVal);
         const res = calcForLabelValue(labelVal, u, xU);
         const f = n => Math.round(n).toLocaleString('tr-TR');
         document.getElementById('exV3').innerText = f(res.v3) + ' ₺';
@@ -4731,20 +4720,30 @@
         return _exCalcResult;
     }
 
-    // Etiket alanındaki ürünü mini-sepete ekler. Birden fazla ürün alınıyorsa bu butona tekrar tekrar
-    // basılır — her ürün kendi kodu ve otomatik hesaplanan fiyatıyla ayrı satır olur. İndirim gerekiyorsa
-    // eklendikten sonra mini-sepetteki ✎ ile düzenlenir (ana sepet ekranındaki akışla aynı mantık).
+    // Etiket alanındaki ürün(ler)i mini-sepete ekler. "+" ile ayrılmış birden fazla etiket yazılırsa
+    // (örn. 1000+2000), her biri AYRI bir ürün olarak eklenir — ana sepet ekranındaki mantıkla aynı.
+    // Tek ürün eklerken kod yazılan alan kullanılır; çoklu eklemede her parça otomatik "Ürün N" adını alır,
+    // kodu sonradan mini-sepetteki ✎ ile düzeltilir.
     function exAddToBasket() {
-        const calc = exRunCalc();
-        if(!(calc.labelVal > 0)) { document.getElementById('exError').innerText = 'Önce bir etiket değeri girmelisin.'; document.getElementById('exError').style.display = 'block'; return; }
+        const u  = smartEval(document.getElementById('cfgU').value),
+              up = smartEval(document.getElementById('cfgU_plus').value);
+        const xU = u * (1 + up/100);
+        const rawVal = document.getElementById('exNewEtiket').value;
+        const parts = rawVal ? rawVal.toString().replace(/\./g,'').replace(/,/g,'.').split('+').map(function(p){return parseFloat(p.trim());}).filter(function(n){return !isNaN(n) && n>0;}) : [];
+
+        if(!parts.length) { document.getElementById('exError').innerText = 'Önce bir etiket değeri girmelisin.'; document.getElementById('exError').style.display = 'block'; return; }
         document.getElementById('exError').style.display = 'none';
 
         const kRaw = document.getElementById('exNewKod').value.trim();
-        const autoName = 'Ürün ' + (_exNewBasket.length + 1);
-        _exNewBasket.push({
-            id: Date.now(), k: kRaw ? kRaw.toUpperCase() : autoName, v: calc.res,
-            d: 'Pırlanta', mode: 'pirlanta',
-            _rawP: String(calc.labelVal), _manualN: false, note: ''
+        parts.forEach(function(labelVal, idx) {
+            const res = calcForLabelValue(labelVal, u, xU);
+            const autoName = 'Ürün ' + (_exNewBasket.length + 1);
+            const kod = (parts.length === 1 && kRaw) ? kRaw.toUpperCase() : autoName;
+            _exNewBasket.push({
+                id: Date.now() + idx, k: kod, v: res,
+                d: 'Pırlanta', mode: 'pirlanta',
+                _rawP: String(labelVal), _manualN: false, note: ''
+            });
         });
 
         document.getElementById('exNewEtiket').value = '';
@@ -4827,24 +4826,15 @@
         _exUpdateSummary();
     }
 
-    // Eski tutar (sistemden ya da elle) + mini-sepetteki TÜM yeni ürünlerin Nakit toplamı üzerinden
-    // net farkı canlı gösterir — mağaza onaylamadan önce "müşteriden ne kadar alınacağını/verileceğini" görür.
+    // Eski tutar (elle yazılan) + mini-sepetteki TÜM yeni ürünlerin Nakit toplamı üzerinden net farkı
+    // canlı gösterir — mağaza onaylamadan önce "müşteriden ne kadar alınacağını/verileceğini" görür.
     function _exUpdateSummary() {
         const block = document.getElementById('exSummaryBlock');
         const textEl = document.getElementById('exSummaryText');
         if(!_exNewBasket.length) { block.style.display = 'none'; return; }
 
         const newTotal = Math.round(_exNewBasket.reduce(function(a,i){ return a + i.v.vN; }, 0));
-
-        let oldAmount = 0;
-        if(_exOrigSource === 'system') {
-            const key = document.getElementById('exOrigKey').value;
-            const storeId = document.getElementById('exOrigStoreId').value;
-            const h = _historyCache.find(function(x) { return x.key === key && x.storeId === storeId; });
-            if(h) oldAmount = Math.round(h.closingAmount || h.basket.reduce(function(a,b){ return a + b.v.vN; }, 0));
-        } else {
-            oldAmount = smartEvalThousands(document.getElementById('exManualTutar').value);
-        }
+        const oldAmount = smartEvalThousands(document.getElementById('exManualTutar').value);
 
         const diff = Math.round(newTotal - oldAmount);
         block.style.display = 'block';
@@ -4865,28 +4855,14 @@
 
         const u = smartEval(document.getElementById('cfgU').value);
         const newAmount = Math.round(_exNewBasket.reduce(function(a,i){ return a + i.v.vN; }, 0));
-        const newEtiketTotal = _exNewBasket.reduce(function(a,i){ return a + smartEval(i._rawP); }, 0);
 
-        // Eski ürün bilgisi: sistemden ya da elle.
-        let oldAmount = 0, oldEtiket = 0, oldKod = '', oldNote = '', origKey = null, origStoreId = null;
-        if(_exOrigSource === 'system') {
-            origKey = document.getElementById('exOrigKey').value;
-            origStoreId = document.getElementById('exOrigStoreId').value;
-            const h = _historyCache.find(function(x) { return x.key === origKey && x.storeId === origStoreId; });
-            if(!h) { errEl.innerText = 'Orijinal satış kaydı bulunamadı.'; errEl.style.display = 'block'; return; }
-            oldAmount = Math.round(h.closingAmount || h.basket.reduce(function(a,b){ return a + b.v.vN; }, 0));
-            oldEtiket = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0);
-            oldKod = h.basket.map(function(i){ return i.k; }).join(', ');
-        } else {
-            oldAmount = smartEvalThousands(document.getElementById('exManualTutar').value);
-            if(!(oldAmount > 0)) { errEl.innerText = 'Geri verilen ürünün tutarını gir.'; errEl.style.display = 'block'; return; }
-            // Etiket değeri opsiyonel — biliniyorsa raporda "Etiket $" alanı dolu çıkar (maliyet/kâr hesabı tam olur).
-            // Bilinmiyorsa 0 kalır; bu durumda rapor "Etiket $" sütununu boş gösterir, sadece tutarın bugünün
-            // kuruyla USD karşılığı düşülür (bkz. buildStoreReportData: hasManualEtiket kontrolü).
-            oldEtiket = smartEvalThousands(document.getElementById('exManualEtiket').value);
-            oldKod = document.getElementById('exManualKod').value.trim().toUpperCase() || '—';
-            oldNote = document.getElementById('exManualNote').value.trim();
-        }
+        // Eski ürün(ler) bilgisi — her zaman elle girilir.
+        const oldAmount = smartEvalThousands(document.getElementById('exManualTutar').value);
+        if(!(oldAmount > 0)) { errEl.innerText = 'Geri alınan ürün(ler)in tutarını gir.'; errEl.style.display = 'block'; return; }
+        const oldEtiket = smartEvalThousands(document.getElementById('exManualEtiket').value);
+        const oldKod = document.getElementById('exManualKod').value.trim().toUpperCase() || '—';
+        const oldNote = document.getElementById('exManualNote').value.trim();
+        const oldAdet = parseInt(document.getElementById('exManualAdet').value) || 1;
 
         const now = new Date();
         const saleDate = new Date(dateStr + 'T12:00:00');
@@ -4900,35 +4876,34 @@
             status: 'sold', soldAt: saleDate.toLocaleDateString('tr-TR'), soldAtMillis: saleDate.getTime(),
             closingAmount: newAmount, paymentNote: '', usdRateAtSave: u || null,
             basket: JSON.parse(JSON.stringify(_exNewBasket)),
-            exchangeFromKey: origKey || null, exchangeFromStoreId: origStoreId || null,
-            exchangeFromNote: _exOrigSource === 'manual' ? (oldKod + ' — ' + Math.round(oldAmount).toLocaleString('tr-TR') + ' ₺' + (oldNote ? ' (' + oldNote + ')' : ' (sistem dışı / önceki kayıt)')) : null
+            exchangeFromNote: oldKod + (oldAdet > 1 ? ' (' + oldAdet + ' adet)' : '') + ' — ' + Math.round(oldAmount).toLocaleString('tr-TR') + ' ₺' + (oldNote ? ' (' + oldNote + ')' : '')
         };
 
         let newSaleKey = null;
         fbDb.ref('stores/' + currentStoreId + '/history').push(newSalePayload).then(function(newRefObj) {
             newSaleKey = newRefObj.key;
-            // 2) Eski ürün için negatif kayıt — bugünün tarihinde, orijinal satışa referans vererek.
+            // 2) Eski ürün(ler) için negatif kayıt — bugünün tarihinde, hiçbir orijinal satışa referans vermeden.
             const exRef = dateShort.replace(/\./g,'') + '/' + (Math.floor(Math.random()*9000)+1000);
             const exReturnPayload = {
                 ref: exRef, ts: now.toLocaleString('tr-TR'), tsMillis: now.getTime(),
                 cusName: newSalePayload.cusName, cusPhone: newSalePayload.cusPhone, storeName: newSalePayload.storeName,
                 status: 'sold', soldAt: now.toLocaleDateString('tr-TR'), soldAtMillis: now.getTime(),
                 closingAmount: -Math.abs(oldAmount), paymentNote: '', usdRateAtSave: u || null,
-                basket: [{ id: Date.now()+1, k: oldKod, v: { v3:-Math.abs(oldAmount), v2:-Math.abs(oldAmount), v1:-Math.abs(oldAmount), vN:-Math.abs(oldAmount), old:0, m3:'',m2:'',m1:'',mN:'' }, d: 'Değişim — geri alınan ürün', mode: 'pirlanta', _rawP: String(-Math.abs(oldEtiket)), _manualN: true, note: oldNote || '', _etiketUnknown: !(oldEtiket > 0) }],
+                exchangeAdet: oldAdet,
+                basket: [{ id: Date.now()+1, k: oldKod, v: { v3:-Math.abs(oldAmount), v2:-Math.abs(oldAmount), v1:-Math.abs(oldAmount), vN:-Math.abs(oldAmount), old:0, m3:'',m2:'',m1:'',mN:'' }, d: 'Değişim — geri alınan ürün' + (oldAdet > 1 ? ' (' + oldAdet + ' adet)' : ''), mode: 'pirlanta', _rawP: String(-Math.abs(oldEtiket)), _manualN: true, note: oldNote || '', _etiketUnknown: !(oldEtiket > 0), _exchangeAdet: oldAdet }],
                 isExchangeReturn: true,
-                exchangeToKey: newRefObj.key, exchangeToStoreId: currentStoreId,
-                exchangeOrigKey: origKey || null, exchangeOrigStoreId: origStoreId || null
+                exchangeToKey: newRefObj.key, exchangeToStoreId: currentStoreId
             };
             return fbDb.ref('stores/' + currentStoreId + '/history').push(exReturnPayload);
         }).then(function(exRefObj) {
             // 3) Yeni satışa, negatif kaydın key'ini geri yaz — böylece her iki karttan da tek tıkla
-            //    "Değişimi Geri Al" çalışabilir (manuel girişte de, sistem-içi girişte de aynı şekilde).
+            //    "Değişimi Geri Al" çalışabilir.
             return fbDb.ref('stores/' + currentStoreId + '/history/' + newSaleKey).update({
                 exchangeReturnKey: exRefObj.key, exchangeReturnStoreId: currentStoreId
             });
         }).then(function() {
             closeModal('exchangeModal');
-            sysAlert('Değişim tamamlandı: yeni satış (' + _exNewBasket.length + ' ürün) ve geri alınan ürünün kaydı geçmişe işlendi.', { title: '🔄 Değişim Tamamlandı' });
+            sysAlert('Değişim tamamlandı: yeni satış (' + _exNewBasket.length + ' ürün) ve geri alınan ürün(ler)in kaydı geçmişe işlendi.', { title: '🔄 Değişim Tamamlandı' });
         }).catch(function(err) {
             console.error('Değişim kaydedilemedi:', err);
             errEl.innerText = 'Değişim kaydedilirken hata oluştu: ' + err.message;
@@ -6499,18 +6474,26 @@
         const f = n => Math.round(n).toLocaleString('tr-TR');
         const monthRows = _historyCache.filter(function(h) { return h.status === 'sold' && (h.soldAtMillis || h.tsMillis || 0) >= monthStart; });
 
-        let totalEtiket = 0;
-        const byStore = {}; // storeId -> { name, count, etiket }
+        // count/etiket: gerçek satışlar (değişimde geri alınanlar hariç). exchangeCount: o ay değişimde
+        // geri alınan ürün adedi — ayrı tutulur, "ay içinde X ürün satıldı" rakamına karıştırılmaz.
+        let totalEtiket = 0, monthProductCount = 0, monthExchangeCount = 0;
+        const byStore = {}; // storeId -> { name, count, exchangeCount, etiket }
         monthRows.forEach(function(h) {
             const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
             totalEtiket += et;
-            if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, etiket: 0 };
-            byStore[h.storeId].count += h.basket.length;
+            if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, exchangeCount: 0, etiket: 0 };
+            if(h.isExchangeReturn) {
+                const adet = h.exchangeAdet || h.basket.length;
+                byStore[h.storeId].exchangeCount += adet;
+                monthExchangeCount += adet;
+            } else {
+                byStore[h.storeId].count += h.basket.length;
+                monthProductCount += h.basket.length;
+            }
             byStore[h.storeId].etiket += et;
         });
 
-        const monthProductCount = monthRows.reduce(function(a,h){ return a + h.basket.length; }, 0);
-        document.getElementById('dash-month-count').innerText = monthProductCount;
+        document.getElementById('dash-month-count').innerText = monthProductCount + (monthExchangeCount > 0 ? ' (+' + monthExchangeCount + ' 🔄)' : '');
         document.getElementById('dash-month-etiket').innerText = '$ ' + f(totalEtiket/3);
 
         const ranked = Object.keys(byStore).map(function(sid) { return Object.assign({ storeId: sid, il: (_storesInfo[sid]||{}).il || '' }, byStore[sid]); })
@@ -6536,7 +6519,7 @@
                 return '<div class="dash-store-row">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b>' + (s.il ? ' <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' : '') + '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b>' + (s.il ? ' <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' : '') + '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -6781,14 +6764,21 @@
         const rows = getFilteredHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
 
-        let totalEtiket = 0, soldTxCount = 0, soldProductCount = 0;
+        // soldProductCount: gerçek satılan ürün adedi (değişimde geri alınanlar hariç).
+        // exchangeProductCount: değişimde geri alınan ürün adedi — ayrı tutulur, toplanıp karıştırılmaz.
+        let totalEtiket = 0, soldTxCount = 0, soldProductCount = 0, exchangeProductCount = 0;
         rows.forEach(function(h) {
             const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
-            if(h.status === 'sold') { totalEtiket += et; soldTxCount++; soldProductCount += h.basket.length; }
+            if(h.status === 'sold') {
+                totalEtiket += et;
+                soldTxCount++;
+                if(h.isExchangeReturn) { exchangeProductCount += (h.exchangeAdet || h.basket.length); }
+                else { soldProductCount += h.basket.length; }
+            }
         });
 
         document.getElementById('rep-summary').innerHTML =
-            '<div class="dash-stat-card accent-success" style="padding:14px 16px;"><div class="eyebrow">Satış Adedi</div><div class="stat-value" style="font-size:24px;">' + soldProductCount + '</div><div class="stat-sub">' + soldProductCount + ' ürün / ' + soldTxCount + ' işlem</div></div>' +
+            '<div class="dash-stat-card accent-success" style="padding:14px 16px;"><div class="eyebrow">Satış Adedi</div><div class="stat-value" style="font-size:24px;">' + soldProductCount + (exchangeProductCount > 0 ? ' <span style="font-size:14px; color:var(--dash-rose);">+' + exchangeProductCount + ' 🔄</span>' : '') + '</div><div class="stat-sub">' + soldProductCount + ' ürün / ' + soldTxCount + ' işlem' + (exchangeProductCount > 0 ? ' · ' + exchangeProductCount + ' değişim ürünü' : '') + '</div></div>' +
             '<div class="dash-stat-card accent-rose" style="padding:14px 16px;"><div class="eyebrow">Etiket Toplamı (÷3)</div><div class="stat-value" style="font-size:24px;">$ ' + f(totalEtiket/3) + '</div></div>';
 
         const sortBarEl = document.getElementById('rep-sort-bar');
@@ -6806,8 +6796,9 @@
             soldRows.forEach(function(h) {
                 const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
-                if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, cash: 0, etiket: 0, il: (_storesInfo[h.storeId]||{}).il || '—' };
-                byStore[h.storeId].count += h.basket.length;
+                if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, exchangeCount: 0, cash: 0, etiket: 0, il: (_storesInfo[h.storeId]||{}).il || '—' };
+                if(h.isExchangeReturn) { byStore[h.storeId].exchangeCount += (h.exchangeAdet || h.basket.length); }
+                else { byStore[h.storeId].count += h.basket.length; }
                 byStore[h.storeId].cash += sN;
                 byStore[h.storeId].etiket += et;
             });
@@ -6827,7 +6818,7 @@
                 return '<div class="dash-store-row">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -6848,10 +6839,11 @@
                         il: (_storesInfo[h.storeId]||{}).il || '—',
                         cusName: h.cusName,
                         ts: h.ts,
-                        kod: item.k,
+                        kod: item.k + (h.isExchangeReturn ? ' 🔄' : ''),
                         etiket: etiket,
                         etiketBolu3: etiket / 3,
-                        nakit: item.v.vN
+                        nakit: item.v.vN,
+                        isExchangeReturn: !!h.isExchangeReturn
                     });
                 });
             });
@@ -6862,13 +6854,14 @@
                 return;
             }
             listEl.innerHTML = productRows.map(function(p, idx) {
-                return '<div class="dash-store-row">' +
+                const rowColor = p.isExchangeReturn ? 'var(--dash-rose)' : 'var(--dash-gold)';
+                return '<div class="dash-store-row"' + (p.isExchangeReturn ? ' style="background:var(--rose-pale);"' : '') + '>' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
                     '<div><b style="color:var(--dash-ink);">' + p.kod + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + p.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + p.storeName + ' · ' + p.cusName + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
-                    '<div style="font-weight:700; color:var(--dash-gold); font-size:14px;">$ ' + f(p.etiketBolu3) + '</div>' +
+                    '<div style="font-weight:700; color:' + rowColor + '; font-size:14px;">$ ' + f(p.etiketBolu3) + '</div>' +
                     '<div style="font-size:10px; color:var(--dash-ink-dim);">Etiket: ' + f(p.etiket) + ' · Nakit: ' + f(p.nakit) + ' ₺</div>' +
                     '</div></div>';
             }).join('');
@@ -6891,28 +6884,35 @@
                         bolge: (_storesInfo[h.storeId]||{}).bolge || '—',
                         musteri: h.cusName,
                         tarih: h.soldAt || h.ts,
-                        kod: item.k,
+                        kod: item.k + (h.isExchangeReturn ? ' 🔄' : ''),
                         etiket: Math.round(etiket),
                         etiketBolu3: Math.round(etiket/3),
-                        nakit: Math.round(item.v.vN)
+                        nakit: Math.round(item.v.vN),
+                        isExchangeReturn: !!h.isExchangeReturn
                     });
                 });
             });
             productRows.sort(function(a,b) { return b.etiket - a.etiket; });
             return { mode: 'urun', rows: productRows };
         } else {
+            // adet: mağazanın gerçek sattığı ürün sayısı (değişimde geri alınanlar hariç).
+            // exchangeAdet: aynı mağazanın değişimde geri aldığı ürün sayısı — ayrı tutulur, toplanıp karıştırılmaz.
             const byStore = {};
             rows.forEach(function(h) {
                 const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
                 const info = _storesInfo[h.storeId] || {};
-                if(!byStore[h.storeId]) byStore[h.storeId] = { magaza: h.storeName || h.storeId, il: info.il || '—', bolge: info.bolge || '—', adet: 0, nakit: 0, etiket: 0 };
-                byStore[h.storeId].adet += h.basket.length;
+                if(!byStore[h.storeId]) byStore[h.storeId] = { magaza: h.storeName || h.storeId, il: info.il || '—', bolge: info.bolge || '—', adet: 0, exchangeAdet: 0, nakit: 0, etiket: 0 };
+                if(h.isExchangeReturn) {
+                    byStore[h.storeId].exchangeAdet += (h.exchangeAdet || h.basket.length);
+                } else {
+                    byStore[h.storeId].adet += h.basket.length;
+                }
                 byStore[h.storeId].nakit += sN;
                 byStore[h.storeId].etiket += et;
             });
             let storeRows = Object.values(byStore).map(function(s) {
-                return { magaza: s.magaza, il: s.il, bolge: s.bolge, adet: s.adet, nakit: Math.round(s.nakit), etiketBolu3: Math.round(s.etiket/3) };
+                return { magaza: s.magaza, il: s.il, bolge: s.bolge, adet: s.adet, exchangeAdet: s.exchangeAdet, nakit: Math.round(s.nakit), etiketBolu3: Math.round(s.etiket/3) };
             });
             storeRows.sort(function(a,b) {
                 if(_reportSortBy === 'count') {
@@ -7025,19 +7025,21 @@
         const filteredRows = getFilteredHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
 
-        let totalEtiket = 0, totalCount = 0;
+        let totalEtiket = 0, totalCount = 0, totalExchangeCount = 0;
         if(data.mode === 'urun') {
-            totalCount = data.rows.length;
-            data.rows.forEach(function(r) { totalEtiket += r.etiketBolu3; });
+            data.rows.forEach(function(r) {
+                if(r.isExchangeReturn) { totalExchangeCount += 1; } else { totalCount += 1; }
+                totalEtiket += r.etiketBolu3;
+            });
         } else {
-            data.rows.forEach(function(r) { totalCount += r.adet; totalEtiket += r.etiketBolu3; });
+            data.rows.forEach(function(r) { totalCount += r.adet; totalExchangeCount += (r.exchangeAdet||0); totalEtiket += r.etiketBolu3; });
         }
 
         document.getElementById('rep-pdf-range').innerText = getReportFilterSummaryText() + ' · ' + (data.mode === 'urun' ? 'Ürün Bazlı' : 'Tutar Bazlı') + ' · Oluşturulma: ' + new Date().toLocaleString('tr-TR');
 
         document.getElementById('rep-pdf-summary').innerHTML =
             '<div style="display:flex; gap:16px; border:1px solid #e8e4ec; border-radius:10px; padding:14px 18px;">' +
-            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ ADEDİ</div><div style="font-size:16px; font-weight:800;">' + totalCount + '</div></div>' +
+            '<div><div style="font-size:9px; color:#9090a0; font-weight:800;">SATIŞ ADEDİ</div><div style="font-size:16px; font-weight:800;">' + totalCount + (totalExchangeCount > 0 ? ' <span style="font-size:11px; color:#c8244c;">+' + totalExchangeCount + ' 🔄</span>' : '') + '</div></div>' +
             '<div><div style="font-size:9px; color:#c8244c; font-weight:800;">ETİKET TOPLAMI (÷3, $)</div><div style="font-size:16px; font-weight:800; color:#c8244c;">$ ' + f(totalEtiket) + '</div></div>' +
             '</div>';
 
@@ -7047,23 +7049,24 @@
         if(data.mode === 'urun') {
             theadRow.innerHTML = '<th style="padding:8px 6px;">Mağaza</th><th style="padding:8px 6px;">İl</th><th style="padding:8px 6px;">Tarih</th><th style="padding:8px 6px;">Müşteri</th><th style="padding:8px 6px;">Ürün Kodu</th><th style="padding:8px 6px; text-align:right;">Etiket ÷3 ($)</th>';
             document.getElementById('rep-pdf-body').innerHTML = data.rows.map(function(r) {
-                return '<tr style="border-bottom:1px solid #e8e4ec;">' +
-                    '<td style="padding:7px 6px;">' + r.magaza + '</td>' +
-                    '<td style="padding:7px 6px;">' + r.il + '</td>' +
-                    '<td style="padding:7px 6px;">' + r.tarih + '</td>' +
-                    '<td style="padding:7px 6px;">' + r.musteri + '</td>' +
-                    '<td style="padding:7px 6px;">' + r.kod + '</td>' +
-                    '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.etiketBolu3) + '</td>' +
+                return '<tr style="border-bottom:1px solid #e8e4ec;' + (r.isExchangeReturn ? ' background:#fdf0f3;' : '') + '">' +
+                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + r.magaza + '</td>' +
+                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + r.il + '</td>' +
+                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + r.tarih + '</td>' +
+                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + r.musteri + '</td>' +
+                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c; font-weight:700;' : '') + '">' + r.kod + '</td>' +
+                    '<td style="padding:7px 6px; text-align:right;' + (r.isExchangeReturn ? ' color:#c8244c; font-weight:700;' : '') + '">$ ' + f(r.etiketBolu3) + '</td>' +
                     '</tr>';
             }).join('');
         } else {
             theadRow.innerHTML = '<th style="padding:8px 6px;">Mağaza</th><th style="padding:8px 6px;">İl</th><th style="padding:8px 6px;">Bölge</th><th style="padding:8px 6px; text-align:right;">Adet</th><th style="padding:8px 6px; text-align:right;">Etiket ÷3 ($)</th>';
             document.getElementById('rep-pdf-body').innerHTML = data.rows.map(function(r) {
+                const adetCell = r.adet + (r.exchangeAdet > 0 ? ' (+' + r.exchangeAdet + ' 🔄)' : '');
                 return '<tr style="border-bottom:1px solid #e8e4ec;">' +
                     '<td style="padding:7px 6px;">' + r.magaza + '</td>' +
                     '<td style="padding:7px 6px;">' + r.il + '</td>' +
                     '<td style="padding:7px 6px;">' + r.bolge + '</td>' +
-                    '<td style="padding:7px 6px; text-align:right;">' + r.adet + '</td>' +
+                    '<td style="padding:7px 6px; text-align:right;">' + adetCell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.etiketBolu3) + '</td>' +
                     '</tr>';
             }).join('');
@@ -7090,7 +7093,7 @@
             });
         } else {
             sheetData = data.rows.map(function(r) {
-                return { 'Mağaza': r.magaza, 'İl': r.il, 'Bölge': r.bolge, 'Adet': r.adet, 'Etiket ÷3 ($)': r.etiketBolu3 };
+                return { 'Mağaza': r.magaza, 'İl': r.il, 'Bölge': r.bolge, 'Adet': r.adet, 'Değişim Adedi': r.exchangeAdet||0, 'Etiket ÷3 ($)': r.etiketBolu3 };
             });
         }
         if(!sheetData.length) {
