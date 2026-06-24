@@ -1240,12 +1240,16 @@
             <div class="simple-modal-body">
                 <input type="hidden" id="markSoldKey">
                 <input type="hidden" id="markSoldStoreId">
+                <div id="markSoldMissingCodesBlock" style="display:none; margin-bottom:14px; padding:10px 12px; background:var(--rose-pale); border-radius:10px;">
+                    <div style="font-size:10px; color:var(--rose); font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;">⚠ Ürün Kodu Eksik — Satıştan Önce Tamamla</div>
+                    <div id="markSoldMissingCodesList"></div>
+                </div>
                 <label class="field-label">Satış Tarihi</label>
                 <input type="date" id="markSoldDate" style="font-size:15px; text-align:left; padding:10px 14px;">
                 <label class="field-label" style="margin-top:12px;">Ödeme Açıklaması (opsiyonel)</label>
                 <input type="text" id="markSoldPaymentNote" style="font-size:14px; text-align:left; padding:10px 14px;" placeholder="Örn: 10.000 nakit + 5.000 altın değişim">
                 <div id="markSoldError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
-                <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm); background:var(--success);" onclick="confirmMarkSold()">✓ Satışı Onayla</button>
+                <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm); background:var(--success);" onclick="handleMarkSoldConfirmClick()">✓ Satışı Onayla</button>
             </div>
         </div>
     </div>
@@ -1795,6 +1799,10 @@
                 <span class="modal-close" onclick="closeModal('cusModal')">×</span>
             </div>
             <div class="simple-modal-body">
+                <div id="cusModalMissingCodesBlock" style="display:none; margin-bottom:14px; padding:10px 12px; background:var(--rose-pale); border-radius:10px;">
+                    <div style="font-size:10px; color:var(--rose); font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;">⚠ Ürün Kodu Eksik — Satıştan Önce Tamamla</div>
+                    <div id="cusModalMissingCodesList"></div>
+                </div>
                 <label class="field-label">Müşteri Adı</label>
                 <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px; text-transform:uppercase;">
                 <label class="field-label" style="margin-top:12px;">Telefon</label>
@@ -3150,39 +3158,68 @@
         updateLinkedHistoryBanner();
     }
 
+    let _markSoldMode = 'history'; // 'history' | 'linkedSale' — confirmMarkSold hangi akışı tamamlayacağını bilir
+
     function completeLinkedSale() {
         if(!_linkedHistoryKey || !_linkedHistoryStoreId) return;
         if(!basket.length) { sysAlert('Sepet boş, tamamlanacak bir satış yok.', { tone: 'warn' }); return; }
-        const missing = getBasketItemsWithMissingCodes();
-        if(missing.length) {
-            sysAlert('Satış için sepetteki tüm ürünlerin kodu girilmeli.\n\nKodu eksik: ' + missing.map(function(i){ return i.k; }).join(', ') + '\n\nSepette ✎ ile düzenleyip kodu yazdıktan sonra tekrar dene.', { tone: 'warn', title: 'Ürün Kodu Eksik' });
+
+        _markSoldMode = 'linkedSale';
+        document.getElementById('markSoldKey').value = _linkedHistoryKey;
+        document.getElementById('markSoldStoreId').value = _linkedHistoryStoreId;
+        document.getElementById('markSoldDate').value = new Date().toISOString().slice(0,10);
+        document.getElementById('markSoldPaymentNote').value = '';
+        document.getElementById('markSoldError').style.display = 'none';
+        renderMarkSoldMissingCodes({ basket: basket }); // sepetteki güncel ürünlere göre eksik kod kutucuklarını çiz
+        openModal('markSoldModal');
+    }
+
+    // completeLinkedSale akışının onayı: markSoldModal'daki eksik kod kutucukları okunur,
+    // sepete uygulanır, bağlı geçmiş kaydı güncellenip "Satış Oldu" olarak işaretlenir.
+    function confirmCompleteLinkedSale() {
+        const errEl = document.getElementById('markSoldError');
+        errEl.style.display = 'none';
+
+        const codeInputs = document.querySelectorAll('#markSoldMissingCodesList [data-mark-sold-code-idx]');
+        let stillMissing = false;
+        codeInputs.forEach(function(inp) {
+            const idx = parseInt(inp.getAttribute('data-mark-sold-code-idx'));
+            const val = inp.value.trim();
+            if(val) {
+                basket[idx].k = val.toUpperCase();
+            } else {
+                stillMissing = true;
+            }
+        });
+        if(stillMissing) {
+            errEl.innerText = 'Satış için yukarıdaki tüm ürün kodları doldurulmalı.';
+            errEl.style.display = 'block';
             return;
         }
+
         const cusName  = document.getElementById('iCus').value.trim().toUpperCase()  || 'Müşterimiz';
         const cusPhone = document.getElementById('iPhone').value.trim() || '—';
-
-        sysConfirm('Bu satışı tamamlamak istediğine emin misin? Sepetteki güncel ürün ve fiyatlarla geçmiş kaydı güncellenecek ve "Satış Oldu" olarak işaretlenecek.', { title: 'Satışı Tamamla', okText: 'Evet, Tamamla' }).then(function(ok) {
-            if(!ok) return;
-            const updates = {
-                cusName: cusName,
-                cusPhone: cusPhone,
-                basket: JSON.parse(JSON.stringify(basket)),
-                status: 'sold',
-                soldAt: new Date().toLocaleDateString('tr-TR'),
-                soldAtMillis: Date.now()
-            };
-            fbDb.ref('stores/' + _linkedHistoryStoreId + '/history/' + _linkedHistoryKey).update(updates)
-                .then(function() {
-                    sysAlert('Satış tamamlandı ve geçmiş güncellendi.', { title: 'Tamamlandı' });
-                    _linkedHistoryKey = null;
-                    _linkedHistoryStoreId = null;
-                    clearBasketAfterSave();
-                })
-                .catch(function(err) {
-                    console.error('Güncellenemedi:', err);
-                    sysAlert('Satış tamamlanırken hata oluştu: ' + err.message, { tone: 'danger', title: 'Hata' });
-                });
-        });
+        const updates = {
+            cusName: cusName,
+            cusPhone: cusPhone,
+            basket: JSON.parse(JSON.stringify(basket)),
+            status: 'sold',
+            soldAt: new Date().toLocaleDateString('tr-TR'),
+            soldAtMillis: Date.now()
+        };
+        fbDb.ref('stores/' + _linkedHistoryStoreId + '/history/' + _linkedHistoryKey).update(updates)
+            .then(function() {
+                closeModal('markSoldModal');
+                sysAlert('Satış tamamlandı ve geçmiş güncellendi.', { title: 'Tamamlandı' });
+                _linkedHistoryKey = null;
+                _linkedHistoryStoreId = null;
+                clearBasketAfterSave();
+            })
+            .catch(function(err) {
+                console.error('Güncellenemedi:', err);
+                errEl.innerText = 'Satış tamamlanırken hata oluştu: ' + err.message;
+                errEl.style.display = 'block';
+            });
     }
 
     function renderBasket() {
@@ -3391,22 +3428,10 @@
         });
     }
 
-    // Sepetteki ürünlerden hangileri otomatik atanmış "Ürün N" kodunu taşıyor (kullanıcı elle yazmamış) — bunları döner.
-    function getBasketItemsWithMissingCodes() {
-        return basket.filter(function(item) { return /^Ürün \d+$/.test(item.k); });
-    }
-
     function openCusModal(purpose) {
         if(!basket.length) {
             sysAlert('Önce sepete ürün eklemelisin.', { tone: 'warn' });
             return;
-        }
-        if(purpose === 'directSale') {
-            const missing = getBasketItemsWithMissingCodes();
-            if(missing.length) {
-                sysAlert('Satış için sepetteki tüm ürünlerin kodu girilmeli.\n\nKodu eksik: ' + missing.map(function(i){ return i.k; }).join(', ') + '\n\nSepette ✎ ile düzenleyip kodu yazdıktan sonra tekrar dene.', { tone: 'warn', title: 'Ürün Kodu Eksik' });
-                return;
-            }
         }
         _cusModalPurpose = purpose;
         document.getElementById('cusModalError').style.display = 'none';
@@ -3422,6 +3447,7 @@
             btnEl.innerText = '👤 Kaydet';
             dateWrap.style.display = 'none';
             closeWrap.style.display = 'none';
+            renderCusModalMissingCodes(false);
         } else if(purpose === 'directSale') {
             titleEl.innerText = '✓ Satış Oldu';
             btnEl.innerText = '✓ Satışı Kaydet';
@@ -3430,24 +3456,68 @@
             closeWrap.style.display = 'block';
             document.getElementById('cusModalSaleDate').value = new Date().toISOString().slice(0,10);
             document.getElementById('cusModalPaymentNote').value = '';
+            renderCusModalMissingCodes(true); // sadece direkt satışta kod zorunlu, teklif/yazdırmada değil
         } else {
             titleEl.innerText = 'Müşteri Bilgileri';
             btnEl.innerText = '📄 Yazdır';
             dateWrap.style.display = 'none';
             closeWrap.style.display = 'none';
+            renderCusModalMissingCodes(false);
         }
         openModal('cusModal');
+    }
+
+    // cusModal'da (sadece directSale modunda) sepetteki otomatik atanmış ("Ürün N") kodlu
+    // ürünler için inline kutucuk çizer. show=false ise blok tamamen gizlenir (kod zorunlu değil).
+    function renderCusModalMissingCodes(show) {
+        const block = document.getElementById('cusModalMissingCodesBlock');
+        const listEl = document.getElementById('cusModalMissingCodesList');
+        if(!show) { block.style.display = 'none'; listEl.innerHTML = ''; return; }
+        const missingIdx = basket.map(function(item, idx) { return { item, idx }; })
+            .filter(function(x) { return /^Ürün \d+$/.test(x.item.k); });
+        if(!missingIdx.length) {
+            block.style.display = 'none';
+            listEl.innerHTML = '';
+            return;
+        }
+        block.style.display = 'block';
+        listEl.innerHTML = missingIdx.map(function(x) {
+            return '<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">' +
+                '<span style="font-size:10.5px; color:var(--ink-mid); min-width:70px;">Etiket: ' + (x.item._rawP ? Math.round(smartEval(x.item._rawP)).toLocaleString('tr-TR') : '—') + '</span>' +
+                '<input type="text" data-cus-modal-code-idx="' + x.idx + '" placeholder="Kod yaz" style="flex:1; font-size:13px; padding:7px 10px; text-transform:uppercase; border:1px solid var(--border); border-radius:8px; text-align:left;">' +
+                '</div>';
+        }).join('');
     }
 
     function submitCusModal() {
         const cusName  = document.getElementById('iCus').value.trim().toUpperCase();
         const cusPhone = document.getElementById('iPhone').value.trim();
         const errEl = document.getElementById('cusModalError');
+        errEl.style.display = 'none';
 
         if(!cusName || !cusPhone) {
             errEl.innerText = 'Müşteri adı ve telefon, geçmişte aranabilmesi için gerekli.';
             errEl.style.display = 'block';
             return;
+        }
+
+        if(_cusModalPurpose === 'directSale') {
+            const codeInputs = document.querySelectorAll('#cusModalMissingCodesList [data-cus-modal-code-idx]');
+            let stillMissing = false;
+            codeInputs.forEach(function(inp) {
+                const idx = parseInt(inp.getAttribute('data-cus-modal-code-idx'));
+                const val = inp.value.trim();
+                if(val) {
+                    basket[idx].k = val.toUpperCase();
+                } else {
+                    stillMissing = true;
+                }
+            });
+            if(stillMissing) {
+                errEl.innerText = 'Satış için yukarıdaki tüm ürün kodları doldurulmalı.';
+                errEl.style.display = 'block';
+                return;
+            }
         }
 
         if(_cusModalPurpose === 'save' || _cusModalPurpose === 'directSale') {
@@ -4362,16 +4432,13 @@
         if(status === 'sold') {
             const h = _historyCache.find(function(x) { return x.key === key; });
             if(!h) return;
-            const missing = h.basket.filter(function(item) { return /^Ürün \d+$/.test(item.k); });
-            if(missing.length) {
-                sysAlert('Satış için bu kayıttaki tüm ürünlerin kodu girilmeli.\n\nKodu eksik: ' + missing.map(function(i){ return i.k; }).join(', ') + '\n\nKaydı önizleyip ✎ ile her ürünün kodunu yazdıktan sonra tekrar dene.', { tone: 'warn', title: 'Ürün Kodu Eksik' });
-                return;
-            }
+            _markSoldMode = 'history';
             document.getElementById('markSoldKey').value = key;
             document.getElementById('markSoldStoreId').value = storeId;
             document.getElementById('markSoldDate').value = new Date().toISOString().slice(0,10);
             document.getElementById('markSoldPaymentNote').value = '';
             document.getElementById('markSoldError').style.display = 'none';
+            renderMarkSoldMissingCodes(h);
             openModal('markSoldModal');
             return;
         }
@@ -4384,19 +4451,69 @@
         }).catch(err => console.error('Durum güncellenemedi:', err));
     }
 
+    // "Satışa Çevir" modalında, kodu hâlâ otomatik atanmış ("Ürün N") kalan ürünler için
+    // tek bir ekranda doldurulabilecek inline kutucuklar çizer. Kullanıcı satıştan önce
+    // başka bir ekrana gitmek zorunda kalmaz — kodları burada yazıp aynı butonla onaylar.
+    function renderMarkSoldMissingCodes(h) {
+        const block = document.getElementById('markSoldMissingCodesBlock');
+        const listEl = document.getElementById('markSoldMissingCodesList');
+        const missingIdx = h.basket.map(function(item, idx) { return { item, idx }; })
+            .filter(function(x) { return /^Ürün \d+$/.test(x.item.k); });
+        if(!missingIdx.length) {
+            block.style.display = 'none';
+            listEl.innerHTML = '';
+            return;
+        }
+        block.style.display = 'block';
+        listEl.innerHTML = missingIdx.map(function(x) {
+            return '<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">' +
+                '<span style="font-size:10.5px; color:var(--ink-mid); min-width:70px;">Etiket: ' + (x.item._rawP ? Math.round(smartEval(x.item._rawP)).toLocaleString('tr-TR') : '—') + '</span>' +
+                '<input type="text" data-mark-sold-code-idx="' + x.idx + '" placeholder="Kod yaz" style="flex:1; font-size:13px; padding:7px 10px; text-transform:uppercase; border:1px solid var(--border); border-radius:8px; text-align:left;">' +
+                '</div>';
+        }).join('');
+    }
+
+    // markSoldModal tek bir modal ama iki farklı akıştan açılabilir (Geçmiş'ten direkt "Satış Oldu"
+    // işaretleme, ya da sepetten bağlı teklifi tamamlama). Hangi akış olduğunu _markSoldMode taşır.
+    function handleMarkSoldConfirmClick() {
+        if(_markSoldMode === 'linkedSale') confirmCompleteLinkedSale();
+        else confirmMarkSold();
+    }
+
     function confirmMarkSold() {
         const key = document.getElementById('markSoldKey').value;
         const storeId = document.getElementById('markSoldStoreId').value;
         const dateStr = document.getElementById('markSoldDate').value;
         const paymentNote = document.getElementById('markSoldPaymentNote').value.trim();
         const errEl = document.getElementById('markSoldError');
+        errEl.style.display = 'none';
 
         if(!dateStr) { errEl.innerText = 'Satış tarihi gerekli.'; errEl.style.display = 'block'; return; }
 
         const h = _historyCache.find(function(x) { return x.key === key; });
         if(!h) { errEl.innerText = 'Kayıt bulunamadı.'; errEl.style.display = 'block'; return; }
+
+        // Eksik kod kutucuklarını oku — hepsi doldurulmuş mu kontrol et, doluysa sepete uygula.
+        const codeInputs = document.querySelectorAll('#markSoldMissingCodesList [data-mark-sold-code-idx]');
+        const updatedBasket = JSON.parse(JSON.stringify(h.basket));
+        let stillMissing = false;
+        codeInputs.forEach(function(inp) {
+            const idx = parseInt(inp.getAttribute('data-mark-sold-code-idx'));
+            const val = inp.value.trim();
+            if(val) {
+                updatedBasket[idx].k = val.toUpperCase();
+            } else {
+                stillMissing = true;
+            }
+        });
+        if(stillMissing) {
+            errEl.innerText = 'Satış için yukarıdaki tüm ürün kodları doldurulmalı.';
+            errEl.style.display = 'block';
+            return;
+        }
+
         // Kapanış tutarı = sepetteki Nakit fiyatı (mağaza ✎ ile indirim yapıp düzenlemiş olabilir)
-        const closingAmount = Math.round(h.basket.reduce(function(a,b){ return a + b.v.vN; }, 0));
+        const closingAmount = Math.round(updatedBasket.reduce(function(a,b){ return a + b.v.vN; }, 0));
 
         const d = new Date(dateStr + 'T12:00:00');
         fbDb.ref('stores/' + storeId + '/history/' + key).update({
@@ -4405,6 +4522,7 @@
             soldAtMillis: d.getTime(),
             closingAmount: closingAmount,
             paymentNote: paymentNote,
+            basket: updatedBasket,
             usdRateAtSave: smartEval(document.getElementById('cfgU').value) || null
         }).then(function() {
             closeModal('markSoldModal');
