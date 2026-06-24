@@ -2936,11 +2936,11 @@
 
     // ── OTOMATİK USD/TRY KURU ──
     // Tüm mağazalar ortak bir Firebase köşesini (globalRates/usdTry) dinler.
-    // Kur 2 saatten eskiyse, dinleyen herhangi bir cihaz dış API'den çekip o köşeyi günceller
+    // Kur 1 saatten eskiyse, dinleyen herhangi bir cihaz dış API'den çekip o köşeyi günceller
     // (böylece her mağaza ayrı ayrı dış API'ye istek atmaz, tek bir ortak değer paylaşılır).
-    const USD_RATE_MAX_AGE_MS = 2 * 60 * 60 * 1000; // 2 saat
+    const USD_RATE_MAX_AGE_MS = 60 * 60 * 1000; // 1 saat
 
-    // Firebase'deki güncel kur kaydının yaşını kontrol eder, 2 saatten eskiyse yeniden çeker.
+    // Firebase'deki güncel kur kaydının yaşını kontrol eder, 1 saatten eskiyse yeniden çeker.
     // attachUsdRateListener zaten sayfa açılışında bunu yapıyor; bu fonksiyon sayfa hiç yenilenmeden
     // uzun süre açık kaldığında da aynı kontrolü tekrar tetiklemek için kullanılır.
     function checkUsdRateFreshness() {
