@@ -55,12 +55,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 14px;
-            min-height: 64px;
+            padding: 0 14px;
+            height: 72px;
+            box-sizing: border-box;
+            overflow: hidden;
             background: var(--surface);
             border-bottom: 1px solid var(--border);
             width: 100%;
-            box-sizing: border-box;
             position: sticky;
             top: 0;
             z-index: 200;
@@ -471,8 +472,8 @@
         }
 
         .basket-header {
-            padding: 8px 20px;
-            min-height: 64px;
+            padding: 0 20px;
+            height: 72px;
             box-sizing: border-box;
             position: sticky;
             top: 0;
@@ -1142,10 +1143,15 @@
             }
             .price-grid { grid-template-columns: 1fr 1fr; }
 
-            /* Kur chip'i + butonlar mobilde üst üste: kur tam genişlik, butonlar altında */
+            /* Kur chip'i + butonlar mobilde üst üste: kur tam genişlik, butonlar altında.
+               Masaüstünde sabit 72px olan top-bar, burada serbest yüksekliğe (auto) dönüyor —
+               çünkü mobilde içerik 2 satıra çıkabiliyor, sabit yükseklik onu keserdi. */
             .top-bar {
                 flex-wrap: wrap;
                 gap: 8px;
+                height: auto;
+                overflow: visible;
+                padding: 8px 14px;
             }
             .rates-chip {
                 flex: 1 1 100%;   /* kur satırı tam genişlik */
@@ -1715,7 +1721,7 @@
         <div class="right-basket">
             <div class="basket-header">
                 <div>
-                    <span class="basket-title">Sipariş Listesi<span id="basket-count"></span></span>
+                    <span class="basket-title">Sepet<span id="basket-count"></span></span>
                 </div>
             </div>
             <div id="basket-container">
@@ -7265,16 +7271,12 @@
         XLSX.writeFile(wb, fname);
     }
 
-    // top-bar position:sticky olduğu için içerik onun altına kayıp görünmez kalmamalı diye left-panel'in
-    // üst boşluğu her zaman top-bar'ın GERÇEK yüksekliğine göre ayarlanır — sabit bir sayı kullanılmaz,
-    // çünkü top-bar mobilde/tablet dik ekranda (flex-wrap nedeniyle) tek satırdan iki satıra çıkabiliyor.
-    function adjustPadding() {
-        const topBar = document.querySelector('.top-bar');
-        const leftPanel = document.querySelector('.left-panel');
-        if(!topBar || !leftPanel) return;
-        const h = topBar.offsetHeight;
-        leftPanel.style.paddingTop = (h > 0 ? h + 16 : 28) + 'px';
-    }
+    // NOT: Daha önce burada top-bar'ın yüksekliğine göre left-panel'in üst boşluğunu JS ile hesaplayan
+    // bir adjustPadding() fonksiyonu vardı. Bu GEREKSİZDİ ve fazladan boşluk yaratıyordu: top-bar zaten
+    // left-panel'in normal akıştaki bir ÜST KARDEŞİ (position:sticky olması, sayfa kaydırılırken ekranda
+    // sabit kalmasını sağlar, ama ilk yerleşimini hiç değiştirmez). Flex sütun düzeninde içerik doğal
+    // olarak top-bar'ın hemen altından başlar, manuel hesaplamaya gerek yoktur. Kaldırıldı.
+    function adjustPadding() { /* artık no-op: bilerek boş bırakıldı, eski çağrılar hata vermesin diye */ }
 
     function toggleGroup(m)  { document.getElementById('group-'+m).classList.toggle('hidden'); }
 
@@ -7380,17 +7382,8 @@
     });
 
     window.onload = function() {
-        adjustPadding();
         updateOfflineBanner();
-        // top-bar'ın gerçek yüksekliği değiştiğinde (kur verisi yüklendiğinde, mağaza adı satır
-        // sayısını değiştirdiğinde, vb.) left-panel'in üst boşluğu otomatik yeniden hesaplanır —
-        // tek seferlik tahmini bir gecikmeye (setTimeout) güvenmek yerine her zaman güncel kalır.
-        const topBarEl = document.querySelector('.top-bar');
-        if(topBarEl && typeof ResizeObserver !== 'undefined') {
-            new ResizeObserver(adjustPadding).observe(topBarEl);
-        }
     };
-    window.addEventListener('resize', adjustPadding);
 </script>
 </body>
 </html>
