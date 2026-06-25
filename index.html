@@ -265,6 +265,27 @@
         }
         .big-input { font-size: 26px !important; color: var(--rose); }
 
+        /* Mağaza tarafındaki <select> elementleri (Mağaza Bilgilerini Düzenle modalı, Satış Raporu
+           filtreleri) için: tarayıcının native <select> görünümü appearance:none ile kapatılır,
+           kendi ok ikonumuz eklenir — yanındaki <input>'larla piksel piksel aynı boyut/hizalama garantili. */
+        .modal-select, .filter-select {
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            width: 100%; text-align: left; box-sizing: border-box;
+            font-family: 'Poppins', sans-serif; font-weight: 600; color: var(--ink);
+            border: 1.5px solid var(--border); background-color: var(--bg); outline: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8694' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+        }
+        .modal-select {
+            font-size: 14px; padding: 10px 14px; border-radius: var(--r-sm);
+            background-position: right 14px center; padding-right: 36px;
+        }
+        .filter-select {
+            font-size: 12px; padding: 8px 10px; border-radius: 9px;
+            background-position: right 10px center; padding-right: 30px;
+        }
+        .modal-select:focus, .filter-select:focus { border-color: var(--rose); }
+
         /* Şifre alanı: göz ikonu için sağda yer aç, ortalı değil sola yaslı yazılsın */
         .pw-field-wrap { position: relative; }
         .pw-field-wrap input[type="password"], .pw-field-wrap input[type="text"].pw-as-text {
@@ -1430,12 +1451,12 @@
                 <label class="field-label">Ad</label>
                 <input type="text" id="editStoreName" style="font-size:15px; text-align:left; padding:10px 14px;">
                 <label class="field-label" style="margin-top:12px;">Tür</label>
-                <select id="editStoreType" style="width:100%; padding:10px 14px; border-radius:9px; border:1.5px solid var(--border); font-family:'Poppins',sans-serif; font-size:14px; font-weight:600; background:var(--bg);">
+                <select id="editStoreType" class="modal-select">
                     <option value="magaza">Mağaza</option>
                     <option value="satis_noktasi">Satış Noktası</option>
                 </select>
                 <label class="field-label" style="margin-top:12px;">İl</label>
-                <select id="editStoreIl" style="width:100%; padding:10px 14px; border-radius:9px; border:1.5px solid var(--border); font-family:'Poppins',sans-serif; font-size:14px; font-weight:600; background:var(--bg);"></select>
+                <select id="editStoreIl" class="modal-select"></select>
                 <label class="field-label" style="margin-top:12px;">Telefon</label>
                 <input type="text" id="editStoreTel" style="font-size:15px; text-align:left; padding:10px 14px;">
                 <label class="field-label" style="margin-top:12px;">Adres</label>
@@ -1479,7 +1500,9 @@
                     <h4>1. Genel Bakış</h4>
                     <div class="help-card">
                         <b>🏆 Mağaza Sıralama Ekranı:</b> Açık/Kapalı anahtarıyla, mağazaların kendi Türkiye/bölge sıralamasını görüp görmeyeceğini tek tıkla kontrol edersin. Hiçbir ciro/tutar/adet rakamı paylaşılmaz, mağaza sadece kendi sıra numarasını (örn. "2 / 5") görür — yüzde fark bile gösterilmez, çünkü mağaza kendi cirosunu bildiği için üsttekinin cirosunu geri hesaplayabilirdi. Sıralama her ay için ayrı hesaplanır — mağaza geçmiş 6 aya kadar gidip karşılaştırabilir. Bu hesaplama, sen Genel Bakış'a her girdiğinde otomatik tazelenir.<br><br>
-                        <b>Üst kartlar:</b> Toplam mağaza sayısı, bu ay satılan ürün adedi, bu ayki etiket÷3 toplamı (prim hesap tabanı, $) — ikisinin altında <b>geçen aya göre % fark</b> (▲ arttı / ▼ azaldı) görünür, geçen ay hiç veri yoksa bu kısım boş kalır.<br><br>
+                        <b>Üst kartlar (1. sıra):</b> Toplam mağaza sayısı, bu ay satılan ürün adedi, bu ayki etiket÷3 toplamı (prim hesap tabanı, $) — ikisinin altında <b>geçen aya göre % fark</b> (▲ arttı / ▼ azaldı) görünür, geçen ay hiç veri yoksa bu kısım boş kalır.<br><br>
+                        <b>Üst kartlar (2. sıra):</b> <em>Bu Çeyrek</em> (3 aylık dönem, Oca-Mar/Nis-Haz/Tem-Eyl/Eki-Ara, geçen çeyreğin aynı gün sayısı kadarıyla adil kıyaslanır) · <em>Bu Yıl (YTD)</em> — 1 Ocak'tan bugüne toplam, karşılaştırma yok, sadece düz toplam · <em>Ortalama Satış Tutarı</em> — bu ay yapılan satışların (değişim hariç) ortalama ₺ tutarı · <em>Genel Kâr Marjı</em> — bu ay şirket genelinde (TL ciro − maliyet) / maliyet, her satışın kendi kayıt anındaki kuru ile hesaplanır, etiketi bilinmeyen kayıtlar hariç tutulur.<br><br>
+                        <b>Bölge Karşılaştırması:</b> Bu ay hangi bölge (Marmara, Ege, vb.) ne kadar etiket÷3 yapmış, çubuk grafikle büyükten küçüğe sıralı.<br><br>
                         <b>Mağaza Performansı:</b> Bu ay hangi mağaza ne kadar satmış — Etiket÷3'e veya Ürün Adedine göre sıralayabilirsin.<br><br>
                         <b>⚠ Hareketsiz Mağazalar:</b> Son 14 gündür hiç teklif/satış girmemiş mağazalar burada otomatik listelenir — varsa kırmızı kutu görünür.<br><br>
                         <b>📉 Azalan Mağazalar:</b> Hareketsiz olmayan (yani son 14 gün içinde en az 1 satışı olan) ama bu ay geçen aya göre <b>%40 ve üzeri düşüş</b> gösteren mağazalar burada listelenir. Geçen ay çok düşük hacimliyse (500$'ın altı) gürültü sayılır, listelenmez. Bu, tamamen durmayan ama yavaşlayan mağazaları yakalamak için var — "hareketsiz" uyarısı tam sıfıra inmeden hiç tetiklenmez, bu liste o boşluğu kapatır.<br><br>
@@ -1508,10 +1531,10 @@
                     <p>Bölge → İl → Mağaza şeklinde zincirleme filtreleme, tarih aralığı, tür (Mağaza/Satış Noktası) ve durum (Satış/Teklif) filtreleri.</p>
                     <div class="help-card">
                         <b>Tek bir mağaza seçtiğinde:</b> Filtrelerin altında o mağazaya özel <b>son 6 aylık trend grafiği</b> belirir — "bu mağaza son aylarda artıyor mu, azalıyor mu" sorusunu doğrudan, görsel olarak cevaplar. "Tüm Mağazalar" seçiliyken bu grafik gizlenir (Genel Bakış'taki grafik zaten tüm mağazaların toplamını gösteriyor).<br><br>
-                        <b>💰 Tutar Bazlı:</b> Mağaza başına toplam adet + etiket÷3 ($). Etikete ya da adede göre sıralanabilir.<br><br>
+                        <b>💰 Tutar Bazlı:</b> Mağaza başına toplam adet + etiket÷3 ($). Her mağaza adının altında, ürün adedinin yanında <b>indirim oranı</b> da görünür (örn. "42 ürün +3 🔄 · %18 indirimli") — bu, ✎ ile manuel fiyatlandırılmış (pazarlık/indirim yapılmış) ürünlerin toplam ürüne oranı. %25 ve üzeri kırmızı ve kalın gösterilir, çünkü bir mağaza ortalamadan çok daha fazla indirim yapıyorsa bu kâr marjını eritir — bunu fark etmen için var. Etikete ya da adede göre sıralanabilir.<br><br>
                         <b>📦 Ürün Bazlı:</b> Her satılan ürün kendi satırında, kodu + etiketiyle, en yüksek etiketten en düşüğe sıralı.<br><br>
-                        <b>📊 Excel İndir:</b> Aktif filtrelere ve seçili moda göre .xlsx dosyası iner.<br><br>
-                        <b>📄 PDF Rapor Al:</b> Aynı veriyle, üstte mağaza bazlı bar chart ve zaman bazlı trend grafiği olan bir PDF basılır.
+                        <b>📊 Excel İndir:</b> Aktif filtrelere ve seçili moda göre .xlsx dosyası iner — Tutar Bazlı modda indirimli ürün adedi ve indirim oranı sütunları da dahildir.<br><br>
+                        <b>📄 PDF Rapor Al:</b> Aynı veriyle sade bir tablo PDF'i basılır (grafik içermez, ekrandaki grafiklere zaten admin panelinden bakabilirsin).
                     </div>
                     <p style="margin-top:8px; font-size:11px; color:var(--ink-dim);">Not: Tüm rakamlar $ (etiket÷3) üzerinden gösterilir, TL/nakit tutarı admin tarafında hiç gösterilmez — TL rakamlarını sadece mağaza kendi ekranında görür. Tüm tarih filtreleri gerçek satış tarihine göre çalışır, bir mağaza geçmiş bir satışı geriye dönük girse de doğru aya/güne düşer.</p>
                     <p style="margin-top:8px; font-size:11px; color:var(--ink-dim);"><b>Ürün Değişimi:</b> Bir mağaza ürün değişimi yaptığında raporda iki satır görürsün — yeni ürün pozitif etiket değeriyle, geri alınan eski ürün(ler) negatif etiket değeriyle (örn. −3.333 $, ürün kodunun yanında 🔄 işaretiyle). Bu kasıtlıdır: ikisi toplandığında net fark otomatik çıkar, ekstra bir hesap yapmana gerek yok. <b>Satış Adedi ile değişimde geri alınan ürün adedi her zaman ayrı gösterilir</b> (örn. "7 +1 🔄" gibi) — ikisi toplanıp tek bir rakam olarak karıştırılmaz. Negatif satırlar her zaman <b>değişimin girildiği günün ayına</b> düşer.</p>
@@ -1783,6 +1806,14 @@
                 <span class="modal-close" onclick="closeModal('helpModal')">×</span>
             </div>
             <div class="modal-body">
+
+                <div class="help-section">
+                    <h4>⚠ İnternet Bağlantısı Önemli</h4>
+                    <p>Satış/teklif/değişim kaydettiğinde gördüğün "Kaydedildi" mesajı, kaydın senin cihazına yazıldığı anlamına gelir — bağlantın o sırada zayıfsa, sunucuya ulaşması biraz zaman alabilir.</p>
+                    <div class="help-card" style="border-color:rgba(232,83,122,.3);">
+                        Eğer o an gerçekten internetin yoksa, "Kaydedildi" mesajının altında ek bir uyarı çıkar: <b>"Şu an internet bağlantın yok... bağlantı gelene kadar bu sekmeyi/uygulamayı KAPATMA."</b> Bu uyarı çıktığında, bağlantı gelip kaydın gerçekten gönderildiğinden emin olmadan tableti/telefonu kapatma, sayfayı yenileme veya uygulamadan çıkma — aksi halde o kayıt hiç sunucuya ulaşmadan kaybolabilir. Üstteki kur şeridinde "● senkron" yazısını görünce bağlantın geri gelmiş ve kayıtların gönderilmiş olduğundan emin olabilirsin.
+                    </div>
+                </div>
 
                 <div class="help-section">
                     <h4>1. İlk Kurulum — Ayarlar</h4>
@@ -2107,7 +2138,7 @@
                     <div><label class="field-label" style="margin:0 0 4px;">Başlangıç</label><input type="date" id="srStart" style="font-size:12px; padding:8px 10px;" onchange="renderStoreReport()"></div>
                     <div><label class="field-label" style="margin:0 0 4px;">Bitiş</label><input type="date" id="srEnd" style="font-size:12px; padding:8px 10px;" onchange="renderStoreReport()"></div>
                     <div><label class="field-label" style="margin:0 0 4px;">Durum</label>
-                        <select id="srStatus" style="font-size:12px; padding:8px 10px; border-radius:9px; border:1.5px solid var(--border); background:var(--bg); font-family:'Poppins',sans-serif; font-weight:600;" onchange="renderStoreReport()">
+                        <select id="srStatus" class="filter-select" onchange="renderStoreReport()">
                             <option value="">Hepsi</option>
                             <option value="sold">Sadece Satış</option>
                             <option value="teklif">Sadece Teklif</option>
@@ -2214,6 +2245,40 @@
                         <div class="stat-value" id="dash-month-etiket" style="font-size:26px; color:var(--dash-gold);">—</div>
                         <div class="stat-sub">prim hesap tabanı ($)</div>
                         <div class="stat-sub" id="dash-month-etiket-vs-prev" style="margin-top:2px;"></div>
+                    </div>
+                </div>
+
+                <!-- Çeyrek, YTD, ortalama satış ve genel kâr marjı — aylık kartların altında, daha
+                     "stratejik" bakış açısı sağlayan ikinci sıra. Yönetimin tipik sorduğu sorulara cevap. -->
+                <div class="dash-stat-grid" style="grid-template-columns:repeat(4,1fr); margin-top:-16px;">
+                    <div class="dash-stat-card">
+                        <div class="eyebrow">Bu Çeyrek (Etiket÷3)</div>
+                        <div class="stat-value" id="dash-quarter-etiket" style="font-size:20px; color:var(--dash-gold);">—</div>
+                        <div class="stat-sub" id="dash-quarter-label">—</div>
+                        <div class="stat-sub" id="dash-quarter-vs-prev" style="margin-top:2px;"></div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="eyebrow">Bu Yıl (YTD, Etiket÷3)</div>
+                        <div class="stat-value" id="dash-ytd-etiket" style="font-size:20px; color:var(--dash-gold);">—</div>
+                        <div class="stat-sub" id="dash-ytd-label">—</div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="eyebrow">Ortalama Satış Tutarı</div>
+                        <div class="stat-value" id="dash-avg-sale" style="font-size:20px;">—</div>
+                        <div class="stat-sub">bu ay, satış başına ₺</div>
+                    </div>
+                    <div class="dash-stat-card">
+                        <div class="eyebrow">Genel Kâr Marjı</div>
+                        <div class="stat-value" id="dash-profit-margin" style="font-size:20px;">—</div>
+                        <div class="stat-sub">bu ay, şirket geneli</div>
+                    </div>
+                </div>
+
+                <!-- Bölgeler arası karşılaştırma — hangi bölge güçlü, hangisi zayıf, tek ekranda. -->
+                <div style="margin-bottom:30px;">
+                    <div class="dash-section-title">Bölge Karşılaştırması — Bu Ay</div>
+                    <div class="dash-panel">
+                        <div id="dash-region-comparison"></div>
                     </div>
                 </div>
 
@@ -3473,7 +3538,7 @@
             saveToHistory(cusName, cusPhone, 'sold', dateStr, closingAmount, paymentNote)
                 .then(function() {
                     closeModal('markSoldModal');
-                    sysAlert('Sepetteki ürünler için yeni bir satış kaydı oluşturuldu. Müşterinin almadığı ürünler orijinal teklifte olduğu gibi bekliyor — istersen Geçmişten ayrıca kapatabilirsin.', { title: 'Kısmi Satış Tamamlandı' });
+                    sysAlert('Sepetteki ürünler için yeni bir satış kaydı oluşturuldu. Müşterinin almadığı ürünler orijinal teklifte olduğu gibi bekliyor — istersen Geçmişten ayrıca kapatabilirsin.' + getOfflineSaveWarning(), { title: 'Kısmi Satış Tamamlandı' });
                     _linkedHistoryKey = null;
                     _linkedHistoryStoreId = null;
                     _linkedHistoryOrigCount = 0;
@@ -3573,6 +3638,16 @@
     // ts/tsMillis (teklifin oluşturulma anı) her zaman gerçek "şimdi" kalır — sistemde ne zaman girildiğini gösterir.
     // closingAmount/paymentNote: sadece status='sold' olduğunda anlamlı — gerçek kapanış tutarı ve ödeme şekli açıklaması.
     // basketOverride verilirse global 'basket' yerine o kullanılır (örn. Hızlı Satış Girişi akışı için).
+    // Firebase Realtime Database, bağlantı koparken yazma işlemlerini yerel olarak kuyruğa alır ve
+    // .then() bunu HEMEN tetikler — yani "Kaydedildi" mesajı, kayıt gerçekten sunucuya ULAŞTI anlamına
+    // gelmez, sadece cihazda kuyruğa girdi anlamına gelir. Eğer o anda gerçekten çevrimdışıysak (_fbConnected
+    // false), kullanıcıya bunu netleştirip "tableti kapatma, internet gelene kadar bekle" uyarısı veririz —
+    // yoksa mağaza rahatlayıp cihazı kapatabilir, kayıt sunucuya hiç ulaşmadan kaybolabilir.
+    function getOfflineSaveWarning() {
+        if(_fbConnected) return '';
+        return '\n\n⚠ Şu an internet bağlantın yok. Bu kayıt cihazında bekliyor, bağlantı gelince otomatik gönderilecek — bağlantı gelene kadar bu sekmeyi/uygulamayı KAPATMA, yoksa kayıt kaybolabilir.';
+    }
+
     function saveToHistory(cusName, cusPhone, status, customSaleDateStr, closingAmount, paymentNote, basketOverride) {
         status = status || 'teklif';
         const now = new Date();
@@ -3711,7 +3786,7 @@
             document.getElementById('quickKod').value = '';
             _quickMultiCodeValues = {};
             renderMultiCodeInputs(document.getElementById('quickEtiket-parts'), [], '_quickMultiCodeValues');
-            sysAlert('"' + cusName + '" için satış kaydedildi.', { title: 'Kaydedildi' });
+            sysAlert('"' + cusName + '" için satış kaydedildi.' + getOfflineSaveWarning(), { title: 'Kaydedildi' });
         }).catch(function(err) {
             console.error('Kaydedilemedi:', err);
             errEl.innerText = 'Kaydedilirken hata oluştu: ' + err.message;
@@ -3822,14 +3897,15 @@
             }
             saveToHistory(cusName, cusPhone, status, customDate, closingAmount, paymentNote).then(function() {
                 closeModal('cusModal');
+                const offlineWarn = getOfflineSaveWarning();
                 if(status === 'sold') {
-                    sysConfirm('"' + cusName + '" için satış kaydedildi.\n\nBu satışın PDF\'ini de şimdi yazdırmak ister misin?', { title: 'Satış Kaydedildi', okText: 'PDF Yazdır', cancelText: 'Hayır, Bu Kadar' }).then(function(yes) {
+                    sysConfirm('"' + cusName + '" için satış kaydedildi.' + offlineWarn + '\n\nBu satışın PDF\'ini de şimdi yazdırmak ister misin?', { title: 'Satış Kaydedildi', okText: 'PDF Yazdır', cancelText: 'Hayır, Bu Kadar' }).then(function(yes) {
                         if(yes) { printCurrentBasketPdf(cusName, cusPhone); }
                         clearBasketAfterSave();
                     });
                     return;
                 }
-                sysConfirm('"' + cusName + '" için fiyat geçmişe kaydedildi.\n\nBu teklifin PDF\'ini de şimdi yazdırmak ister misin?', { title: 'Kaydedildi', okText: 'PDF Yazdır', cancelText: 'Hayır, Bu Kadar' }).then(function(yes) {
+                sysConfirm('"' + cusName + '" için fiyat geçmişe kaydedildi.' + offlineWarn + '\n\nBu teklifin PDF\'ini de şimdi yazdırmak ister misin?', { title: 'Kaydedildi', okText: 'PDF Yazdır', cancelText: 'Hayır, Bu Kadar' }).then(function(yes) {
                     if(yes) {
                         printCurrentBasketPdf(cusName, cusPhone);
                         clearBasketAfterSave();
@@ -5079,7 +5155,7 @@
             });
         }).then(function() {
             closeModal('exchangeModal');
-            sysAlert('Değişim tamamlandı: yeni satış (' + _exNewBasket.length + ' ürün) ve geri alınan ürün(ler)in kaydı geçmişe işlendi.', { title: '🔄 Değişim Tamamlandı' });
+            sysAlert('Değişim tamamlandı: yeni satış (' + _exNewBasket.length + ' ürün) ve geri alınan ürün(ler)in kaydı geçmişe işlendi.' + getOfflineSaveWarning(), { title: '🔄 Değişim Tamamlandı' });
         }).catch(function(err) {
             console.error('Değişim kaydedilemedi:', err);
             errEl.innerText = 'Değişim kaydedilirken hata oluştu: ' + err.message;
@@ -5475,7 +5551,9 @@
     }
 
     function deleteHistory(key, storeId) {
-        sysConfirm('Bu teklif silinsin mi?', { okText: 'Sil', danger: true }).then(function(ok) {
+        const h = _historyCache.find(function(x) { return x.key === key && x.storeId === storeId; });
+        const label = (h && h.status === 'teklif') ? 'teklif' : 'satış';
+        sysConfirm('Bu ' + label + ' silinsin mi?', { okText: 'Sil', danger: true }).then(function(ok) {
             if(!ok) return;
             fbDb.ref('stores/' + storeId + '/history/' + key).remove().catch(err => console.error('Silinemedi:', err));
         });
@@ -5833,7 +5911,7 @@
             enteredByAdmin: true // bu kaydın admin tarafından girildiğini ayırt etmek için (raporlarda gizli, sadece iz amaçlı)
         }).then(function() {
             logAdminAction('admin_sale_entry', aseSelectedStoreId, storeName, cusName + ' adına ' + aseBasket.length + ' ürünlük satış girildi (tarih: ' + saleDate.toLocaleDateString('tr-TR') + ')');
-            sysAlert('"' + storeName + '" mağazasının geçmişine satış kaydedildi.', { title: 'Kaydedildi' });
+            sysAlert('"' + storeName + '" mağazasının geçmişine satış kaydedildi.' + getOfflineSaveWarning(), { title: 'Kaydedildi' });
             aseBasket = [];
             aseRenderBasket();
             document.getElementById('aseCusName').value = '';
@@ -6801,6 +6879,108 @@
         renderVsPrev('dash-month-count-vs-prev', monthProductCount, prevMonthProductCount);
         renderVsPrev('dash-month-etiket-vs-prev', totalEtiket/3, prevTotalEtiket/3);
 
+        // ── ÇEYREK (3 aylık dönem) KARŞILAŞTIRMASI ──
+        // Çeyrek = Oca-Mar, Nis-Haz, Tem-Eyl, Eki-Ara. Adil kıyas için aynı mantık: geçen çeyreğin
+        // TAMAMI değil, geçen çeyreğin bugüne kadarki kesiti kadarı alınır (bu çeyrek henüz bitmediyse).
+        const currentQuarterIdx = Math.floor(now.getMonth() / 3); // 0,1,2,3
+        const quarterStartMonth = currentQuarterIdx * 3;
+        const quarterStart = new Date(now.getFullYear(), quarterStartMonth, 1).getTime();
+        const daysIntoQuarter = Math.floor((now.getTime() - quarterStart) / 86400000) + 1;
+        const prevQuarterStartMonth = quarterStartMonth - 3;
+        const prevQuarterStart = new Date(now.getFullYear(), prevQuarterStartMonth, 1).getTime();
+        const prevQuarterEnd = prevQuarterStart + (daysIntoQuarter * 86400000); // geçen çeyreğin aynı gün sayısı kadarı
+        const quarterLabels = ['1. Çeyrek (Oca-Mar)', '2. Çeyrek (Nis-Haz)', '3. Çeyrek (Tem-Eyl)', '4. Çeyrek (Eki-Ara)'];
+        document.getElementById('dash-quarter-label').innerText = quarterLabels[currentQuarterIdx] + ' ' + now.getFullYear();
+
+        let quarterEtiket = 0, prevQuarterEtiket = 0;
+        _historyCache.forEach(function(h) {
+            if(h.status !== 'sold') return;
+            const t = h.soldAtMillis || h.tsMillis || 0;
+            const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            if(t >= quarterStart) quarterEtiket += et;
+            else if(t >= prevQuarterStart && t < prevQuarterEnd) prevQuarterEtiket += et;
+        });
+        document.getElementById('dash-quarter-etiket').innerText = '$ ' + f(quarterEtiket/3);
+        renderVsPrev('dash-quarter-vs-prev', quarterEtiket/3, prevQuarterEtiket/3);
+
+        // ── YTD (YIL BAŞINDAN BUGÜNE) ──
+        // Karşılaştırma yok (geçen yılın aynı kesitiyle kıyas ayrı, daha büyük bir özellik olurdu) —
+        // burası sadece "bu yıl şu ana kadar toplam ne yaptık" sorusuna düz bir cevap.
+        const yearStart = new Date(now.getFullYear(), 0, 1).getTime();
+        document.getElementById('dash-ytd-label').innerText = '1 Ocak ' + now.getFullYear() + ' — bugün';
+        let ytdEtiket = 0;
+        _historyCache.forEach(function(h) {
+            if(h.status !== 'sold') return;
+            const t = h.soldAtMillis || h.tsMillis || 0;
+            if(t >= yearStart) ytdEtiket += h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+        });
+        document.getElementById('dash-ytd-etiket').innerText = '$ ' + f(ytdEtiket/3);
+
+        // ── ORTALAMA SATIŞ TUTARI (bu ay, TL) ──
+        // Değişim kayıtları (isExchangeReturn) bir "satış" değil, bir düzeltmedir — ortalamaya dahil
+        // edilirse düşük/negatif kayıtlar ortalamayı yanlış aşağı çeker, bu yüzden hariç tutulur.
+        const realSaleRows = monthRows.filter(function(h) { return !h.isExchangeReturn; });
+        const totalSaleAmount = realSaleRows.reduce(function(a,h) {
+            return a + (h.closingAmount || h.basket.reduce((aa,b)=>aa+b.v.vN, 0));
+        }, 0);
+        const avgSale = realSaleRows.length ? totalSaleAmount / realSaleRows.length : 0;
+        document.getElementById('dash-avg-sale').innerText = realSaleRows.length ? f(avgSale) + ' ₺' : '—';
+
+        // ── GENEL KÂR MARJI (bu ay, şirket geneli) ──
+        // Her satışın KENDİ kayıt anındaki kuru kullanılır (usdRateAtSave) — sonradan kur değişse de
+        // geçmiş satışların kâr hesabı bozulmaz. etiketUnknown (sistem dışı değişimde etiket girilmemiş)
+        // satırlar maliyeti bilinmediği için hariç tutulur, hem ciro hem maliyet tarafından çıkarılır —
+        // yoksa maliyetsiz bir ciro gibi görünüp kâr marjını yapay şişirirdi.
+        let profitTlBasis = 0, profitCostBasis = 0;
+        monthRows.forEach(function(h) {
+            if(h.isExchangeReturn) {
+                const item = h.basket[0];
+                if(item && item._etiketUnknown) return; // etiketi bilinmiyor, hesaba katma
+            }
+            const rate = h.usdRateAtSave || 0;
+            if(!(rate > 0)) return; // kuru bilinmeyen eski kayıtlar kâr hesabına giremez
+            const tl = h.closingAmount || h.basket.reduce((aa,b)=>aa+b.v.vN, 0);
+            const etiket = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            const cost = (Math.abs(etiket) / 3) * rate * (etiket < 0 ? -1 : 1); // değişim negatifse maliyet de negatif (iade)
+            profitTlBasis += tl;
+            profitCostBasis += cost;
+        });
+        const profitMarginEl = document.getElementById('dash-profit-margin');
+        if(profitCostBasis > 0) {
+            const marginPct = Math.round(((profitTlBasis - profitCostBasis) / profitCostBasis) * 100);
+            profitMarginEl.innerText = (marginPct >= 0 ? '+' : '') + marginPct + '%';
+            profitMarginEl.style.color = marginPct >= 0 ? 'var(--dash-success, #1a7a4a)' : 'var(--dash-rose)';
+        } else {
+            profitMarginEl.innerText = '—';
+        }
+
+        // ── BÖLGE KARŞILAŞTIRMASI (bu ay) ──
+        const byRegion = {};
+        monthRows.forEach(function(h) {
+            if(h.isExchangeReturn) return;
+            const bolge = (_storesInfo[h.storeId]||{}).bolge || 'Bilinmiyor';
+            const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
+            if(!byRegion[bolge]) byRegion[bolge] = 0;
+            byRegion[bolge] += et;
+        });
+        const regionRanked = Object.keys(byRegion).map(function(r) { return { name: r, etiket: byRegion[r] }; })
+            .sort(function(a,b) { return b.etiket - a.etiket; });
+        const regionEl = document.getElementById('dash-region-comparison');
+        if(regionEl) {
+            if(!regionRanked.length) {
+                regionEl.innerHTML = '<div style="color:var(--dash-ink-dim); font-size:12.5px; padding:8px 4px;">Bu ay henüz satış kaydı yok.</div>';
+            } else {
+                const maxRegionEtiket = regionRanked[0].etiket || 1;
+                regionEl.innerHTML = regionRanked.map(function(r) {
+                    const barPct = Math.max(4, Math.round((r.etiket / maxRegionEtiket) * 100));
+                    return '<div style="margin-bottom:12px;">' +
+                        '<div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px;"><b style="color:var(--dash-ink);">' + r.name + '</b><span style="color:var(--dash-gold); font-weight:700;">$ ' + f(r.etiket/3) + '</span></div>' +
+                        '<div style="background:var(--dash-surface-2); border-radius:100px; height:8px; overflow:hidden;"><div style="background:var(--dash-rose); height:100%; width:' + barPct + '%; border-radius:100px;"></div></div>' +
+                        '</div>';
+                }).join('');
+            }
+        }
+
         const ranked = Object.keys(byStore).map(function(sid) { return Object.assign({ storeId: sid, il: (_storesInfo[sid]||{}).il || '' }, byStore[sid]); })
             .sort(function(a,b) {
                 if(_dashSortBy === 'count') {
@@ -7195,9 +7375,12 @@
             soldRows.forEach(function(h) {
                 const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
-                if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, exchangeCount: 0, cash: 0, etiket: 0, il: (_storesInfo[h.storeId]||{}).il || '—' };
+                if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, exchangeCount: 0, cash: 0, etiket: 0, il: (_storesInfo[h.storeId]||{}).il || '—', manualCount: 0 };
                 if(h.isExchangeReturn) { byStore[h.storeId].exchangeCount += (h.exchangeAdet || h.basket.length); }
-                else { byStore[h.storeId].count += h.basket.length; }
+                else {
+                    byStore[h.storeId].count += h.basket.length;
+                    byStore[h.storeId].manualCount += h.basket.filter(function(item) { return !!item._manualN; }).length;
+                }
                 byStore[h.storeId].cash += sN;
                 byStore[h.storeId].etiket += et;
             });
@@ -7214,10 +7397,16 @@
                 return;
             }
             listEl.innerHTML = ranked.map(function(s, idx) {
+                // İndirim oranı: ✎ ile manuel fiyatlandırılmış ürün sayısı / toplam ürün sayısı.
+                // %25'i geçen mağazalar dikkat çeksin diye kırmızı, altındakiler nötr renkte gösterilir.
+                const discountPct = s.count > 0 ? Math.round((s.manualCount / s.count) * 100) : 0;
+                const discountHtml = s.manualCount > 0
+                    ? ' · <span style="color:' + (discountPct >= 25 ? 'var(--dash-rose)' : 'var(--dash-ink-dim)') + '; font-weight:' + (discountPct >= 25 ? '800' : '600') + ';">' + discountPct + '% indirimli</span>'
+                    : '';
                 return '<div class="dash-store-row">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + '</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + discountHtml + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -7296,22 +7485,27 @@
         } else {
             // adet: mağazanın gerçek sattığı ürün sayısı (değişimde geri alınanlar hariç).
             // exchangeAdet: aynı mağazanın değişimde geri aldığı ürün sayısı — ayrı tutulur, toplanıp karıştırılmaz.
+            // manualCount: ✎ ile manuel fiyatlandırılmış (indirim/pazarlık yapılmış) ürün sayısı — bir
+            // mağaza ortalamadan çok daha yüksek oranda indirim yapıyorsa, bu kâr marjını eritir; admin'in
+            // bunu görmesi için eklendi (bkz. Satış Raporu'ndaki "İndirim Oranı" sütunu).
             const byStore = {};
             rows.forEach(function(h) {
                 const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
                 const info = _storesInfo[h.storeId] || {};
-                if(!byStore[h.storeId]) byStore[h.storeId] = { magaza: h.storeName || h.storeId, il: info.il || '—', bolge: info.bolge || '—', adet: 0, exchangeAdet: 0, nakit: 0, etiket: 0 };
+                if(!byStore[h.storeId]) byStore[h.storeId] = { magaza: h.storeName || h.storeId, il: info.il || '—', bolge: info.bolge || '—', adet: 0, exchangeAdet: 0, nakit: 0, etiket: 0, manualCount: 0 };
                 if(h.isExchangeReturn) {
                     byStore[h.storeId].exchangeAdet += (h.exchangeAdet || h.basket.length);
                 } else {
                     byStore[h.storeId].adet += h.basket.length;
+                    byStore[h.storeId].manualCount += h.basket.filter(function(item) { return !!item._manualN; }).length;
                 }
                 byStore[h.storeId].nakit += sN;
                 byStore[h.storeId].etiket += et;
             });
             let storeRows = Object.values(byStore).map(function(s) {
-                return { magaza: s.magaza, il: s.il, bolge: s.bolge, adet: s.adet, exchangeAdet: s.exchangeAdet, nakit: Math.round(s.nakit), etiketBolu3: Math.round(s.etiket/3) };
+                const discountPct = s.adet > 0 ? Math.round((s.manualCount / s.adet) * 100) : 0;
+                return { magaza: s.magaza, il: s.il, bolge: s.bolge, adet: s.adet, exchangeAdet: s.exchangeAdet, nakit: Math.round(s.nakit), etiketBolu3: Math.round(s.etiket/3), manualCount: s.manualCount, discountPct: discountPct };
             });
             storeRows.sort(function(a,b) {
                 if(_reportSortBy === 'count') {
@@ -7381,14 +7575,16 @@
                     '</tr>';
             }).join('');
         } else {
-            theadRow.innerHTML = '<th style="padding:8px 6px;">Mağaza</th><th style="padding:8px 6px;">İl</th><th style="padding:8px 6px;">Bölge</th><th style="padding:8px 6px; text-align:right;">Adet</th><th style="padding:8px 6px; text-align:right;">Etiket ÷3 ($)</th>';
+            theadRow.innerHTML = '<th style="padding:8px 6px;">Mağaza</th><th style="padding:8px 6px;">İl</th><th style="padding:8px 6px;">Bölge</th><th style="padding:8px 6px; text-align:right;">Adet</th><th style="padding:8px 6px; text-align:right;">İndirim %</th><th style="padding:8px 6px; text-align:right;">Etiket ÷3 ($)</th>';
             document.getElementById('rep-pdf-body').innerHTML = data.rows.map(function(r) {
                 const adetCell = r.adet + (r.exchangeAdet > 0 ? ' (+' + r.exchangeAdet + ' 🔄)' : '');
+                const discountCell = r.manualCount > 0 ? r.discountPct + '%' : '—';
                 return '<tr style="border-bottom:1px solid #e8e4ec;">' +
                     '<td style="padding:7px 6px;">' + r.magaza + '</td>' +
                     '<td style="padding:7px 6px;">' + r.il + '</td>' +
                     '<td style="padding:7px 6px;">' + r.bolge + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">' + adetCell + '</td>' +
+                    '<td style="padding:7px 6px; text-align:right;' + (r.discountPct >= 25 ? ' color:#c8244c; font-weight:700;' : '') + '">' + discountCell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.etiketBolu3) + '</td>' +
                     '</tr>';
             }).join('');
@@ -7415,7 +7611,7 @@
             });
         } else {
             sheetData = data.rows.map(function(r) {
-                return { 'Mağaza': r.magaza, 'İl': r.il, 'Bölge': r.bolge, 'Adet': r.adet, 'Değişim Adedi': r.exchangeAdet||0, 'Etiket ÷3 ($)': r.etiketBolu3 };
+                return { 'Mağaza': r.magaza, 'İl': r.il, 'Bölge': r.bolge, 'Adet': r.adet, 'Değişim Adedi': r.exchangeAdet||0, 'İndirimli Ürün Adedi': r.manualCount||0, 'İndirim Oranı (%)': r.discountPct||0, 'Etiket ÷3 ($)': r.etiketBolu3 };
             });
         }
         if(!sheetData.length) {
