@@ -6126,13 +6126,33 @@
                     );
                 }).then(function(confirmed) {
                     if(!confirmed) return;
-                    fbDb.ref('stores').remove().then(function() {
-                        logAdminAction('reset_all', '', '', storeIds.length + ' mağazanın tüm verisi sıfırlandı (admin onayıyla)');
-                        renderAdminStoreList();
-                        sysAlert(storeIds.length + ' mağazanın verisi tamamen sıfırlandı.', { title: 'Sıfırlandı' });
-                    }).catch(function(err) {
-                        sysAlert('Sıfırlanırken hata oluştu: ' + err.message, { tone: 'danger' });
-                    });
+                    // Firebase Rules'da .write izni sadece "stores/$storeId" seviyesinde tanımlı (her
+                    // mağaza kendi/admin yazabilir), "stores" kökünün TAMAMINA tek seferde yazma izni
+                    // YOK — bu yüzden fbDb.ref('stores').remove() PERMISSION_DENIED hatası verir. Çözüm:
+                    // her mağazayı kendi izin verilen yolundan TEK TEK silmek.
+                    let doneCount = 0, failedIds = [];
+                    function removeNext(i) {
+                        if(i >= storeIds.length) {
+                            logAdminAction('reset_all', '', '', doneCount + ' mağazanın tüm verisi sıfırlandı (admin onayıyla)' + (failedIds.length ? ', ' + failedIds.length + ' tanesi silinemedi' : ''));
+                            renderAdminStoreList();
+                            if(failedIds.length) {
+                                sysAlert(doneCount + ' mağaza sıfırlandı, ' + failedIds.length + ' mağaza silinemedi: ' + failedIds.join(', '), { tone: 'warn', title: 'Kısmen Tamamlandı' });
+                            } else {
+                                sysAlert(doneCount + ' mağazanın verisi tamamen sıfırlandı.', { title: 'Sıfırlandı' });
+                            }
+                            return;
+                        }
+                        const sid = storeIds[i];
+                        fbDb.ref('stores/' + sid).remove().then(function() {
+                            doneCount++;
+                            removeNext(i + 1);
+                        }).catch(function(err) {
+                            console.error('Silinemedi (' + sid + '):', err);
+                            failedIds.push(sid);
+                            removeNext(i + 1);
+                        });
+                    }
+                    removeNext(0);
                 }).catch(function(err) {
                     if(err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
                         sysAlert('Şifre yanlış, işlem iptal edildi.', { tone: 'danger' });
