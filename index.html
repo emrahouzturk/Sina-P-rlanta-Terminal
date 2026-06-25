@@ -1147,6 +1147,8 @@
             #print-area * { page-break-inside: avoid; }
             body.admin-print-mode #print-area { display: none !important; }
             body.admin-print-mode #admin-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; z-index: 99999; }
+            body.store-list-print-mode #print-area { display: none !important; }
+            body.store-list-print-mode #store-list-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: #fff; z-index: 99999; }
         }
 
         /* ── MOBILE ── */
@@ -1519,10 +1521,12 @@
                         <b>İşlem butonları:</b> ✎ Bilgileri Düzenle, 🔑 Şifre Sıfırla, 🗑 Arşivle (30 gün sonra otomatik kalıcı silinir, içinde geri yükleyebilirsin).<br><br>
                         <b>Şifre sıfırlama:</b> Tarayıcı güvenliği nedeniyle tek bir ek adım gerekir — sana Firebase Console'da kullanıcıyı silmen için net talimat gösterilir, sonra yeni şifre otomatik oluşturulur. Mağazanın verisi bu işlemden hiç etkilenmez.<br><br>
                         <b>☑ Tümünü Seç + ✎ Toplu Kâr/xU Düzenle:</b> Birden fazla (ya da tüm) mağazayı seçip, xU payını ve Nakit kâr oranını <b>tek seferde</b> güncelleyebilirsin. Sadece doldurduğun alanlar değişir. <b>Nakit Kâr %</b> yazınca 3 Taksit/2 Taksit/Tek Çekim kâr oranları otomatik hesaplanır — her kademe bir öncekinin fiyat olarak <b>%5 eksiği</b> olacak şekilde (Nakit en ucuz, 3 Taksit en pahalı). Bu dört oranı admin ekranından tek tek görmezsin/girmezsin, sadece Nakit'i yazarsın; mağaza isterse kendi ekranından bu oranların herhangi birini sonradan elle değiştirebilir.<br><br>
-                        <b>📋 Boş Şablonu İndir:</b> Mağaza Adı, Tür, İl, Kullanıcı Adı, Şifre, Telefon sütunlu boş bir Excel iner — Tür ve İl sütunları açılır liste (dropdown) olarak gelir, serbest yazılamaz, yazım hatası imkansızdır.<br><br>
+                        <b>📋 Boş Şablonu İndir:</b> Mağaza Adı, Tür, İl, Kullanıcı Adı, Şifre, Telefon sütunlu boş bir Excel iner — Tür ve İl sütunları açılır liste (dropdown) olarak gelir, serbest yazılamaz, yazım hatası imkansızdır. <b>Adres</b> bu hazır şablonda yok (dropdown'ları bozmadan eklemek mümkün olmadı) — istersen tabloya elle bir "Adres" sütunu ekleyip doldurabilirsin, sistem yükleme sırasında bunu okur. "Mevcut Mağazaları Excel'e Aktar" ile indirdiğin dosyada ise Adres sütunu zaten hazır geliyor.<br><br>
                         <b>📤 Excel'den Toplu Yükle:</b> Doldurduğun şablonu (ya da "Mevcut Mağazaları Excel'e Aktar" ile indirip üzerine eklediğin dosyayı) yükle. Yeni kullanıcı adları sıfırdan oluşturulur; <b>var olan kullanıcı adları</b> ise sadece bilgi (ad/tür/il/telefon) olarak güncellenir — <b>şifre Excel'den asla değiştirilmez</b>. İşlem bitince kaç mağazanın oluşturulduğu/güncellendiği/hata verdiği özet olarak gösterilir.<br><br>
                         <b>📥 Mevcut Mağazaları Excel'e Aktar:</b> Tüm aktif mağazaları aynı sütun düzeniyle indirir — yeni mağaza eklemek istediğinde bu dosyanın altına ekleyip tekrar yükleyebilirsin. Şifre sütunu, sadece daha önce "Şifre (not)" olarak kaydettiysen dolu gelir.<br><br>
-                        <b>Önemli:</b> Excel'den mağaza <b>silinmez</b> — bir satırı dosyadan kaldırıp tekrar yüklesen de o mağaza sistemde kalır. Kapanan bir mağazayı kapatmak için mağaza listesinden elle "🗑 Arşivle" demen gerekir, bu kasıtlı bir güvenlik tercihidir.
+                        <b>🖨️ Mağaza Listesi PDF (Bölgelere Göre):</b> Tüm aktif mağazaları, bölgelere göre gruplanmış, kurumsal görünümlü bir PDF olarak yazdırır — her bölge kendi başlığı altında, mağaza adı/tür/il/telefon/adres bilgileriyle. Toplantı, sunum ya da paylaşım için.<br><br>
+                        <b>Önemli:</b> Excel'den mağaza <b>silinmez</b> — bir satırı dosyadan kaldırıp tekrar yüklesen de o mağaza sistemde kalır. Kapanan bir mağazayı kapatmak için mağaza listesinden elle "🗑 Arşivle" demen gerekir, bu kasıtlı bir güvenlik tercihidir.<br><br>
+                        <b>⚠ Tehlikeli Bölge — Tüm Mağaza Verilerini Sıfırla:</b> Listenin en altında, kırmızı çerçeveli ayrı bir kartta durur. Test/pilot mağazalarını temizleyip gerçek kullanıma sıfırdan başlamak için — tüm mağazaların ayarlarını ve satış geçmişini kalıcı olarak siler. Şifreni tekrar girmen ve "Evet, N Mağazayı Sıfırla" diye net bir onay vermen istenir, geri alınamaz. <b>Mağaza giriş bilgileri (kullanıcı adı/şifre) bu işlemden etkilenmez</b> — Firebase'in güvenlik kısıtı nedeniyle hesapları tarayıcıdan toplu silmek mümkün değildir; hesapları da tamamen kaldırmak istersen Firebase Console → Authentication → Users'tan elle silmen gerekir.
                     </div>
                 </div>
 
@@ -2337,6 +2341,7 @@
                         <div><label class="dash-label">Kullanıcı Adı</label><input type="text" id="newStoreUser" class="dash-input" style="width:100%;" placeholder="örn: kadikoy"></div>
                         <div><label class="dash-label">Şifre</label><input type="text" id="newStorePass" class="dash-input" style="width:100%;" placeholder="en az 6 karakter"></div>
                         <div><label class="dash-label">Telefon</label><input type="text" id="newStoreTel" class="dash-input" style="width:100%;" placeholder="0216 XXX XX XX"></div>
+                        <div style="grid-column:1/-1;"><label class="dash-label">Adres</label><input type="text" id="newStoreAddr" class="dash-input" style="width:100%;" placeholder="Örn: Bağdat Cad. No:12, Kadıköy/İstanbul"></div>
                     </div>
                     <div id="newStoreError" style="display:none; margin-top:10px; font-size:11.5px; color:var(--dash-rose); font-weight:600;"></div>
                     <button class="dash-btn-primary" style="margin-top:14px;" onclick="createStore()">Oluştur</button>
@@ -2349,6 +2354,7 @@
                         <button class="dash-btn-ghost" onclick="document.getElementById('storeExcelFileInput').click()">📤 Excel'den Toplu Yükle</button>
                         <input type="file" id="storeExcelFileInput" accept=".xlsx,.xls" style="display:none;" onchange="handleStoreExcelUpload(event)">
                         <button class="dash-btn-ghost" onclick="exportStoresToExcel()">📥 Mevcut Mağazaları Excel'e Aktar</button>
+                        <button class="dash-btn-ghost" onclick="generateStoreListPDF()">🖨️ Mağaza Listesi PDF (Bölgelere Göre)</button>
                     </div>
                     <div style="font-size:10.5px; color:var(--dash-ink-dim); margin-top:10px; line-height:1.6;">
                         Boş şablonda Tür ve İl sütunları açılır liste (dropdown) olarak gelir, yazım hatası yapılamaz. Yüklerken: yeni kullanıcı adları otomatik oluşturulur, var olanların bilgileri (ad/tür/il/telefon) güncellenir — şifre Excel'den değiştirilmez.
@@ -2369,6 +2375,17 @@
                 </div>
                 <div class="dash-panel" style="margin-top:14px;">
                     <div id="admin-store-list"></div>
+                </div>
+
+                <!-- TEHLİKELİ BÖLGE — sadece pilot/test sonrası gerçek kullanıma geçmeden önce kullanılması
+                     beklenen, geri alınamaz bir işlem. Bilerek diğer butonlardan görsel olarak ayrılmış,
+                     kırmızı çerçeveli bir kart içinde tutuluyor — yanlışlıkla diğer butonlarla karıştırılmasın. -->
+                <div style="margin-top:30px; border:1.5px solid var(--dash-rose); border-radius:14px; padding:18px 20px; background:rgba(232,83,122,.04);">
+                    <div style="font-size:13px; font-weight:800; color:var(--dash-rose); margin-bottom:4px;">⚠ Tehlikeli Bölge</div>
+                    <div style="font-size:11px; color:var(--dash-ink-dim); margin-bottom:12px; line-height:1.6;">
+                        Test/pilot mağazalarını temizleyip gerçek kullanıma sıfırdan başlamak için. Tüm mağazaların ayarlarını ve satış geçmişini kalıcı olarak siler — şifreni tekrar girmen ve net bir onay vermen istenir. Mağaza giriş bilgilerinin (kullanıcı adı/şifre) kendisi bu işlemden etkilenmez; hesapları tamamen kaldırmak istersen Firebase Console → Authentication → Users'tan elle silmen gerekir.
+                    </div>
+                    <button class="dash-btn-ghost" style="border-color:var(--dash-rose); color:var(--dash-rose);" onclick="resetAllStoreData()">🗑 Tüm Mağaza Verilerini Sıfırla</button>
                 </div>
             </div>
 
@@ -2446,6 +2463,7 @@
                         <option value="delete">Kalıcı Silme</option>
                         <option value="admin_sale_entry">Admin Satış Girişi</option>
                         <option value="bulk_excel_upload">Excel Toplu Yükleme</option>
+                        <option value="reset_all">Tüm Veriler Sıfırlandı</option>
                     </select>
                     <input type="text" id="logFilterSearch" class="dash-input" style="flex:1; min-width:160px;" placeholder="Mağaza adı ara..." oninput="renderAdminLog()">
                 </div>
@@ -2538,6 +2556,24 @@
                 </thead>
                 <tbody id="rep-pdf-body"></tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- MAĞAZA LİSTESİ PDF — bölgelere göre gruplanmış, kurumsal format -->
+    <div id="store-list-print-area" style="display:none;">
+        <div style="font-family:'Poppins',sans-serif; padding:44px 52px; max-width:920px; margin:0 auto; color:#1a1a24;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid #c8244c; padding-bottom:22px; margin-bottom:30px;">
+                <div>
+                    <div style="font-size:23px; font-weight:800; letter-spacing:-.01em;">Mağaza Listesi</div>
+                    <div style="font-size:11.5px; color:#9090a0; margin-top:5px;" id="store-list-pdf-date"></div>
+                </div>
+                <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" style="height:34px;">
+            </div>
+            <div id="store-list-pdf-summary" style="display:flex; gap:16px; margin-bottom:28px;"></div>
+            <div id="store-list-pdf-body"></div>
+            <div style="margin-top:36px; padding-top:14px; border-top:1px solid #e8e4ec; font-size:9.5px; color:#9090a0; text-align:center;">
+                Sina Pırlanta — Mağaza Listesi · <span id="store-list-pdf-footer-date"></span>
+            </div>
         </div>
     </div>
 
@@ -5739,7 +5775,8 @@
         restore: { icon: '↩', label: 'Geri Yüklendi', color: 'var(--success)' },
         delete: { icon: '🗑', label: 'Kalıcı Silindi', color: 'var(--rose)' },
         admin_sale_entry: { icon: '✓', label: 'Admin Satış Girdi', color: 'var(--success)' },
-        bulk_excel_upload: { icon: '📤', label: 'Excel Toplu Yükleme', color: 'var(--dash-gold)' }
+        bulk_excel_upload: { icon: '📤', label: 'Excel Toplu Yükleme', color: 'var(--dash-gold)' },
+        reset_all: { icon: '⚠', label: 'Tüm Veriler Sıfırlandı', color: 'var(--rose)' }
     };
 
     // ══════════════════════════════════════════════════
@@ -6052,6 +6089,63 @@
         });
     }
 
+    // ── TÜM MAĞAZA VERİLERİNİ SIFIRLA (test/pilot sonrası, gerçek kullanıma geçmeden önce) ──
+    // Sadece Realtime Database'deki mağaza verilerini (config + satış geçmişi) siler. Firebase
+    // Authentication hesapları (kullanıcı adı/şifre girişleri) İSTEMCİ TARAFINDAN SİLİNEMEZ — bu
+    // Firebase'in güvenlik kısıtıdır, sadece sunucu tarafı (Admin SDK / Cloud Functions) yapabilir.
+    // Hesapları silmek istersen Firebase Console → Authentication → Users'tan elle silmen gerekir.
+    // Güvenlik: (1) admin kendi şifresini tekrar girer (reauthentication), (2) mağaza sayısını
+    // göstererek son bir onay ister — geri dönüşü olmayan bir işlem için tek tıkla silmeyi engeller.
+    function resetAllStoreData() {
+        fbDb.ref('stores').once('value').then(function(snap) {
+            const stores = snap.val() || {};
+            const storeIds = Object.keys(stores);
+            if(!storeIds.length) {
+                sysAlert('Sıfırlanacak mağaza verisi bulunamadı, veritabanı zaten boş.', { tone: 'warn' });
+                return;
+            }
+
+            sysPrompt('Bu işlem ' + storeIds.length + ' mağazanın TÜM verisini (ayarlar + satış geçmişi) kalıcı olarak siler. Devam etmek için şifreni tekrar gir:', {
+                title: '⚠ Tüm Mağaza Verilerini Sıfırla',
+                inputType: 'password',
+                placeholder: 'Admin şifren',
+                okText: 'Şifreyi Doğrula',
+                tone: 'danger'
+            }).then(function(pass) {
+                if(pass === null || !pass) return;
+
+                const user = fbAuth.currentUser;
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, pass);
+                user.reauthenticateWithCredential(credential).then(function() {
+                    // Şifre doğru — şimdi net, geri dönüşü olmayan işlemi netleştiren son onay.
+                    return sysConfirm(
+                        storeIds.length + ' MAĞAZANIN TÜM VERİSİ KALICI OLARAK SİLİNECEK.\n\n' +
+                        'Bu işlem GERİ ALINAMAZ. Mağazaların satış geçmişi, ayarları ve raporları tamamen kaybolur.\n\n' +
+                        '(Not: Mağazaların kullanıcı adı/şifre ile giriş yapabilme özelliği bu işlemden etkilenmez — hesapları tamamen kaldırmak için Firebase Console → Authentication → Users\'tan elle silmen gerekir.)',
+                        { okText: 'Evet, ' + storeIds.length + ' Mağazayı Sıfırla', danger: true, title: 'Son Onay' }
+                    );
+                }).then(function(confirmed) {
+                    if(!confirmed) return;
+                    fbDb.ref('stores').remove().then(function() {
+                        logAdminAction('reset_all', '', '', storeIds.length + ' mağazanın tüm verisi sıfırlandı (admin onayıyla)');
+                        renderAdminStoreList();
+                        sysAlert(storeIds.length + ' mağazanın verisi tamamen sıfırlandı.', { title: 'Sıfırlandı' });
+                    }).catch(function(err) {
+                        sysAlert('Sıfırlanırken hata oluştu: ' + err.message, { tone: 'danger' });
+                    });
+                }).catch(function(err) {
+                    if(err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                        sysAlert('Şifre yanlış, işlem iptal edildi.', { tone: 'danger' });
+                    } else {
+                        sysAlert('Doğrulama hatası: ' + err.message, { tone: 'danger' });
+                    }
+                });
+            });
+        }).catch(function(err) {
+            sysAlert('Mağaza listesi okunamadı: ' + err.message, { tone: 'danger' });
+        });
+    }
+
     function createStore() {
         const storeName = document.getElementById('newStoreName').value.trim();
         const storeType = document.getElementById('newStoreType').value;
@@ -6059,6 +6153,7 @@
         const userRaw   = document.getElementById('newStoreUser').value.trim();
         const pass      = document.getElementById('newStorePass').value;
         const tel       = document.getElementById('newStoreTel').value.trim();
+        const addr      = document.getElementById('newStoreAddr').value.trim();
         const errEl = document.getElementById('newStoreError');
         errEl.style.display = 'none';
 
@@ -6084,7 +6179,7 @@
                 return fbDb.ref('stores/' + storeId + '/config').set({
                     cfgStore: storeName,
                     cfgTel: tel,
-                    cfgAddr: '',
+                    cfgAddr: addr,
                     storeType: storeType,
                     il: storeIl,
                     bolge: PROVINCE_TO_REGION[storeIl] || '',
@@ -6102,6 +6197,7 @@
                 document.getElementById('newStoreUser').value = '';
                 document.getElementById('newStorePass').value = '';
                 document.getElementById('newStoreTel').value = '';
+                document.getElementById('newStoreAddr').value = '';
                 renderAdminStoreList();
                 logAdminAction('create', storeId, storeName, (storeType === 'satis_noktasi' ? 'Satış Noktası' : 'Mağaza') + ' · ' + storeIl);
                 sysAlert('Oluşturuldu: ' + storeName + ' (kullanıcı adı: ' + storeId + ')\n\nNot: Bazı durumlarda yeni hesabın başka bir cihazdan giriş yapabilmesi için 1-2 dakika beklemek gerekebilir (Firebase senkronizasyon gecikmesi). Hemen giriş yapılamazsa kısa bir süre sonra tekrar denenmeli.', { title: 'Oluşturuldu' });
@@ -6162,12 +6258,13 @@
                     'İl': cfg.il || '',
                     'Kullanıcı Adı': sid,
                     'Şifre': cfg.passwordNote || '',
-                    'Telefon': cfg.cfgTel || ''
+                    'Telefon': cfg.cfgTel || '',
+                    'Adres': cfg.cfgAddr || ''
                 };
             }).sort(function(a,b) { return a['Mağaza Adı'].localeCompare(b['Mağaza Adı'], 'tr'); });
 
             const ws = XLSX.utils.json_to_sheet(sheetData);
-            ws['!cols'] = [{wch:28},{wch:16},{wch:18},{wch:18},{wch:16},{wch:18}];
+            ws['!cols'] = [{wch:28},{wch:16},{wch:18},{wch:18},{wch:16},{wch:18},{wch:36}];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Mağaza Listesi');
             XLSX.writeFile(wb, 'magazalar-' + new Date().toISOString().slice(0,10) + '.xlsx');
@@ -6332,6 +6429,7 @@
                 const userRaw = (row['Kullanıcı Adı'] || '').toString().trim();
                 const pass = (row['Şifre'] || '').toString().trim();
                 const tel = (row['Telefon'] || '').toString().trim();
+                const addr = (row['Adres'] || '').toString().trim();
                 const storeId = sanitizeStoreId(userRaw);
 
                 resultEl.innerHTML = '⏳ İşleniyor… (' + (idx+1) + ' / ' + validRows.length + ') — ' + storeName;
@@ -6352,6 +6450,7 @@
                     const updates = { cfgStore: storeName, storeType: storeType };
                     if(il) { updates.il = il; updates.bolge = PROVINCE_TO_REGION[il] || ''; }
                     if(tel) updates.cfgTel = tel;
+                    if(addr) updates.cfgAddr = addr;
                     fbDb.ref('stores/' + storeId + '/config').update(updates)
                         .then(function() {
                             updated++;
@@ -6378,7 +6477,7 @@
                             return fbDb.ref('stores/' + storeId + '/config').set({
                                 cfgStore: storeName,
                                 cfgTel: tel,
-                                cfgAddr: '',
+                                cfgAddr: addr,
                                 storeType: storeType,
                                 il: il,
                                 bolge: PROVINCE_TO_REGION[il] || '',
@@ -7635,6 +7734,84 @@
         document.body.classList.add('admin-print-mode');
         window.print();
         setTimeout(() => document.body.classList.remove('admin-print-mode'), 500);
+    }
+
+    // Mağaza listesini bölgelere göre gruplanmış, kurumsal formatta PDF olarak yazdırır.
+    // Her bölge kendi başlığı altında, o bölgedeki mağazalar il sırasına göre alfabetik listelenir.
+    // Arşivlenmiş mağazalar hiç gösterilmez — bu sadece aktif mağazaların kurumsal bir özeti.
+    function generateStoreListPDF() {
+        fbDb.ref('stores').once('value').then(function(snap) {
+            const stores = snap.val() || {};
+            const activeIds = Object.keys(stores).filter(function(sid) { return !(stores[sid].config || {}).archived; });
+
+            if(!activeIds.length) {
+                sysAlert('PDF için listelenecek aktif mağaza bulunamadı.', { tone: 'warn' });
+                return;
+            }
+
+            // Bölgelere göre grupla
+            const byRegion = {};
+            activeIds.forEach(function(sid) {
+                const cfg = stores[sid].config || {};
+                const bolge = cfg.bolge || 'Bölgesi Belirtilmemiş';
+                if(!byRegion[bolge]) byRegion[bolge] = [];
+                byRegion[bolge].push({
+                    sid: sid,
+                    name: cfg.cfgStore || sid,
+                    type: cfg.storeType === 'satis_noktasi' ? 'Satış Noktası' : 'Mağaza',
+                    il: cfg.il || '—',
+                    tel: cfg.cfgTel || '—',
+                    addr: cfg.cfgAddr || '—'
+                });
+            });
+
+            // Bölge adlarını alfabetik sırala, her bölgenin içindeki mağazaları il + ada göre sırala
+            const regionNames = Object.keys(byRegion).sort(function(a,b) { return a.localeCompare(b, 'tr'); });
+            regionNames.forEach(function(r) {
+                byRegion[r].sort(function(a,b) {
+                    return a.il.localeCompare(b.il, 'tr') || a.name.localeCompare(b.name, 'tr');
+                });
+            });
+
+            const now = new Date();
+            document.getElementById('store-list-pdf-date').innerText = 'Oluşturulma: ' + now.toLocaleString('tr-TR');
+            document.getElementById('store-list-pdf-footer-date').innerText = now.toLocaleDateString('tr-TR');
+
+            const magazaCount = activeIds.filter(function(sid) { return (stores[sid].config||{}).storeType !== 'satis_noktasi'; }).length;
+            const satisNoktasiCount = activeIds.length - magazaCount;
+
+            document.getElementById('store-list-pdf-summary').innerHTML =
+                '<div style="flex:1; border:1px solid #e8e4ec; border-radius:10px; padding:14px 18px;"><div style="font-size:9px; color:#9090a0; font-weight:800; text-transform:uppercase;">Toplam Aktif</div><div style="font-size:20px; font-weight:800;">' + activeIds.length + '</div></div>' +
+                '<div style="flex:1; border:1px solid #e8e4ec; border-radius:10px; padding:14px 18px;"><div style="font-size:9px; color:#9090a0; font-weight:800; text-transform:uppercase;">Mağaza</div><div style="font-size:20px; font-weight:800;">' + magazaCount + '</div></div>' +
+                '<div style="flex:1; border:1px solid #e8e4ec; border-radius:10px; padding:14px 18px;"><div style="font-size:9px; color:#9090a0; font-weight:800; text-transform:uppercase;">Satış Noktası</div><div style="font-size:20px; font-weight:800;">' + satisNoktasiCount + '</div></div>' +
+                '<div style="flex:1; border:1px solid #e8e4ec; border-radius:10px; padding:14px 18px;"><div style="font-size:9px; color:#9090a0; font-weight:800; text-transform:uppercase;">Bölge Sayısı</div><div style="font-size:20px; font-weight:800;">' + regionNames.length + '</div></div>';
+
+            document.getElementById('store-list-pdf-body').innerHTML = regionNames.map(function(regionName) {
+                const stores = byRegion[regionName];
+                const rows = stores.map(function(s) {
+                    return '<tr style="border-bottom:1px solid #f0eef2;">' +
+                        '<td style="padding:9px 8px;"><b>' + s.name + '</b><br><span style="font-size:9.5px; color:#9090a0;">' + s.type + '</span></td>' +
+                        '<td style="padding:9px 8px;">' + s.il + '</td>' +
+                        '<td style="padding:9px 8px; font-size:10px;">' + s.tel + '</td>' +
+                        '<td style="padding:9px 8px; font-size:10px; color:#5a5564;">' + s.addr + '</td>' +
+                        '</tr>';
+                }).join('');
+                return '<div style="margin-bottom:26px; page-break-inside:avoid;">' +
+                    '<div style="background:#c8244c; color:#fff; font-size:12.5px; font-weight:800; padding:8px 14px; border-radius:8px 8px 0 0; letter-spacing:.02em;">' + regionName + ' <span style="font-weight:600; opacity:.85;">(' + stores.length + ' mağaza)</span></div>' +
+                    '<table style="width:100%; border-collapse:collapse; font-size:11px; border:1px solid #e8e4ec; border-top:none;">' +
+                    '<thead><tr style="background:#faf9fb; border-bottom:1.5px solid #e8e4ec; text-align:left;"><th style="padding:8px 8px; width:30%;">Mağaza</th><th style="padding:8px 8px; width:14%;">İl</th><th style="padding:8px 8px; width:16%;">Telefon</th><th style="padding:8px 8px;">Adres</th></tr></thead>' +
+                    '<tbody>' + rows + '</tbody>' +
+                    '</table>' +
+                    '</div>';
+            }).join('');
+
+            document.body.classList.add('store-list-print-mode');
+            window.print();
+            setTimeout(() => document.body.classList.remove('store-list-print-mode'), 500);
+        }).catch(function(err) {
+            console.error('Mağaza listesi PDF oluşturulamadı:', err);
+            sysAlert('PDF oluşturulurken hata oluştu: ' + err.message, { tone: 'danger' });
+        });
     }
 
     function generateAdminReportExcel() {
