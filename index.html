@@ -1580,12 +1580,11 @@
 
         <!-- TOP BAR -->
         <div class="top-bar">
-            <div class="rates-chip">
+            <div class="rates-chip" style="position:relative; padding-right:26px;">
                 <div id="user-chip" style="font-weight:800; color:var(--rose); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
                 <div id="tech-rates">U: — | xU: —</div>
-                <div id="tech-time" class="tech-time">— &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span>
-                    <span onclick="manualRefreshUsdRate()" id="usd-refresh-btn" title="Kuru şimdi güncelle" style="cursor:pointer; margin-left:6px; color:var(--rose); font-weight:800; display:inline-block;">↻</span>
-                </div>
+                <div id="tech-time" class="tech-time">— &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span></div>
+                <span onclick="manualRefreshUsdRate()" id="usd-refresh-btn" title="Kuru şimdi güncelle" style="position:absolute; top:50%; right:6px; transform:translateY(-50%); cursor:pointer; color:var(--rose); font-weight:800; font-size:16px; line-height:1; padding:4px;">↻</span>
             </div>
             <div class="top-actions">
                 <div style="position:relative;">
