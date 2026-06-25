@@ -857,6 +857,7 @@
         }
         .empty-basket svg { opacity: .25; margin-bottom: 12px; }
         .empty-basket p { font-size: 12px; font-weight: 500; margin: 0; }
+        .empty-basket-hint { font-size: 10.5px; color: var(--ink-dim); opacity: .7; margin-top: 4px !important; font-weight: 400 !important; }
 
         /* ── GEÇMİŞ EKRANI SEKMELERİ ── */
         .hist-tab.active { color: var(--rose) !important; border-bottom-color: var(--rose) !important; }
@@ -2259,7 +2260,7 @@
 
                 <!-- Çeyrek, YTD, ortalama satış ve genel kâr marjı — aylık kartların altında, daha
                      "stratejik" bakış açısı sağlayan ikinci sıra. Yönetimin tipik sorduğu sorulara cevap. -->
-                <div class="dash-stat-grid" style="grid-template-columns:repeat(4,1fr); margin-top:-16px;">
+                <div class="dash-stat-grid" style="margin-top:-16px;">
                     <div class="dash-stat-card">
                         <div class="eyebrow">Bu Çeyrek (Etiket÷3)</div>
                         <div class="stat-value" id="dash-quarter-etiket" style="font-size:20px; color:var(--dash-gold);">—</div>
@@ -3622,7 +3623,7 @@
         const container = document.getElementById('basket-container');
         const countEl   = document.getElementById('basket-count');
         if(!basket.length) {
-            container.innerHTML = `<div class="empty-basket"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><p>Sepet boş</p></div>`;
+            container.innerHTML = `<div class="empty-basket"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><p>Sepet boş</p><p class="empty-basket-hint">Etiket değerini yazınca otomatik burada görünür</p></div>`;
             document.getElementById('sum-box').style.display = 'none';
             if(countEl) countEl.innerText = '';
             updateLinkedHistoryBanner();
