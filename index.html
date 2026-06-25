@@ -58,7 +58,6 @@
             padding: 0 14px;
             height: 72px;
             box-sizing: border-box;
-            overflow: hidden;
             background: var(--surface);
             border-bottom: 1px solid var(--border);
             width: 100%;
@@ -1199,9 +1198,9 @@
                 justify-content: flex-end;
                 flex-wrap: wrap;
             }
-            /* Geçmiş/Rapor metni dar ekranda gizlenir, sadece ☰ ikonu kalır — diğer butonlar sığsın diye */
-            #store-more-btn .store-more-label { display: none; }
-            #store-more-btn { padding: 9px 11px; }
+            /* Satış Raporu metni dar ekranda gizlenir, sadece ☰ ikonu kalır — diğer butonlar sığsın diye */
+            #store-report-btn .store-more-label { display: none; }
+            #store-report-btn { padding: 9px 11px; }
         }
 
         @media (max-width: 360px) {
@@ -1588,16 +1587,10 @@
                 <span onclick="manualRefreshUsdRate()" id="usd-refresh-btn" title="Kuru şimdi güncelle" style="position:absolute; top:50%; right:6px; transform:translateY(-50%); cursor:pointer; color:var(--rose); font-weight:800; font-size:16px; line-height:1; padding:4px;">↻</span>
             </div>
             <div class="top-actions">
-                <div style="position:relative;">
-                    <button class="btn-ghost" onclick="toggleStoreMoreMenu()" id="store-more-btn">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                        <span class="store-more-label">Geçmiş / Rapor</span>
-                    </button>
-                    <div id="store-more-menu" style="display:none; position:absolute; top:calc(100% + 6px); right:0; background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow-md); padding:6px; z-index:80; min-width:180px; max-width:calc(100vw - 24px);">
-                        <button onclick="closeStoreMoreMenu(); openHistoryScreen();" style="display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:none; padding:11px 12px; border-radius:8px; font-size:13px; font-weight:600; color:var(--ink); cursor:pointer;">🕐 Geçmiş</button>
-                        <button onclick="closeStoreMoreMenu(); openStoreReportScreen();" style="display:flex; align-items:center; gap:8px; width:100%; text-align:left; background:none; border:none; padding:11px 12px; border-radius:8px; font-size:13px; font-weight:600; color:var(--ink); cursor:pointer;">📊 Satış Raporu</button>
-                    </div>
-                </div>
+                <button class="btn-ghost" id="store-report-btn" onclick="openStoreReportScreen()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    <span class="store-more-label">Satış Raporu</span>
+                </button>
                 <button class="btn-solid" onclick="openModal('settingsModal')">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     Ayarlar
@@ -1881,7 +1874,7 @@
                 <div class="help-section">
                     <h4>5. Geçmiş — Teklifler ve Satışa Dönenler</h4>
                     <div id="help-sec5-teklif-on">
-                        <p>Sağ üstteki <b>☰ Geçmiş / Rapor</b> menüsünden ya da sepet altındaki <strong>🕐 Geçmiş</strong> kısayolundan tam ekran geçmiş ekranı açılır, iki sekmesi var:</p>
+                        <p>Sepet altındaki <strong>🕐 Geçmiş</strong> kısayolundan tam ekran geçmiş ekranı açılır, iki sekmesi var:</p>
                         <div class="help-card">
                             <b>📝 Teklifler:</b> Henüz satışa dönmemiş, bekleyen teklifler. Bir karta tıklayınca sağda detay açılır.<br><br>
                             <b>✓ Satışa Dönenler:</b> Satış olarak işaretlenmiş kayıtlar, kapanış tutarı ve ödeme açıklamasıyla birlikte görünür. Tarih, tutar ve adet aralığına göre filtreleyebilirsin.
@@ -1893,7 +1886,7 @@
                         <p style="margin-top:8px;"><b>✎ Müşteri Bilgisini Düzelt:</b> Bir kaydı önizlerken, müşteri adının yanındaki bu linkten isim/telefon yanlış girilmişse sonradan düzeltebilirsin — hem teklif hem satış kayıtlarında çalışır.</p>
                     </div>
                     <div id="help-sec5-teklif-off" style="display:none;">
-                        <p>Sağ üstteki <b>☰ Geçmiş / Rapor</b> menüsünden ya da sepet altındaki <strong>🕐 Geçmiş</strong> kısayolundan tam ekran geçmiş ekranı açılır — tüm satışların tek listesi, sekme ayrımı yok (teklif özelliği kapalı olduğu için her kayıt zaten satıştır).</p>
+                        <p>Sepet altındaki <strong>🕐 Geçmiş</strong> kısayolundan tam ekran geçmiş ekranı açılır — tüm satışların tek listesi, sekme ayrımı yok (teklif özelliği kapalı olduğu için her kayıt zaten satıştır).</p>
                         <div class="help-card">Bir karta tıklayınca sağda detay açılır: ürünler, kapanış tutarı, ödeme açıklaması. Tarih, tutar ve adet aralığına göre filtreleyebilirsin.</div>
                         <p style="margin-top:8px;"><b>📄 O Günkü Fiyatla PDF:</b> Geçmişteki bir satışın PDF'ini, o gün kaydedildiği fiyatlarla (güncel kura göre değil) tekrar basabilirsin.</p>
                         <p style="margin-top:8px;"><b>✎ Müşteri Bilgisini Düzelt:</b> Bir kaydı önizlerken, müşteri adının yanındaki bu linkten isim/telefon yanlış girilmişse sonradan düzeltebilirsin.</p>
@@ -1902,7 +1895,7 @@
 
                 <div class="help-section">
                     <h4>5b. Satış Raporu</h4>
-                    <p>Sağ üstteki <b>☰ Geçmiş / Rapor</b> menüsünden <b>📊 Satış Raporu</b>'na girince, kendi mağazanın satışlarını filtreleyip indirebilirsin — admin panelindeki rapora benzer ama sadece senin verilerin.</p>
+                    <p>Sağ üstteki <b>📊 Satış Raporu</b> butonuna girince, kendi mağazanın satışlarını filtreleyip indirebilirsin — admin panelindeki rapora benzer ama sadece senin verilerin.</p>
                     <div class="help-card">
                         <b>Filtreler:</b> Tarih aralığı, <span id="help-sec5b-durum-on">durum (satış/teklif), </span>tutar ve adet aralığı.<br><br>
                         <b>💰 Tutar Bazlı / 📦 Ürün Bazlı:</b> Tutar bazlı günlere göre gruplar; ürün bazlı her satılan ürünü kendi satırında gösterir.<br><br>
@@ -4333,24 +4326,6 @@
             });
         }
     }
-
-    // ── MAĞAZA ÜST BAR "Geçmiş / Rapor" AÇILIR MENÜSÜ ──
-    function toggleStoreMoreMenu() {
-        const menu = document.getElementById('store-more-menu');
-        if(!menu) return;
-        const isOpen = menu.style.display === 'block';
-        menu.style.display = isOpen ? 'none' : 'block';
-    }
-    function closeStoreMoreMenu() {
-        const menu = document.getElementById('store-more-menu');
-        if(menu) menu.style.display = 'none';
-    }
-    document.addEventListener('click', function(e) {
-        const menu = document.getElementById('store-more-menu');
-        const btn = document.getElementById('store-more-btn');
-        if(!menu || menu.style.display !== 'block') return;
-        if(!menu.contains(e.target) && !btn.contains(e.target)) closeStoreMoreMenu();
-    });
 
     // ══════════════════════════════════════════════════
     // MAĞAZA SATIŞ RAPORU (sadece kendi geçmişi üzerinden, TL + ham etiket + $ ölü3 birlikte gösterilir)
