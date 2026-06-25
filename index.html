@@ -1583,7 +1583,7 @@
             <div class="rates-chip" style="position:relative; padding-right:26px;">
                 <div id="user-chip" style="font-weight:800; color:var(--rose); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
                 <div id="tech-rates">U: — | xU: —</div>
-                <div id="tech-time" class="tech-time">— &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span></div>
+                <div id="tech-time" class="tech-time"><span id="usd-rate-age">kur: —</span> &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span></div>
                 <span onclick="manualRefreshUsdRate()" id="usd-refresh-btn" title="Kuru şimdi güncelle" style="position:absolute; top:50%; right:6px; transform:translateY(-50%); cursor:pointer; color:var(--rose); font-weight:800; font-size:16px; line-height:1; padding:4px;">↻</span>
             </div>
             <div class="top-actions">
@@ -3100,7 +3100,7 @@
         });
 
         attachUsdRateListener();
-        runCalc(); setInterval(updateTech, 1000);
+        runCalc(); setInterval(updateUsdRateAge, 1000);
         // Sayfa günlerce açık kalsa bile (kullanıcı hiç giriş/çıkış yapmasa, sayfayı yenilemese) kur eskimesin diye,
         // her 30 dakikada bir Firebase'deki kur kaydının yaşını kontrol et — gerekirse otomatik tazelenir.
         setInterval(checkUsdRateFreshness, 30 * 60 * 1000);
@@ -3136,6 +3136,8 @@
                 document.getElementById('cfgU').value = data.rate;
                 runCalc();
                 const ageMs = Date.now() - (data.fetchedAtMillis || 0);
+                _lastKnownRateFetchMillis = data.fetchedAtMillis || null;
+                updateUsdRateAge(); // ekrandaki yazıyı anında tazele, 1 saniyelik interval'i bekleme
                 if(statusEl) {
                     statusEl.innerText = 'Otomatik kur: ' + data.rate + ' (kaynak: ' + (data.source || 'açık veri') + ', güncellenme: ' + new Date(data.fetchedAtMillis).toLocaleString('tr-TR') + ')';
                 }
@@ -3285,12 +3287,18 @@
         });
     }
 
-    function updateTech() {
-        if(!lastUpdate) return;
-        const diff = Math.floor((new Date() - lastUpdate) / 1000);
-        const timeStr = lastUpdate.toLocaleTimeString('tr-TR');
+    // Kur şeridindeki "kur: X dk önce" yazısını günceller — bu, mağaza config'inin yaşı değil,
+    // GERÇEK kur verisinin (globalRates/usdTry) yaşıdır. Önceki sürümde bu alan yanlışlıkla mağaza
+    // ayarlarının son kaydedilme zamanını gösteriyordu, mağaza çalışanı "kur ne zaman güncellendi"
+    // sorusuna hep yanlış bir sayıya bakarak cevap arıyordu — bu yüzden ↻ butonu kuru gerçekten
+    // güncellese de, ekrandaki sayı (config yaşı, kurla ilgisiz) hiç değişmiyormuş gibi görünüyordu.
+    let _lastKnownRateFetchMillis = null;
+    function updateUsdRateAge() {
+        const el = document.getElementById('usd-rate-age');
+        if(!el || !_lastKnownRateFetchMillis) return;
+        const diff = Math.floor((Date.now() - _lastKnownRateFetchMillis) / 1000);
         const agoStr = diff < 60 ? diff + ' sn önce' : Math.floor(diff/60) + ' dk önce';
-        document.getElementById('tech-time').innerHTML = `${timeStr} &nbsp;<span class="live">● ${agoStr}</span>`;
+        el.innerText = 'kur: ' + agoStr;
     }
 
     function getCodes(u, xU) {
