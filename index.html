@@ -3139,7 +3139,10 @@
                 _lastKnownRateFetchMillis = data.fetchedAtMillis || null;
                 updateUsdRateAge(); // ekrandaki yazıyı anında tazele, 1 saniyelik interval'i bekleme
                 if(statusEl) {
-                    statusEl.innerText = 'Otomatik kur: ' + data.rate + ' (kaynak: ' + (data.source || 'açık veri') + ', güncellenme: ' + new Date(data.fetchedAtMillis).toLocaleString('tr-TR') + ')';
+                    const rawText = (data.rawRate !== undefined && data.rawRate !== null) ? ' — ham veri: ' + data.rawRate : '';
+                    statusEl.innerHTML = 'Otomatik kur: ' + data.rate + ' (kaynak: ' + (data.source || 'açık veri') + ', güncellenme: ' + new Date(data.fetchedAtMillis).toLocaleString('tr-TR') + ')' +
+                        '<br><span style="font-family:monospace; color:var(--ink-dim);">' + rawText.replace(/^ — /, '') + '</span>' +
+                        '<br><span style="font-size:9.5px; color:var(--ink-dim);">Bu ham hassasiyetli sayı sadece kanıt amaçlıdır — her güncellemede farklı bir değer görmen, sistemin gerçekten çalıştığını gösterir. Fiyat hesabı her zaman 2 ondalık (' + data.rate + ') kullanır, bu kısım hiç değişmez.</span>';
                 }
                 // Kur çok bayatlamışsa (3 saatten fazla) görsel olarak uyar — bu cihaz zaten kendi
                 // güncellemeyi tetikleyecek (aşağıda), ama mağaza çalışanının "bu fiyat güncel mi"
@@ -3250,8 +3253,12 @@
             const rate = data && data.usd && data.usd.try;
             if(!rate || !(rate > 0)) throw new Error('Geçersiz kur verisi');
             const rounded = Math.round(rate * 100) / 100;
+            // rawRate: API'den gelen TAM hassasiyetli ham değer — fiyat hesaplamasında KULLANILMIYOR
+            // (o hâlâ "rounded", 2 ondalık hane kullanır), sadece Ayarlar ekranında "gerçekten her
+            // çekişte farklı bir sayı geliyor mu" diye kanıt görmek için saklanıyor.
             return fbDb.ref('globalRates/usdTry').set({
                 rate: rounded,
+                rawRate: rate,
                 source: 'fawazahmed0/currency-api',
                 fetchedAtMillis: Date.now()
             }).then(function() { return rounded; });
