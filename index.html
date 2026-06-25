@@ -1583,7 +1583,9 @@
             <div class="rates-chip">
                 <div id="user-chip" style="font-weight:800; color:var(--rose); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
                 <div id="tech-rates">U: — | xU: —</div>
-                <div id="tech-time" class="tech-time">— &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span></div>
+                <div id="tech-time" class="tech-time">— &nbsp;<span id="sync-status" style="color:var(--ink-dim);">○ bağlanıyor…</span>
+                    <span onclick="manualRefreshUsdRate()" id="usd-refresh-btn" title="Kuru şimdi güncelle" style="cursor:pointer; margin-left:6px; color:var(--rose); font-weight:800; display:inline-block;">↻</span>
+                </div>
             </div>
             <div class="top-actions">
                 <div style="position:relative;">
@@ -1812,6 +1814,14 @@
                     <p>Satış/teklif/değişim kaydettiğinde gördüğün "Kaydedildi" mesajı, kaydın senin cihazına yazıldığı anlamına gelir — bağlantın o sırada zayıfsa, sunucuya ulaşması biraz zaman alabilir.</p>
                     <div class="help-card" style="border-color:rgba(232,83,122,.3);">
                         Eğer o an gerçekten internetin yoksa, "Kaydedildi" mesajının altında ek bir uyarı çıkar: <b>"Şu an internet bağlantın yok... bağlantı gelene kadar bu sekmeyi/uygulamayı KAPATMA."</b> Bu uyarı çıktığında, bağlantı gelip kaydın gerçekten gönderildiğinden emin olmadan tableti/telefonu kapatma, sayfayı yenileme veya uygulamadan çıkma — aksi halde o kayıt hiç sunucuya ulaşmadan kaybolabilir. Üstteki kur şeridinde "● senkron" yazısını görünce bağlantın geri gelmiş ve kayıtların gönderilmiş olduğundan emin olabilirsin.
+                    </div>
+                </div>
+
+                <div class="help-section">
+                    <h4>⚠ Kur Şeridi Kırmızı Görünüyorsa</h4>
+                    <p>Üstteki kur şeridi (U: ... | xU: ...) normalde gri/normal renkte durur. Eğer <b>kırmızıya döndüyse</b>, kur 3 saatten daha eski demektir — yani sistem otomatik güncellemeyi bir süredir yapamamış olabilir.</p>
+                    <div class="help-card" style="border-color:rgba(232,83,122,.3);">
+                        Kur şeridinin üstündeki saat/zaman bilgisinin yanında küçük bir <b>↻ ikonu</b> var — buna basman kuru <b>anında</b> zorla günceller, Ayarlar'a girmen gerekmez. Buton dönerken bekle, işlem bitince ✓ (başarılı) veya ⚠ (başarısız, internet sorunlu olabilir) gösterir, sonra otomatik eski hâline döner. Kur uzun süre (yarım saatten fazla) bayat/kırmızı kalırsa, önce bu ikona bas; düzelmiyorsa sayfayı yenile; o da düzeltmiyorsa bana (admin'e) bildir.
                     </div>
                 </div>
 
@@ -3102,6 +3112,9 @@
     // Kur 1 saatten eskiyse, dinleyen herhangi bir cihaz dış API'den çekip o köşeyi günceller
     // (böylece her mağaza ayrı ayrı dış API'ye istek atmaz, tek bir ortak değer paylaşılır).
     const USD_RATE_MAX_AGE_MS = 60 * 60 * 1000; // 1 saat
+    // Kur bundan daha bayatsa (3 saat), mağaza ekranında kur şeridi kırmızıya döner — "bu cihaz zaten
+    // güncellemeyi tetikleyecek" ile "mağaza çalışanı bunu fark etmeli" ayrı şeyler, ikisi de gerekli.
+    const USD_RATE_STALE_WARNING_MS = 3 * 60 * 60 * 1000; // 3 saat
 
     // Firebase'deki güncel kur kaydının yaşını kontrol eder, 1 saatten eskiyse yeniden çeker.
     // attachUsdRateListener zaten sayfa açılışında bunu yapıyor; bu fonksiyon sayfa hiç yenilenmeden
@@ -3119,12 +3132,25 @@
         fbDb.ref('globalRates/usdTry').on('value', function(snap) {
             const data = snap.val();
             const statusEl = document.getElementById('usd-rate-status');
+            const chipEl = document.querySelector('.rates-chip');
             if(data && data.rate > 0) {
                 document.getElementById('cfgU').value = data.rate;
                 runCalc();
                 const ageMs = Date.now() - (data.fetchedAtMillis || 0);
                 if(statusEl) {
                     statusEl.innerText = 'Otomatik kur: ' + data.rate + ' (kaynak: ' + (data.source || 'açık veri') + ', güncellenme: ' + new Date(data.fetchedAtMillis).toLocaleString('tr-TR') + ')';
+                }
+                // Kur çok bayatlamışsa (3 saatten fazla) görsel olarak uyar — bu cihaz zaten kendi
+                // güncellemeyi tetikleyecek (aşağıda), ama mağaza çalışanının "bu fiyat güncel mi"
+                // sorusuna kuşkuyla bakması gerektiğini anlaması için kur şeridi kırmızıya döner.
+                if(chipEl) {
+                    if(ageMs > USD_RATE_STALE_WARNING_MS) {
+                        chipEl.style.borderColor = 'var(--rose)';
+                        chipEl.style.background = 'var(--rose-pale)';
+                    } else {
+                        chipEl.style.borderColor = '';
+                        chipEl.style.background = '';
+                    }
                 }
                 if(ageMs > USD_RATE_MAX_AGE_MS) {
                     refreshUsdRateFromApi(); // bayatladıysa bu cihaz güncellemeyi dener
@@ -3214,7 +3240,7 @@
         const primaryUrl  = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json';
         const fallbackUrl = 'https://latest.currency-api.pages.dev/v1/currencies/usd.json';
 
-        fetch(primaryUrl).then(function(r) {
+        return fetch(primaryUrl).then(function(r) {
             if(!r.ok) throw new Error('primary failed');
             return r.json();
         }).catch(function() {
@@ -3223,14 +3249,40 @@
             const rate = data && data.usd && data.usd.try;
             if(!rate || !(rate > 0)) throw new Error('Geçersiz kur verisi');
             const rounded = Math.round(rate * 100) / 100;
-            fbDb.ref('globalRates/usdTry').set({
+            return fbDb.ref('globalRates/usdTry').set({
                 rate: rounded,
                 source: 'fawazahmed0/currency-api',
                 fetchedAtMillis: Date.now()
-            }).catch(function(err) { console.error('Kur Firebase\'e yazılamadı:', err); });
+            }).then(function() { return rounded; });
         }).catch(function(err) {
             console.error('USD kuru çekilemedi:', err);
             if(statusEl) statusEl.innerText = '⚠ Otomatik kur çekilemedi. Mevcut değer kullanılıyor, gerekirse elle düzeltebilirsin (Ayarlar açıkken kilidi kaldırmak için bana bildir).';
+            throw err; // manualRefreshUsdRate gibi çağıranların hatayı yakalayabilmesi için yeniden fırlatılır
+        });
+    }
+
+    // Mağaza tarafındaki ↻ butonuna basıldığında çağrılır — Ayarlar'a girmeye hiç gerek kalmadan,
+    // ana ekrandan tek tıkla kuru anında zorla günceller. Görsel geri bildirim: buton döner, biter,
+    // ✓ veya ⚠ ile sonucu gösterir.
+    let _manualRefreshInProgress = false;
+    function manualRefreshUsdRate() {
+        if(_manualRefreshInProgress) return; // üst üste tıklamayı engelle
+        _manualRefreshInProgress = true;
+        const btn = document.getElementById('usd-refresh-btn');
+        if(btn) { btn.innerText = '⏳'; btn.style.pointerEvents = 'none'; }
+
+        refreshUsdRateFromApi().then(function() {
+            if(btn) { btn.innerText = '✓'; btn.style.color = 'var(--success)'; }
+            setTimeout(function() {
+                if(btn) { btn.innerText = '↻'; btn.style.color = 'var(--rose)'; btn.style.pointerEvents = ''; }
+                _manualRefreshInProgress = false;
+            }, 1500);
+        }).catch(function() {
+            if(btn) { btn.innerText = '⚠'; }
+            setTimeout(function() {
+                if(btn) { btn.innerText = '↻'; btn.style.color = 'var(--rose)'; btn.style.pointerEvents = ''; }
+                _manualRefreshInProgress = false;
+            }, 2000);
         });
     }
 
