@@ -1523,7 +1523,7 @@
                         <b>☑ Tümünü Seç + ✎ Toplu Kâr/xU Düzenle:</b> Birden fazla (ya da tüm) mağazayı seçip, xU payını ve Nakit kâr oranını <b>tek seferde</b> güncelleyebilirsin. Sadece doldurduğun alanlar değişir. <b>Nakit Kâr %</b> yazınca 3 Taksit/2 Taksit/Tek Çekim kâr oranları otomatik hesaplanır — her kademe bir öncekinin fiyat olarak <b>%5 eksiği</b> olacak şekilde (Nakit en ucuz, 3 Taksit en pahalı). Bu dört oranı admin ekranından tek tek görmezsin/girmezsin, sadece Nakit'i yazarsın; mağaza isterse kendi ekranından bu oranların herhangi birini sonradan elle değiştirebilir.<br><br>
                         <b>📋 Boş Şablonu İndir:</b> Mağaza Adı, Tür, İl, Kullanıcı Adı, Şifre, Telefon sütunlu boş bir Excel iner — Tür ve İl sütunları açılır liste (dropdown) olarak gelir, serbest yazılamaz, yazım hatası imkansızdır. <b>Adres</b> bu hazır şablonda yok (dropdown'ları bozmadan eklemek mümkün olmadı) — istersen tabloya elle bir "Adres" sütunu ekleyip doldurabilirsin, sistem yükleme sırasında bunu okur. "Mevcut Mağazaları Excel'e Aktar" ile indirdiğin dosyada ise Adres sütunu zaten hazır geliyor.<br><br>
                         <b>📤 Excel'den Toplu Yükle:</b> Doldurduğun şablonu (ya da "Mevcut Mağazaları Excel'e Aktar" ile indirip üzerine eklediğin dosyayı) yükle. Yeni kullanıcı adları sıfırdan oluşturulur; <b>var olan kullanıcı adları</b> ise sadece bilgi (ad/tür/il/telefon) olarak güncellenir — <b>şifre Excel'den asla değiştirilmez</b>. İşlem bitince kaç mağazanın oluşturulduğu/güncellendiği/hata verdiği özet olarak gösterilir.<br><br>
-                        <b>⚠ Çok sayıda yeni mağaza (30+) aynı anda oluşturuyorsan:</b> Firebase, aynı cihazdan kısa sürede çok fazla hesap oluşturma denemesini "şüpheli yoğunluk" sayıp bir süreliğine <b>tüm hesap oluşturmayı engelleyebilir</b> (hata: "too-many-requests"). Bu durumda panik yapma — birkaç saat bekleyip tekrar dene, genelde kendiliğinden açılır. Büyük listeleri (50+) birden değil, 15-20'lik gruplar halinde yüklemen bu riski azaltır.<br><br>
+                        <b>⏸ Çok sayıda yeni mağaza oluştururken:</b> Firebase, aynı cihazdan kısa sürede çok fazla hesap oluşturma denemesini "şüpheli yoğunluk" sayıp tüm hesap oluşturmayı geçici olarak engelleyebilir (hata: "too-many-requests"). Bunu önlemek için sistem <b>her 12 yeni mağazadan sonra kendiliğinden ~75 saniyelik bir ara verir</b> — ekranda "⏸ kısa bir ara veriliyor" yazısını görürsün, bu normaldir, dosyayı elle gruplara bölmene gerek yok, tek seferde 60+ mağaza yükleyip bekleyebilirsin. Yine de bu engele çarparsan (ki çok nadiren olur), birkaç saat bekleyip tekrar denemen yeterli, genelde kendiliğinden açılır.<br><br>
                         <b>📥 Mevcut Mağazaları Excel'e Aktar:</b> Tüm aktif mağazaları aynı sütun düzeniyle indirir — yeni mağaza eklemek istediğinde bu dosyanın altına ekleyip tekrar yükleyebilirsin. Şifre sütunu, sadece daha önce "Şifre (not)" olarak kaydettiysen dolu gelir.<br><br>
                         <b>🖨️ Mağaza Listesi PDF (Bölgelere Göre):</b> Tüm aktif mağazaları, bölgelere göre gruplanmış, kurumsal görünümlü bir PDF olarak yazdırır — her bölge kendi başlığı altında, mağaza adı/tür/il/telefon/adres bilgileriyle. Toplantı, sunum ya da paylaşım için.<br><br>
                         <b>Önemli:</b> Excel'den mağaza <b>silinmez</b> — bir satırı dosyadan kaldırıp tekrar yüklesen de o mağaza sistemde kalır. Kapanan bir mağazayı kapatmak için mağaza listesinden elle "🗑 Arşivle" demen gerekir, bu kasıtlı bir güvenlik tercihidir.<br><br>
@@ -6410,6 +6410,21 @@
         processStoreExcelRows(_pendingExcelRows);
     }
 
+    // Excel toplu yükleme sırasında, belirli aralıklarla otomatik "dinlenme" yapar — ekranda geri
+    // sayımı gösterir, süre bitince callback'i çalıştırır. Bu, Firebase'in "too-many-requests" güvenlik
+    // engeline çarpmamak için kasıtlı bir yavaşlatmadır, admin'in dosyayı gruplara bölmesine gerek bırakmaz.
+    function runCooldown(seconds, callback) {
+        const resultEl = document.getElementById('storeExcelResult');
+        let remaining = seconds;
+        function tick() {
+            if(resultEl) resultEl.innerHTML = '⏸ Firebase güvenlik sınırına çarpmamak için kısa bir ara veriliyor… (' + remaining + ' sn) — bu normal, dosyanı yüklemeye devam edecek.';
+            if(remaining <= 0) { callback(); return; }
+            remaining--;
+            setTimeout(tick, 1000);
+        }
+        tick();
+    }
+
     function processStoreExcelRows(rows) {
         const resultEl = document.getElementById('storeExcelResult');
         resultEl.style.display = 'block';
@@ -6427,6 +6442,12 @@
         fbDb.ref('stores').once('value').then(function(snap) {
             const existing = snap.val() || {};
             let created = 0, updated = 0, failed = [];
+            // Firebase'in "too-many-requests" güvenlik engeline çarpmamak için: her COOLDOWN_EVERY yeni
+            // hesap oluşturulduktan sonra, kod kendi içinde COOLDOWN_SECONDS kadar bekler. Bu sayede admin
+            // 66 mağazalık tek bir dosyayı yükleyip bekleyebilir, dosyayı elle gruplara bölmesi gerekmez.
+            const COOLDOWN_EVERY = 12;
+            const COOLDOWN_SECONDS = 75;
+            let createdSinceCooldown = 0;
 
             function processNext(idx) {
                 if(idx >= validRows.length) {
@@ -6512,7 +6533,13 @@
                         .then(function() {
                             existing[storeId] = true; // aynı dosyada tekrar geçerse mükerrer oluşturmayı önler
                             created++;
-                            setTimeout(function() { processNext(idx+1); }, 2500); // Firebase Auth "too-many-requests" sınırına çarpmamak için bekleme (önceki 600ms yetersiz kaldı, 66 mağazalık toplu denemede engellenme yaşandı)
+                            createdSinceCooldown++;
+                            if(createdSinceCooldown >= COOLDOWN_EVERY && idx + 1 < validRows.length) {
+                                createdSinceCooldown = 0;
+                                runCooldown(COOLDOWN_SECONDS, function() { processNext(idx+1); });
+                            } else {
+                                setTimeout(function() { processNext(idx+1); }, 2500); // ardışık istekler arası temel bekleme
+                            }
                         })
                         .catch(function(err) {
                             failed.push(storeName + ' (oluşturulamadı: ' + err.message + ')');
