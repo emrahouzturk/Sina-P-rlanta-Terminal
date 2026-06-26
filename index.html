@@ -4289,16 +4289,30 @@
 
     let _historyCache = []; // [{key, ref, ts, cusName, cusPhone, storeName, storeId, status, soldAt, basket}]
     let _storesInfo = {}; // storeId -> {il, bolge, storeType, cfgStore}
+    let _storesInfoListenerAttached = false;
 
+    // Önceden bu sadece bir kerelik (once) çekim yapıyordu — admin paneline girdikten SONRA yeni bir
+    // mağaza oluşturulursa (ya da bilgisi düzenlenirse), _storesInfo hiç tazelenmiyordu. Sonuç: yeni
+    // mağazadan satış geldiğinde "Bölge: Bilinmiyor" görünüyordu, çünkü o mağaza _storesInfo'da hiç yoktu.
+    // Şimdi canlı dinleyici (on) kullanılıyor — stores/ altında HERHANGİ bir değişiklik (yeni mağaza,
+    // düzenleme, arşivleme) olduğunda otomatik tazelenir, admin'in sayfayı yenilemesi hiç gerekmez.
     function refreshStoresInfo() {
-        return fbDb.ref('stores').once('value').then(function(snap) {
-            const stores = snap.val() || {};
-            _storesInfo = {};
-            Object.keys(stores).forEach(function(sid) {
-                const cfg = stores[sid].config || {};
-                _storesInfo[sid] = { il: cfg.il || '', bolge: cfg.bolge || '', storeType: cfg.storeType || 'magaza', cfgStore: cfg.cfgStore || sid, archived: !!cfg.archived };
+        return new Promise(function(resolve) {
+            if(_storesInfoListenerAttached) { resolve(_storesInfo); return; }
+            _storesInfoListenerAttached = true;
+            fbDb.ref('stores').on('value', function(snap) {
+                const stores = snap.val() || {};
+                _storesInfo = {};
+                Object.keys(stores).forEach(function(sid) {
+                    const cfg = stores[sid].config || {};
+                    _storesInfo[sid] = { il: cfg.il || '', bolge: cfg.bolge || '', storeType: cfg.storeType || 'magaza', cfgStore: cfg.cfgStore || sid, archived: !!cfg.archived };
+                });
+                resolve(_storesInfo);
+                // İlk çağrıdan sonraki her güncellemede, açık ekranları da tazele — yoksa admin ekranda
+                // dururken yeni mağaza/satış gelirse "Bilinmiyor" görünmeye devam ederdi.
+                if(typeof renderAdminPanel === 'function') renderAdminPanel();
+                if(typeof renderDashOverview === 'function') renderDashOverview();
             });
-            return _storesInfo;
         });
     }
     let _historyListenerAttached = false;
@@ -6677,13 +6691,6 @@
         fbDb.ref('stores').once('value').then(function(snap) {
             const stores = snap.val() || {};
             const ids = Object.keys(stores);
-
-            // _storesInfo lookup'ını da tazele (rapor filtrelerinin il/bölge/tür bilgisini bilmesi için)
-            _storesInfo = {};
-            ids.forEach(function(sid) {
-                const cfg = stores[sid].config || {};
-                _storesInfo[sid] = { il: cfg.il || '', bolge: cfg.bolge || '', storeType: cfg.storeType || 'magaza', cfgStore: cfg.cfgStore || sid, archived: !!cfg.archived };
-            });
 
             if(!ids.length) { el.innerHTML = '<div style="font-size:12.5px; color:var(--dash-ink-dim); padding:6px 4px;">Henüz mağaza yok.</div>'; return; }
 
