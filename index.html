@@ -1203,6 +1203,8 @@
             /* Satış Raporu metni dar ekranda gizlenir, sadece ☰ ikonu kalır — diğer butonlar sığsın diye */
             #store-report-btn .store-more-label { display: none; }
             #store-report-btn { padding: 9px 11px; }
+            #my-performance-btn .store-more-label { display: none; }
+            #my-performance-btn { padding: 9px 11px; }
         }
 
         @media (max-width: 360px) {
@@ -1536,7 +1538,7 @@
                     <p>Bölge → İl → Mağaza şeklinde zincirleme filtreleme, tarih aralığı, tür (Mağaza/Satış Noktası) ve durum (Satış/Teklif) filtreleri.</p>
                     <div class="help-card">
                         <b>Tek bir mağaza seçtiğinde:</b> Filtrelerin altında o mağazaya özel <b>son 6 aylık trend grafiği</b> belirir — "bu mağaza son aylarda artıyor mu, azalıyor mu" sorusunu doğrudan, görsel olarak cevaplar. "Tüm Mağazalar" seçiliyken bu grafik gizlenir (Genel Bakış'taki grafik zaten tüm mağazaların toplamını gösteriyor).<br><br>
-                        <b>💰 Tutar Bazlı:</b> Mağaza başına toplam adet + etiket÷3 ($). Her mağaza adının altında, ürün adedinin yanında <b>indirim oranı</b> da görünür (örn. "42 ürün +3 🔄 · %18 indirimli") — bu, ✎ ile manuel fiyatlandırılmış (pazarlık/indirim yapılmış) ürünlerin toplam ürüne oranı. %25 ve üzeri kırmızı ve kalın gösterilir, çünkü bir mağaza ortalamadan çok daha fazla indirim yapıyorsa bu kâr marjını eritir — bunu fark etmen için var. Etikete ya da adede göre sıralanabilir.<br><br>
+                        <b>💰 Tutar Bazlı:</b> Mağaza başına toplam adet + etiket÷3 ($). Her mağaza adının altında, ürün adedinin yanında <b>indirim oranı</b> da görünür (örn. "42 ürün +3 🔄 · %18 indirimli") — bu, ✎ ile manuel fiyatlandırılmış (pazarlık/indirim yapılmış) ürünlerin toplam ürüne oranı. %25 ve üzeri kırmızı ve kalın gösterilir, çünkü bir mağaza ortalamadan çok daha fazla indirim yapıyorsa bu kâr marjını eritir — bunu fark etmen için var. Altında ayrıca <b>💰 Prim: $ X</b> satırı görünür — seçili filtrelere göre o mağazanın tahmini prim hak edişi, dolar cinsinden (varsayılan %3, mağazanın işaretlediği ürünler %1, değişimlerde net fark üzerinden). Ödemeyi hangi para birimiyle yaparsan yap, referans tutar dolar bazında verilir. Etikete ya da adede göre sıralanabilir.<br><br>
                         <b>📦 Ürün Bazlı:</b> Her satılan ürün kendi satırında, kodu + etiketiyle, en yüksek etiketten en düşüğe sıralı.<br><br>
                         <b>📊 Excel İndir:</b> Aktif filtrelere ve seçili moda göre .xlsx dosyası iner — Tutar Bazlı modda indirimli ürün adedi ve indirim oranı sütunları da dahildir.<br><br>
                         <b>📄 PDF Rapor Al:</b> Aynı veriyle sade bir tablo PDF'i basılır (grafik içermez, ekrandaki grafiklere zaten admin panelinden bakabilirsin).
@@ -1592,6 +1594,10 @@
                 <span onclick="manualRefreshUsdRate()" id="usd-refresh-btn" title="Kuru şimdi güncelle" style="position:absolute; top:50%; right:6px; transform:translateY(-50%); cursor:pointer; color:var(--rose); font-weight:800; font-size:16px; line-height:1; padding:4px;">↻</span>
             </div>
             <div class="top-actions">
+                <button class="btn-ghost" id="my-performance-btn" onclick="openMyPerformanceScreen()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span class="store-more-label">Performansım</span>
+                </button>
                 <button class="btn-ghost" id="store-report-btn" onclick="openStoreReportScreen()">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                     <span class="store-more-label">Satış Raporu</span>
@@ -1617,54 +1623,6 @@
                 <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" alt="Sina Pırlanta">
                 <div id="h-store-display" class="brand-name">SINA TERMİNAL</div>
                 <div id="h-tel-display" class="brand-sub"></div>
-            </div>
-
-            <div id="monthly-summary-card" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div style="font-size:10px; font-weight:800; color:var(--ink-dim); letter-spacing:.05em; text-transform:uppercase;">📅 Aylık Performansım</div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button onclick="shiftSummaryMonth(-1)" style="background:none; border:1px solid var(--border); border-radius:6px; width:24px; height:24px; cursor:pointer; color:var(--ink-dim); font-size:12px; display:flex; align-items:center; justify-content:center;">‹</button>
-                        <span id="monthly-summary-label" style="font-size:11px; font-weight:700; color:var(--ink); min-width:80px; text-align:center;">—</span>
-                        <button onclick="shiftSummaryMonth(1)" style="background:none; border:1px solid var(--border); border-radius:6px; width:24px; height:24px; cursor:pointer; color:var(--ink-dim); font-size:12px; display:flex; align-items:center; justify-content:center;">›</button>
-                    </div>
-                </div>
-                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
-                    <div style="text-align:center; background:var(--bg); border-radius:10px; padding:8px 4px;">
-                        <div id="monthly-summary-count" style="font-size:17px; font-weight:800; color:var(--success);">0</div>
-                        <div style="font-size:8px; color:var(--ink-dim); font-weight:700;">SATILAN ÜRÜN</div>
-                    </div>
-                    <div style="text-align:center; background:var(--bg); border-radius:10px; padding:8px 4px;">
-                        <div id="monthly-summary-tl" style="font-size:15px; font-weight:800; color:var(--ink);">0</div>
-                        <div style="font-size:8px; color:var(--ink-dim); font-weight:700;">TOPLAM ₺</div>
-                    </div>
-                    <div style="text-align:center; background:var(--bg); border-radius:10px; padding:8px 4px;">
-                        <div id="monthly-summary-etiket" style="font-size:15px; font-weight:800; color:var(--gold);">0</div>
-                        <div style="font-size:8px; color:var(--ink-dim); font-weight:700;">ETİKET TOPLAMI</div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="leaderboard-card" style="display:none; background:linear-gradient(135deg,var(--rose-pale),var(--gold-pale)); border:1px solid var(--rose-soft); border-radius:14px; padding:14px 16px; margin-bottom:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <div style="font-size:10px; font-weight:800; color:var(--rose); letter-spacing:.05em; text-transform:uppercase;">🏆 Sıralamam</div>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <button onclick="shiftLeaderboardMonth(-1)" style="background:none; border:1px solid var(--rose-soft); border-radius:6px; width:22px; height:22px; cursor:pointer; color:var(--rose); font-size:11px; display:flex; align-items:center; justify-content:center;">‹</button>
-                        <span id="leaderboard-month-label" style="font-size:10px; font-weight:700; color:var(--ink); min-width:72px; text-align:center;">—</span>
-                        <button onclick="shiftLeaderboardMonth(1)" style="background:none; border:1px solid var(--rose-soft); border-radius:6px; width:22px; height:22px; cursor:pointer; color:var(--rose); font-size:11px; display:flex; align-items:center; justify-content:center;">›</button>
-                    </div>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <div style="flex:1; text-align:center; background:rgba(255,255,255,.6); border-radius:10px; padding:8px 6px;">
-                        <div style="font-size:9px; color:var(--ink-dim); font-weight:700;">TÜRKİYE GENELİ</div>
-                        <div id="lb-turkiye-rank" style="font-size:20px; font-weight:800; color:var(--ink); margin-top:2px;">—</div>
-                        <div id="lb-turkiye-diff" style="font-size:9.5px; color:var(--ink-dim); margin-top:2px;">—</div>
-                    </div>
-                    <div style="flex:1; text-align:center; background:rgba(255,255,255,.6); border-radius:10px; padding:8px 6px;">
-                        <div style="font-size:9px; color:var(--ink-dim); font-weight:700;" id="lb-bolge-label">BÖLGE GENELİ</div>
-                        <div id="lb-bolge-rank" style="font-size:20px; font-weight:800; color:var(--ink); margin-top:2px;">—</div>
-                        <div id="lb-bolge-diff" style="font-size:9.5px; color:var(--ink-dim); margin-top:2px;">—</div>
-                    </div>
-                </div>
             </div>
 
             <div class="input-card" id="calc-mode-section">
@@ -1938,14 +1896,17 @@
                 </div>
 
                 <div class="help-section">
-                    <h4>7. Aylık Performansım</h4>
-                    <p>Ana ekranda <b>📅 Aylık Performansım</b> kartı, Geçmiş'e girip filtre yapmana gerek kalmadan, o ay kaç ürün sattığını, toplam ₺ tutarını ve etiket toplamını anında gösterir.</p>
-                    <div class="help-card">‹ › okları ile geçmiş aylara gidip karşılaştırabilirsin (gelecek aya gidilemez). Sadece <b>gerçekten satılmış</b> kayıtlar sayılır<span id="help-sec7-durum-on">, bekleyen teklifler dahil değildir</span>.</div>
+                    <h4>7. Performansım</h4>
+                    <p>Sağ üstteki <b>📊 Performansım</b> butonuna girince açılan ekranda üç bölüm var — bunlar artık ana ekranda değil, ayrı bir sekmede, çünkü müşteri yanındayken bu bilgilerin görünmesi uygun değildi.</p>
+                    <div class="help-card">
+                        <b>📅 Aylık Performansım:</b> O ay kaç ürün sattığını, toplam ₺ tutarını ve etiket toplamını anında gösterir. ‹ › okları ile geçmiş aylara gidip karşılaştırabilirsin (gelecek aya gidilemez). Sadece <b>gerçekten satılmış</b> kayıtlar sayılır<span id="help-sec7-durum-on">, bekleyen teklifler dahil değildir</span>.<br><br>
+                        <b>💰 Bu Ayki Tahmini Prim:</b> Seçili aydaki tüm satışların prim toplamı, etiket÷3 üzerinden, <b>dolar ($) cinsinden</b> hesaplanır. Varsayılan oran <b>%3</b>'tür — bir ürün merkezin belirlediği istisnai (%1'lik) bir ürünse, Geçmiş ekranından o satışı açıp ürünün yanındaki "Prim: %3" etiketine dokunarak %1'e çevirebilirsin (tekrar dokunursan %3'e döner). Bu işaretleme satış kapandıktan sonra yapılır, müşteri hiç görmez. <b>Değişimlerde</b> prim, yeni ürünün tam tutarından değil, <b>net farktan</b> (yeni ürün etiketi − geri alınan ürün etiketi) hesaplanır, yeni ürünün prim oranı kullanılır.
+                    </div>
                 </div>
 
                 <div class="help-section" id="help-sec8-siralama">
                     <h4>8. Mağaza Sıralaması</h4>
-                    <p>Eğer ekranda <b>🏆 Sıralamam</b> kartı görünüyorsa, seçtiğin ay için Türkiye genelinde ve kendi bölgende kaçıncı sırada olduğunu gösterir (örn. "2 / 5").</p>
+                    <p>Aynı <b>📊 Performansım</b> ekranında, eğer açıksa <b>🏆 Sıralamam</b> kartı görünür — seçtiğin ay için Türkiye genelinde ve kendi bölgende kaçıncı sırada olduğunu gösterir (örn. "2 / 5").</p>
                     <div class="help-card">‹ › okları ile geçmiş aylara (son 6 ay) gidip "geçen ay kaçıncıydım, bu ay neredeyim" diye karşılaştırabilirsin. Bu kart sadece bilgilendirme amaçlıdır, hiçbir ciro/tutar/adet rakamı ya da yüzdesel fark paylaşılmaz — sadece sıra numarası görünür. Yönetim bu ekranı istediği zaman kapatabilir, kapalıysa kart hiç görünmez.</div>
                 </div>
 
@@ -2132,6 +2093,75 @@
     </div>
 
     <!-- MAĞAZA SATIŞ RAPORU EKRANI (tam ekran) -->
+    <!-- PERFORMANSIM — Aylık Performans, Sıralama ve Prim özeti. Önceden ana hesap makinesi ekranında,
+         müşterinin gözü önünde duruyordu — artık ayrı bir sekme, mağaza çalışanı isteyince açar. -->
+    <div id="my-performance-screen" style="position:fixed; inset:0; background:var(--bg); z-index:600; display:none; flex-direction:column;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
+            <h3 style="margin:0; font-size:16px;">Performansım</h3>
+            <button onclick="closeMyPerformanceScreen()" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; color:var(--ink-mid); cursor:pointer;">✕ Kapat</button>
+        </div>
+
+        <div style="flex:1; overflow-y:auto; padding:18px 22px 80px;">
+
+            <div id="monthly-summary-card" style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px 16px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="font-size:10px; font-weight:800; color:var(--ink-dim); letter-spacing:.05em; text-transform:uppercase;">📅 Aylık Performansım</div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button onclick="shiftSummaryMonth(-1)" style="background:none; border:1px solid var(--border); border-radius:6px; width:24px; height:24px; cursor:pointer; color:var(--ink-dim); font-size:12px; display:flex; align-items:center; justify-content:center;">‹</button>
+                        <span id="monthly-summary-label" style="font-size:11px; font-weight:700; color:var(--ink); min-width:80px; text-align:center;">—</span>
+                        <button onclick="shiftSummaryMonth(1)" style="background:none; border:1px solid var(--border); border-radius:6px; width:24px; height:24px; cursor:pointer; color:var(--ink-dim); font-size:12px; display:flex; align-items:center; justify-content:center;">›</button>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">
+                    <div style="text-align:center; background:var(--bg); border-radius:10px; padding:8px 4px;">
+                        <div id="monthly-summary-count" style="font-size:17px; font-weight:800; color:var(--success);">0</div>
+                        <div style="font-size:8px; color:var(--ink-dim); font-weight:700;">SATILAN ÜRÜN</div>
+                    </div>
+                    <div style="text-align:center; background:var(--bg); border-radius:10px; padding:8px 4px;">
+                        <div id="monthly-summary-tl" style="font-size:15px; font-weight:800; color:var(--ink);">0</div>
+                        <div style="font-size:8px; color:var(--ink-dim); font-weight:700;">TOPLAM ₺</div>
+                    </div>
+                    <div style="text-align:center; background:var(--bg); border-radius:10px; padding:8px 4px;">
+                        <div id="monthly-summary-etiket" style="font-size:15px; font-weight:800; color:var(--gold);">0</div>
+                        <div style="font-size:8px; color:var(--ink-dim); font-weight:700;">ETİKET TOPLAMI</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRİM ÖZETİ — seçili aydaki tahmini prim hak edişi. Değişimler net fark üzerinden,
+                 her ürün kendi prim oranıyla (varsayılan %3, işaretlenmişse %1) hesaplanır. -->
+            <div id="monthly-prim-card" style="background:linear-gradient(135deg,var(--gold-pale),var(--rose-pale)); border:1px solid var(--gold); border-radius:14px; padding:14px 16px; margin-bottom:16px;">
+                <div style="font-size:10px; font-weight:800; color:var(--gold); letter-spacing:.05em; text-transform:uppercase; margin-bottom:6px;">💰 Bu Ayki Tahmini Prim</div>
+                <div id="monthly-prim-amount" style="font-size:24px; font-weight:800; color:var(--ink);">$ 0</div>
+                <div style="font-size:10px; color:var(--ink-dim); margin-top:4px;">Etiket÷3 üzerinden, varsayılan %3 — istisnai ürünler (Geçmiş'te işaretlenenler) %1. Değişimlerde net fark esas alınır.</div>
+            </div>
+
+            <div id="leaderboard-card" style="display:none; background:linear-gradient(135deg,var(--rose-pale),var(--gold-pale)); border:1px solid var(--rose-soft); border-radius:14px; padding:14px 16px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div style="font-size:10px; font-weight:800; color:var(--rose); letter-spacing:.05em; text-transform:uppercase;">🏆 Sıralamam</div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <button onclick="shiftLeaderboardMonth(-1)" style="background:none; border:1px solid var(--rose-soft); border-radius:6px; width:22px; height:22px; cursor:pointer; color:var(--rose); font-size:11px; display:flex; align-items:center; justify-content:center;">‹</button>
+                        <span id="leaderboard-month-label" style="font-size:10px; font-weight:700; color:var(--ink); min-width:72px; text-align:center;">—</span>
+                        <button onclick="shiftLeaderboardMonth(1)" style="background:none; border:1px solid var(--rose-soft); border-radius:6px; width:22px; height:22px; cursor:pointer; color:var(--rose); font-size:11px; display:flex; align-items:center; justify-content:center;">›</button>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1; text-align:center; background:rgba(255,255,255,.6); border-radius:10px; padding:8px 6px;">
+                        <div style="font-size:9px; color:var(--ink-dim); font-weight:700;">TÜRKİYE GENELİ</div>
+                        <div id="lb-turkiye-rank" style="font-size:20px; font-weight:800; color:var(--ink); margin-top:2px;">—</div>
+                        <div id="lb-turkiye-diff" style="font-size:9.5px; color:var(--ink-dim); margin-top:2px;">—</div>
+                    </div>
+                    <div style="flex:1; text-align:center; background:rgba(255,255,255,.6); border-radius:10px; padding:8px 6px;">
+                        <div style="font-size:9px; color:var(--ink-dim); font-weight:700;" id="lb-bolge-label">BÖLGE GENELİ</div>
+                        <div id="lb-bolge-rank" style="font-size:20px; font-weight:800; color:var(--ink); margin-top:2px;">—</div>
+                        <div id="lb-bolge-diff" style="font-size:9.5px; color:var(--ink-dim); margin-top:2px;">—</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <div id="store-report-screen" style="position:fixed; inset:0; background:var(--bg); z-index:600; display:none; flex-direction:column;">
         <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
             <h3 style="margin:0; font-size:16px;">Satış Raporu</h3>
@@ -3158,14 +3188,16 @@
         }).catch(function(err) { console.error('Kur tazelik kontrolü başarısız:', err); });
     }
 
+    let _currentUsdRate = 0; // admin tarafında cfgU input'u olmadığı için, prim hesabı gibi yerlerde kullanılır
     function attachUsdRateListener() {
         fbDb.ref('globalRates/usdTry').on('value', function(snap) {
             const data = snap.val();
             const statusEl = document.getElementById('usd-rate-status');
             const chipEl = document.querySelector('.rates-chip');
+            const cfgUEl = document.getElementById('cfgU'); // admin tarafında bu input yok, null gelebilir
             if(data && data.rate > 0) {
-                document.getElementById('cfgU').value = data.rate;
-                runCalc();
+                _currentUsdRate = data.rate;
+                if(cfgUEl) { cfgUEl.value = data.rate; runCalc(); }
                 const ageMs = Date.now() - (data.fetchedAtMillis || 0);
                 _lastKnownRateFetchMillis = data.fetchedAtMillis || null;
                 updateUsdRateAge(); // ekrandaki yazıyı anında tazele, 1 saniyelik interval'i bekleme
@@ -4288,6 +4320,7 @@
         const tlEl = document.getElementById('monthly-summary-tl');
         const etiketEl = document.getElementById('monthly-summary-etiket');
         const labelEl = document.getElementById('monthly-summary-label');
+        const primEl = document.getElementById('monthly-prim-amount');
         if(!countEl || !tlEl || !etiketEl || !labelEl) return;
 
         const now = new Date();
@@ -4297,10 +4330,12 @@
         labelEl.innerText = targetMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
 
         let count = 0, totalTl = 0, totalEtiket = 0;
+        const monthRows = [];
         _historyCache.forEach(function(h) {
             if(h.status !== 'sold') return;
             const d = h.soldAtMillis || h.tsMillis || 0;
             if(d < monthStart || d >= monthEnd) return;
+            monthRows.push(h);
             count += h.basket.length;
             // Gerçek kapanış tutarı (admin/mağaza tarafından elle düzeltilmiş olabilir) varsa o esas alınır,
             // yoksa sepetteki ürünlerin otomatik hesaplanan Nakit fiyatları toplanır (eski kayıtlarla uyumluluk için).
@@ -4317,6 +4352,11 @@
         countEl.innerText = count;
         tlEl.innerText = f(totalTl);
         etiketEl.innerText = f(totalEtiket);
+
+        if(primEl) {
+            const prim = calcPrimForRows(monthRows);
+            primEl.innerText = '$ ' + f(prim.usd);
+        }
     }
 
     function attachHistoryListener() {
@@ -4368,6 +4408,24 @@
     // MAĞAZA SATIŞ RAPORU (sadece kendi geçmişi üzerinden, TL + ham etiket + $ ölü3 birlikte gösterilir)
     // ══════════════════════════════════════════════════
     let _srMode = 'tutar'; // 'tutar' | 'urun'
+
+    // "Performansım" sekmesi: Aylık Performans, Prim özeti ve Sıralama — önceden ana ekranda, müşterinin
+    // gözü önünde duruyordu, artık mağaza çalışanı istediğinde açtığı ayrı bir sekme.
+    function openMyPerformanceScreen() {
+        renderMonthlySummary();
+        loadLeaderboardForCurrentMonth();
+        document.getElementById('my-performance-screen').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+    }
+
+    function closeMyPerformanceScreen() {
+        document.getElementById('my-performance-screen').style.display = 'none';
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+    }
 
     function openStoreReportScreen() {
         document.getElementById('srStart').value = '';
@@ -5408,14 +5466,40 @@
         document.getElementById('prev-items').innerHTML = h.basket.map(function(i, idx) {
             const editBtn = isAdmin ? '' : ' <span onclick="openEditHistoryItem(\'' + key + '\', ' + idx + ')" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;">✎</span>';
             const etiketVal = i._rawP ? smartEval(i._rawP) : 0;
+            // Prim oranı: varsayılan %3, mağaza isterse bu ürünü %1'e işaretleyebilir. Müşteri önündeki
+            // sepette değil, satış kapandıktan sonra burada (Geçmiş) işaretlenir — müşteri hiç görmez.
+            // Değişimde geri alınan ürünler (isExchangeReturn) prime hiç girmediği için etiket gösterilmez.
+            const isExchangeRow = !!h.isExchangeReturn;
+            const primPct = i.primPct || 3;
+            const primBtn = (isAdmin || isExchangeRow) ? '' :
+                ' <span onclick="event.stopPropagation(); toggleItemPrimRate(\'' + key + '\', ' + idx + ')" style="font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:100px; cursor:pointer; margin-left:4px; ' +
+                (primPct === 1 ? 'background:var(--gold-pale); color:var(--gold);' : 'background:var(--success-bg); color:var(--success);') +
+                '">Prim: %' + primPct + '</span>';
             return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">' +
-                '<span><b>' + i.k + '</b>' + editBtn + (i.note ? ' <em style="opacity:.6;">— ' + i.note + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + i.d + ' · Etiket: ' + f(etiketVal) + '</span></span>' +
+                '<span><b>' + i.k + '</b>' + editBtn + primBtn + (i.note ? ' <em style="opacity:.6;">— ' + i.note + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + i.d + ' · Etiket: ' + f(etiketVal) + '</span></span>' +
                 '<span style="text-align:right;flex-shrink:0;margin-left:12px;">' +
                 '<span style="color:var(--rose);font-weight:700;">' + f(i.v.vN) + ' ₺</span><br>' +
                 '<span style="opacity:.6;font-size:10px;">3T: ' + f(i.v.v3) + ' ₺</span>' +
                 '</span></div>';
         }).join('');
         document.getElementById('history-preview').style.display = 'block';
+    }
+
+    // Bir ürünün prim oranını %3 ↔ %1 arasında değiştirir. Varsayılan %3'tür, sadece istisnai ürünler
+    // (merkezin %1 belirlediği ürün türleri) %1'e işaretlenir. Müşteri önünde değil, satış kapandıktan
+    // sonra Geçmiş ekranından yapılır — bu yüzden sepette değil burada.
+    function toggleItemPrimRate(key, itemIdx) {
+        const h = _historyCache.find(function(x) { return x.key === key; });
+        if(!h || !h.basket[itemIdx]) return;
+        const current = h.basket[itemIdx].primPct || 3;
+        const next = current === 3 ? 1 : 3;
+        const basketCopy = h.basket.slice();
+        basketCopy[itemIdx] = Object.assign({}, basketCopy[itemIdx], { primPct: next });
+        fbDb.ref('stores/' + h.storeId + '/history/' + key + '/basket').set(basketCopy).then(function() {
+            previewHistory(key); // ekranı tazele, yeni oranı göster
+        }).catch(function(err) {
+            sysAlert('Prim oranı güncellenemedi: ' + err.message, { tone: 'danger' });
+        });
     }
 
     // Bir kaydın müşteri adı/telefonunu sonradan düzeltir — teklif ya da satış, her durumda kullanılabilir.
@@ -6989,6 +7073,75 @@
     // bugüne kadarki AYNI GÜN SAYISI kadarki kesiti alınır (örn. bugün ayın 2'siyse, geçen ayın sadece
     // 1-2. günleri). Geçen ay daha kısaysa (örn. bu ay Mart, geçen ay 28 günlük Şubat) taşma olmaz,
     // geçen ayın tamamı ile sınırlı kalır. Hem renderDashOverview hem renderDecliningStores kullanır.
+    // ── PRİM HESABI ──
+    // Varsayılan oran %3'tür (item.primPct yoksa). Mağaza, satış kapandıktan sonra Geçmiş ekranından
+    // istisnai ürünleri %1'e işaretleyebilir (bkz. toggleItemPrimRate). Değişim kayıtları (isExchangeReturn
+    // true olan negatif kayıt VE onun bağlı olduğu pozitif kayıt) prime AYRI AYRI girmez — ikisi NET FARK
+    // olarak (yeni ürün etiketi - eski ürün etiketi) tek seferde, yeni ürünün kendi prim oranıyla hesaplanır.
+    // Bu fonksiyon belirli bir mağazanın, belirli bir ay aralığındaki (rows zaten filtrelenmiş gelir) prim
+    // toplamını {usd, tl} olarak döner. TL'ye çevirme her satırın KENDİ kayıt anındaki kuruyla (usdRateAtSave)
+    // yapılır — admin tarafında birden çok mağaza/tarih karışık geldiğinde "şu anki tek kur" kullanmak yanlış
+    // olurdu, her satış kendi günündeki kurla değerlendirilmeli. rows: _historyCache'ten süzülmüş satırlar.
+    function calcPrimForRows(rows) {
+        let totalPrimUsd = 0, totalPrimTl = 0;
+        const processedExchangePairs = {}; // aynı çiftin iki kez sayılmasını önler
+        const fallbackRate = _currentUsdRate || 0;
+
+        function addPrim(itemEt, pct, rate) {
+            const usd = (itemEt / 3) * pct;
+            totalPrimUsd += usd;
+            totalPrimTl += usd * (rate || fallbackRate || 0);
+        }
+
+        rows.forEach(function(h) {
+            if(h.status !== 'sold') return;
+            const rate = h.usdRateAtSave || fallbackRate;
+
+            if(h.isExchangeReturn) {
+                // Bu, bir değişimin NEGATİF tarafı — kendi başına prime girmez, eşleştiği pozitif kayıt
+                // işlenirken (aşağıdaki else dalında) net fark olarak zaten hesaba katılır. Eğer eşleştiği
+                // pozitif kayıt bu 'rows' listesinde YOKSA (örn. farklı ay filtrelemesi yüzünden), bu negatif
+                // kayıt kendi başına da işlenir — yoksa o ayki net fark hiç hesaba girmemiş olur.
+                const pairKey = h.exchangeToKey || h.key;
+                if(processedExchangePairs[pairKey]) return;
+                const pairRow = rows.find(function(x) { return x.key === h.exchangeToKey; });
+                if(pairRow) return; // pozitif kayıt zaten listede, orada işlenecek
+                // Pozitif kayıt bu listede yok — bu negatif kaydın etiketini, kendi (varsayılan %3) oranıyla işle
+                processedExchangePairs[pairKey] = true;
+                h.basket.forEach(function(item) {
+                    const pct = (item.primPct || 3) / 100;
+                    const itemEt = item._rawP ? smartEval(item._rawP) : 0;
+                    addPrim(itemEt, pct, rate);
+                });
+                return;
+            }
+
+            // Normal satır (değişim değil) — kendi etiketi üzerinden, her ürünün kendi prim oranıyla.
+            // Eğer bu satırın bağlı olduğu bir NEGATİF değişim kaydı varsa (exchangeFromKey), o kaydın
+            // etiketi burada negatif olarak eklenir — böylece net fark otomatik çıkar.
+            h.basket.forEach(function(item) {
+                const pct = (item.primPct || 3) / 100;
+                const itemEt = item._rawP ? smartEval(item._rawP) : 0;
+                addPrim(itemEt, pct, rate);
+            });
+            if(h.exchangeFromKey) {
+                const oldH = rows.find(function(x) { return x.key === h.exchangeFromKey; });
+                if(oldH) {
+                    processedExchangePairs[h.key] = true;
+                    oldH.basket.forEach(function(item) {
+                        // Eski üründe işaretlenmiş bir prim oranı yoktur (zaten elle girilen, sistemde
+                        // tanımlı olmayan bir üründür) — yeni ürünün oranı, net farkın tüm prim oranını belirler.
+                        const newPct = (h.basket[0] && h.basket[0].primPct) || 3;
+                        const itemEt = item._rawP ? smartEval(item._rawP) : 0;
+                        addPrim(itemEt, newPct / 100, rate); // itemEt zaten negatif, bu yüzden çıkarma otomatik olur
+                    });
+                }
+            }
+        });
+
+        return { usd: Math.round(totalPrimUsd), tl: Math.round(totalPrimTl) };
+    }
+
     function getFairMonthComparisonRange(now) {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
         const dayOfMonth = now.getDate();
@@ -7561,10 +7714,11 @@
 
             const soldRows = rows.filter(function(h) { return h.status === 'sold'; });
             const byStore = {};
+            const primRowsByStoreAdmin = {};
             soldRows.forEach(function(h) {
                 const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
-                if(!byStore[h.storeId]) byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, exchangeCount: 0, cash: 0, etiket: 0, il: (_storesInfo[h.storeId]||{}).il || '—', manualCount: 0 };
+                if(!byStore[h.storeId]) { byStore[h.storeId] = { name: h.storeName || h.storeId, count: 0, exchangeCount: 0, cash: 0, etiket: 0, il: (_storesInfo[h.storeId]||{}).il || '—', manualCount: 0 }; primRowsByStoreAdmin[h.storeId] = []; }
                 if(h.isExchangeReturn) { byStore[h.storeId].exchangeCount += (h.exchangeAdet || h.basket.length); }
                 else {
                     byStore[h.storeId].count += h.basket.length;
@@ -7572,8 +7726,12 @@
                 }
                 byStore[h.storeId].cash += sN;
                 byStore[h.storeId].etiket += et;
+                primRowsByStoreAdmin[h.storeId].push(h);
             });
-            const ranked = Object.keys(byStore).map(function(sid) { return Object.assign({ storeId: sid }, byStore[sid]); })
+            const ranked = Object.keys(byStore).map(function(sid) {
+                const primResult = calcPrimForRows(primRowsByStoreAdmin[sid] || []);
+                return Object.assign({ storeId: sid, primTl: primResult.tl, primUsd: primResult.usd }, byStore[sid]);
+            })
                 .sort(function(a,b) {
                     if(_reportSortBy === 'count') {
                         return (b.count - a.count) || (b.etiket - a.etiket);
@@ -7595,7 +7753,7 @@
                 return '<div class="dash-store-row">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + discountHtml + '</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + discountHtml + '</span><br><span style="font-size:10.5px; color:var(--dash-gold); font-weight:700;">💰 Prim: $ ' + f(s.primUsd) + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -7677,12 +7835,16 @@
             // manualCount: ✎ ile manuel fiyatlandırılmış (indirim/pazarlık yapılmış) ürün sayısı — bir
             // mağaza ortalamadan çok daha yüksek oranda indirim yapıyorsa, bu kâr marjını eritir; admin'in
             // bunu görmesi için eklendi (bkz. Satış Raporu'ndaki "İndirim Oranı" sütunu).
+            // primRows: mağaza bazlı satırlar — calcPrimForRows her mağaza için AYRI çağrılır, çünkü
+            // değişim eşleştirmesi (exchangeFromKey/exchangeToKey) sadece aynı mağazanın kendi satırları
+            // arasında anlamlıdır.
             const byStore = {};
+            const primRowsByStore = {};
             rows.forEach(function(h) {
                 const sN = h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
                 const info = _storesInfo[h.storeId] || {};
-                if(!byStore[h.storeId]) byStore[h.storeId] = { magaza: h.storeName || h.storeId, il: info.il || '—', bolge: info.bolge || '—', adet: 0, exchangeAdet: 0, nakit: 0, etiket: 0, manualCount: 0 };
+                if(!byStore[h.storeId]) { byStore[h.storeId] = { magaza: h.storeName || h.storeId, il: info.il || '—', bolge: info.bolge || '—', adet: 0, exchangeAdet: 0, nakit: 0, etiket: 0, manualCount: 0 }; primRowsByStore[h.storeId] = []; }
                 if(h.isExchangeReturn) {
                     byStore[h.storeId].exchangeAdet += (h.exchangeAdet || h.basket.length);
                 } else {
@@ -7691,10 +7853,13 @@
                 }
                 byStore[h.storeId].nakit += sN;
                 byStore[h.storeId].etiket += et;
+                primRowsByStore[h.storeId].push(h);
             });
-            let storeRows = Object.values(byStore).map(function(s) {
+            let storeRows = Object.keys(byStore).map(function(sid) {
+                const s = byStore[sid];
                 const discountPct = s.adet > 0 ? Math.round((s.manualCount / s.adet) * 100) : 0;
-                return { magaza: s.magaza, il: s.il, bolge: s.bolge, adet: s.adet, exchangeAdet: s.exchangeAdet, nakit: Math.round(s.nakit), etiketBolu3: Math.round(s.etiket/3), manualCount: s.manualCount, discountPct: discountPct };
+                const prim = calcPrimForRows(primRowsByStore[sid] || []);
+                return { magaza: s.magaza, il: s.il, bolge: s.bolge, adet: s.adet, exchangeAdet: s.exchangeAdet, nakit: Math.round(s.nakit), etiketBolu3: Math.round(s.etiket/3), manualCount: s.manualCount, discountPct: discountPct, primUsd: prim.usd, primTl: prim.tl };
             });
             storeRows.sort(function(a,b) {
                 if(_reportSortBy === 'count') {
@@ -7764,7 +7929,7 @@
                     '</tr>';
             }).join('');
         } else {
-            theadRow.innerHTML = '<th style="padding:8px 6px;">Mağaza</th><th style="padding:8px 6px;">İl</th><th style="padding:8px 6px;">Bölge</th><th style="padding:8px 6px; text-align:right;">Adet</th><th style="padding:8px 6px; text-align:right;">İndirim %</th><th style="padding:8px 6px; text-align:right;">Etiket ÷3 ($)</th>';
+            theadRow.innerHTML = '<th style="padding:8px 6px;">Mağaza</th><th style="padding:8px 6px;">İl</th><th style="padding:8px 6px;">Bölge</th><th style="padding:8px 6px; text-align:right;">Adet</th><th style="padding:8px 6px; text-align:right;">İndirim %</th><th style="padding:8px 6px; text-align:right;">Etiket ÷3 ($)</th><th style="padding:8px 6px; text-align:right;">Tahmini Prim ($)</th>';
             document.getElementById('rep-pdf-body').innerHTML = data.rows.map(function(r) {
                 const adetCell = r.adet + (r.exchangeAdet > 0 ? ' (+' + r.exchangeAdet + ' 🔄)' : '');
                 const discountCell = r.manualCount > 0 ? r.discountPct + '%' : '—';
@@ -7775,6 +7940,7 @@
                     '<td style="padding:7px 6px; text-align:right;">' + adetCell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;' + (r.discountPct >= 25 ? ' color:#c8244c; font-weight:700;' : '') + '">' + discountCell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.etiketBolu3) + '</td>' +
+                    '<td style="padding:7px 6px; text-align:right; font-weight:700;">$ ' + f(r.primUsd||0) + '</td>' +
                     '</tr>';
             }).join('');
         }
@@ -7878,7 +8044,7 @@
             });
         } else {
             sheetData = data.rows.map(function(r) {
-                return { 'Mağaza': r.magaza, 'İl': r.il, 'Bölge': r.bolge, 'Adet': r.adet, 'Değişim Adedi': r.exchangeAdet||0, 'İndirimli Ürün Adedi': r.manualCount||0, 'İndirim Oranı (%)': r.discountPct||0, 'Etiket ÷3 ($)': r.etiketBolu3 };
+                return { 'Mağaza': r.magaza, 'İl': r.il, 'Bölge': r.bolge, 'Adet': r.adet, 'Değişim Adedi': r.exchangeAdet||0, 'İndirimli Ürün Adedi': r.manualCount||0, 'İndirim Oranı (%)': r.discountPct||0, 'Etiket ÷3 ($)': r.etiketBolu3, 'Tahmini Prim ($)': r.primUsd||0 };
             });
         }
         if(!sheetData.length) {
