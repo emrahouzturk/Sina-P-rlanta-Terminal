@@ -4284,7 +4284,13 @@
         cusName = (cusName || document.getElementById('iCus').value.trim().toUpperCase() || '');
         const phoneRaw = cusPhone !== undefined ? cusPhone : document.getElementById('iPhone').value;
         const cusPhoneDigits = (phoneRaw || '').replace(/\D/g,'');
-        const storeName = document.getElementById('cfgStore').value;
+        const rawStoreName = document.getElementById('cfgStore').value.trim();
+        // Mağaza adı bazen sadece "Mersin" gibi kısa yazılmış olabilir (Ayarlar'da tam doldurulmamış) —
+        // mesajın her zaman kurumsal ve tutarlı görünmesi için "Sina Pırlanta" ön eki garanti edilir,
+        // zaten varsa tekrar eklenmez (örn. "Sina Pırlanta Maltepe Piazza" olduğu gibi kalır).
+        const storeName = /sina\s*p[ıi]rlanta/i.test(rawStoreName)
+            ? rawStoreName
+            : 'Sina Pırlanta ' + rawStoreName + (/(mağaza|magaza|şube|sube)/i.test(rawStoreName) ? '' : ' Mağazası');
         const f = n => Math.round(n).toLocaleString('tr-TR');
         const now = new Date().toLocaleString('tr-TR');
 
