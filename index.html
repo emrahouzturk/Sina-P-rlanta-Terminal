@@ -4172,6 +4172,11 @@
     // Sadece yazdırma ekranını hazırlar ve yazdırır (geçmişe ayrıca yazmaz — bu, çağıran fonksiyonun işidir)
     // overrideTs/overrideRef verilirse (geçmişten "o günkü" yazdırmada), bugünün tarihi yerine onlar kullanılır.
     function printCurrentBasketPdf(cusName, cusPhone, overrideTs, overrideRef) {
+        // basket'ın anlık kopyası — bu fonksiyon bittiğinde (PDF yazdırıldıktan hemen sonra)
+        // clearBasketAfterSave() sepeti boşaltıyor, ama WhatsApp mesajı gecikmeli (setTimeout içinde)
+        // hazırlandığı için o ana kadar basket çoktan boşalmış oluyordu — mesaj "0 ₺" çıkıyordu.
+        // Şimdi PDF oluşturulurken (sepet hâlâ doluyken) bir kopya alınır, WhatsApp mesajı o kopyadan üretilir.
+        const basketSnapshotForWa = basket.slice();
         const now = new Date();
         const ts  = overrideTs || now.toLocaleString('tr-TR');
         const dateShort = now.toLocaleDateString('tr-TR');
@@ -4240,9 +4245,20 @@
         // Tüm modalleri kapat
         document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
         document.getElementById('print-area').style.display = 'block';
+
+        // PDF dosya adı: çoğu tarayıcı (Chrome/Firefox/Edge), "Yazdır → PDF olarak kaydet" dediğinde
+        // sayfanın <title>'ını önerilen dosya adı olarak kullanır — window.print() sırasında JS'in
+        // doğrudan kontrol edebildiği tek yol bu. Müşteri adı + Nakit tutarı içerir, özel karakterler
+        // (/ : * ? " < > | ve ₺) dosya sisteminde sorun yaratmasın diye temizlenir.
+        const originalTitle = document.title;
+        const safeCusName = (cusName || 'Musteri').replace(/[\/:*?"<>|]/g, '').trim();
+        const fileNameTitle = safeCusName + ' - ' + Math.round(sN).toLocaleString('tr-TR').replace(/\./g,'') + 'TL';
+        document.title = fileNameTitle;
+
         setTimeout(() => {
             window.print();
             setTimeout(() => {
+                document.title = originalTitle; // yazdırma diyaloğu kapandıktan sonra başlık eski haline döner
                 document.getElementById('print-area').style.display = 'none';
                 // PDF yazdırıldıktan sonra, telefon numarası varsa WhatsApp'tan göndermeyi öner — tam
                 // otomatik dosya eki WhatsApp'ın kendi kısıtı yüzünden mümkün değil (hiçbir web sitesi
@@ -4251,7 +4267,7 @@
                 const phoneDigits = (cusPhone || '').replace(/\D/g,'');
                 if(phoneDigits && phoneDigits !== '0') {
                     sysConfirm('PDF yazdırıldı. "' + cusName + '" ile WhatsApp\'ı açıp mesaj göndermek ister misin? (PDF\'i WhatsApp açıldığında 📎 ile elle eklemen gerekir, bu adımı biz atlayamıyoruz — WhatsApp\'ın kendi kısıtı.)', { title: 'WhatsApp\'tan Gönder', okText: 'WhatsApp\'ı Aç', cancelText: 'Hayır' }).then(function(yes) {
-                        if(yes) sendWhatsApp(cusName, cusPhone);
+                        if(yes) sendWhatsApp(cusName, cusPhone, basketSnapshotForWa);
                     });
                 }
             }, 500);
@@ -4260,21 +4276,37 @@
 
     // cusName/cusPhone parametre olarak verilir — modal kapandıktan sonra çağrıldığında (PDF sonrası)
     // input alanları temizlenmiş/erişilemez olabilir, bu yüzden doğrudan değer almak daha güvenlidir.
-    function sendWhatsApp(cusName, cusPhone) {
-        cusName = (cusName || document.getElementById('iCus').value.trim().toUpperCase() || 'Müşterimiz');
+    // basketOverride: PDF yazdırılırken alınan anlık kopya — sepet sonradan boşalmış olsa da (clearBasketAfterSave),
+    // mesaj o kopyadan üretilir, "0 ₺" gibi yanlış bir toplam çıkmaz. Verilmezse canlı basket kullanılır
+    // (örn. ileride farklı bir akıştan çağrılırsa diye, geriye dönük uyumluluk).
+    function sendWhatsApp(cusName, cusPhone, basketOverride) {
+        const items = basketOverride || basket;
+        cusName = (cusName || document.getElementById('iCus').value.trim().toUpperCase() || '');
         const phoneRaw = cusPhone !== undefined ? cusPhone : document.getElementById('iPhone').value;
         const cusPhoneDigits = (phoneRaw || '').replace(/\D/g,'');
         const storeName = document.getElementById('cfgStore').value;
         const f = n => Math.round(n).toLocaleString('tr-TR');
         const now = new Date().toLocaleString('tr-TR');
-        let msg = 'Merhaba ' + cusName + ',\n\nSina Pırlanta fiyat teklifiniz (' + now + '):\n\n';
-        basket.forEach(i => {
-            msg += '• ' + i.k + ' — ' + i.d + '\n';
-            msg += '  3T: ' + f(i.v.v3) + ' ₺ | Nakit: ' + f(i.v.vN) + ' ₺\n\n';
+
+        // İsim girilmemiş/"Müşterimiz" gibi bir varsayılan değilse, kişiye özel hitap; yoksa nötr bir selamlama.
+        const greeting = (cusName && cusName !== 'MÜŞTERİMİZ')
+            ? 'Sayın ' + cusName + ','
+            : 'Değerli misafirimiz,';
+
+        let msg = greeting + '\n\n' + storeName + ' fiyat teklifiniz (' + now + '):\n\n';
+        items.forEach(i => {
+            msg += i.k + ' — ' + i.d + '\n';
+            msg += '3 Taksit: ' + f(i.v.v3) + ' ₺  |  Nakit: ' + f(i.v.vN) + ' ₺\n\n';
         });
-        const s3 = Math.round(basket.reduce((a,b)=>a+b.v.v3,0));
-        const sN = Math.round(basket.reduce((a,b)=>a+b.v.vN,0));
-        msg += 'TOPLAM\n3 Taksit: ' + f(s3) + ' ₺\nNakit: ' + f(sN) + ' ₺\n\nNot: PDF\'i ayrıca WhatsApp\'tan 📎 ile eklemeyi unutma.\n\nSaygılarımızla,\n' + storeName;
+        const s3 = Math.round(items.reduce((a,b)=>a+b.v.v3,0));
+        const sN = Math.round(items.reduce((a,b)=>a+b.v.vN,0));
+        // Toplam gerçekten sıfırsa (örn. sepet boşken bir şekilde çağrılırsa) bu satır hiç eklenmez —
+        // "3 Taksit: 0 ₺ / Nakit: 0 ₺" gibi anlamsız bir görüntü çıkmasın.
+        if(s3 > 0 || sN > 0) {
+            msg += 'TOPLAM\n3 Taksit: ' + f(s3) + ' ₺\nNakit: ' + f(sN) + ' ₺\n\n';
+        }
+        msg += 'Saygılarımızla,\n' + storeName;
+
         const phone = cusPhoneDigits ? '90' + cusPhoneDigits.replace(/^0/,'') : '';
         const url = phone
             ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg)
