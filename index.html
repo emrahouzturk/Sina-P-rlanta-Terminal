@@ -3163,10 +3163,14 @@
         const data = {};
         CFG_IDS.concat(LOCAL_IDS).forEach(id => { data[id] = document.getElementById(id).value; });
         data.lastTime = new Date().toISOString();
-        storeConfigRef().set(data)
+        // update() kullanılır, set() DEĞİL — set() tüm config objesinin üzerine yazar, ve bu ekranın
+        // hiç bilmediği alanları (il, bolge, storeType, archived, archivedAt, passwordNote) SİLER.
+        // Bu, mağaza sadece kâr oranını/telefonunu güncellese bile "Bölge: Bilinmiyor" gibi kalıcı veri
+        // kaybına yol açan kritik bir hataydı — update() sadece belirtilen alanları değiştirir, gerisine dokunmaz.
+        storeConfigRef().update(data)
             .then(function() {
                 if(!navigator.onLine) {
-                    // set() bazen önce yerel cache'e yazıp sonra bağlantı kurulunca senkronize eder;
+                    // update() bazen önce yerel cache'e yazıp sonra bağlantı kurulunca senkronize eder;
                     // bu yüzden onLine durumunu ayrıca kontrol edip kullanıcıyı bilgilendiriyoruz.
                     sysAlert('Bağlantı olmadığı için ayarlar şu an kaydedilemedi. İnternet geri geldiğinde otomatik denenecek, ama emin olmak için bağlantın düzelince Kaydet\'e tekrar bas.', { tone: 'warn', title: 'Bağlantı Yok' });
                 }
@@ -4497,7 +4501,7 @@
 
         if(primEl) {
             const prim = calcPrimForRows(monthRows);
-            primEl.innerText = '$ ' + f(prim.usd);
+            primEl.innerText = '$ ' + prim.usd.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
     }
 
@@ -7278,7 +7282,9 @@
             }
         });
 
-        return { usd: Math.round(totalPrimUsd), tl: Math.round(totalPrimTl) };
+        // Math.round YOK — prim parasal bir değer, küsurat kaybolmasın (27.15$ gibi). Gösterim
+        // katmanında (mağaza/admin ekranları) 2 ondalık hane ile yazdırılır.
+        return { usd: Math.round(totalPrimUsd * 100) / 100, tl: Math.round(totalPrimTl * 100) / 100 };
     }
 
     function getFairMonthComparisonRange(now) {
@@ -7352,7 +7358,7 @@
         const totalPrimEl = document.getElementById('dash-total-prim');
         if(totalPrimEl) {
             const totalPrim = calcPrimForRows(monthRows);
-            totalPrimEl.innerText = '$ ' + f(totalPrim.usd);
+            totalPrimEl.innerText = '$ ' + totalPrim.usd.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         // Geçen aya göre % fark — pozitifse yeşil ok yukarı, negatifse kırmızı ok aşağı, geçen ay hiç
@@ -7729,7 +7735,7 @@
             return '<div style="display:flex; align-items:center; gap:12px; padding:10px 16px; border-bottom:1px solid var(--dash-border);' + (isCurrent ? ' background:rgba(184,150,106,.06);' : '') + '">' +
                 '<div style="width:90px; font-size:11.5px; font-weight:' + (isCurrent ? '800' : '600') + '; color:var(--dash-ink); flex-shrink:0;">' + m.label + (isCurrent ? ' <span style="color:var(--dash-gold); font-size:9.5px;">(bu ay)</span>' : '') + '</div>' +
                 '<div style="flex:1; background:var(--dash-surface-2); border-radius:100px; height:10px; overflow:hidden;"><div style="background:var(--dash-gold); height:100%; width:' + barPct + '%; border-radius:100px;"></div></div>' +
-                '<div style="width:80px; text-align:right; font-size:12.5px; font-weight:700; color:var(--dash-gold); flex-shrink:0;">$ ' + f(val) + '</div>' +
+                '<div style="width:80px; text-align:right; font-size:12.5px; font-weight:700; color:var(--dash-gold); flex-shrink:0;">$ ' + val.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</div>' +
                 '</div>';
         }).join('');
     }
@@ -7955,7 +7961,7 @@
                 return '<div class="dash-store-row">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + discountHtml + '</span><br><span style="font-size:10.5px; color:var(--dash-gold); font-weight:700;">💰 Prim: $ ' + f(s.primUsd) + '</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + discountHtml + '</span><br><span style="font-size:10.5px; color:var(--dash-gold); font-weight:700;">💰 Prim: $ ' + s.primUsd.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -8142,7 +8148,7 @@
                     '<td style="padding:7px 6px; text-align:right;">' + adetCell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;' + (r.discountPct >= 25 ? ' color:#c8244c; font-weight:700;' : '') + '">' + discountCell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;">$ ' + f(r.etiketBolu3) + '</td>' +
-                    '<td style="padding:7px 6px; text-align:right; font-weight:700;">$ ' + f(r.primUsd||0) + '</td>' +
+                    '<td style="padding:7px 6px; text-align:right; font-weight:700;">$ ' + (r.primUsd||0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td>' +
                     '</tr>';
             }).join('');
         }
