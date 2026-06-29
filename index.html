@@ -1964,14 +1964,10 @@
                     <label class="field-label">Mağaza Adı</label><input type="text" id="cfgStore" value="Sina Pırlanta Maltepe Piazza" style="font-size:14px;">
                     <label class="field-label mt-10" style="margin-top:12px;">Telefon</label><input type="text" id="cfgTel" value="0216 XXX XX XX" style="font-size:14px;">
                     <label class="field-label" style="margin-top:12px;">Adres</label><input type="text" id="cfgAddr" value="Maltepe / İstanbul" style="font-size:14px;">
-                    <div style="margin-top:18px; padding:14px; background:var(--bg); border-radius:10px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:12px;">
-                        <div>
-                            <div style="font-size:13px; font-weight:700; color:var(--ink);">Hesap Makinesi Modu</div>
-                            <div style="font-size:10.5px; color:var(--ink-dim); margin-top:2px;">Kapatırsan fiyat hesaplama ekranı gizlenir, sadece hızlı satış girişi kalır. Kendi POS/muhasebe sistemini kullanan mağazalar için.</div>
-                        </div>
-                        <button type="button" id="calcModeToggleBtn" onclick="toggleCalcMode()" style="flex-shrink:0; background:var(--success); color:#fff; border:none; border-radius:100px; padding:8px 14px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;">Açık</button>
-                        <input type="hidden" id="cfgCalcMode" value="1">
-                    </div>
+                    <!-- Hesap Makinesi Modu artık burada değil, ana ekranda (logonun altında) — sık
+                         değiştirilen bir tercih olduğu için Ayarlar'a girip "Kaydet" demek gereksiz bir
+                         tekrar yaratıyordu. Gizli input burada kalır, JS hâlâ ona bağlı çalışıyor. -->
+                    <input type="hidden" id="cfgCalcMode" value="1">
                 </div>
             </div>
             <button class="btn-save" onclick="saveCfg(); closeModal('settingsModal')">Ayarları Kaydet</button>
@@ -3144,12 +3140,6 @@
     }
 
     // ── HESAP MAKİNESİ MODU (açık/kapalı) ──
-    function toggleCalcMode() {
-        const input = document.getElementById('cfgCalcMode');
-        input.value = input.value === '1' ? '0' : '1';
-        applyCalcModeUI();
-    }
-
     // Ana ekrandaki hızlı toggle — basıldığı anda hem değeri değiştirir hem otomatik Firebase'e kaydeder.
     // Ayarlar'a girip "Kaydet" demeye gerek yok, çünkü bu tercih müşteriden müşteriye sık değişebiliyor.
     function toggleCalcModeQuick() {
@@ -3171,11 +3161,6 @@
         const modeInput = document.getElementById('cfgCalcMode');
         if(!modeInput) return; // admin ekranında bu alan yok, sessizce çık
         const enabled = modeInput.value !== '0';
-        const btn = document.getElementById('calcModeToggleBtn');
-        if(btn) {
-            btn.innerText = enabled ? 'Açık' : 'Kapalı';
-            btn.style.background = enabled ? 'var(--success)' : 'var(--ink-dim)';
-        }
         const quickBtn = document.getElementById('calcModeQuickBtn');
         if(quickBtn) {
             quickBtn.innerText = enabled ? 'Açık' : 'Kapalı';
