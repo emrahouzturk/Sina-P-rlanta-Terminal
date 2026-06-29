@@ -463,6 +463,7 @@
         }
         .btn-primary:hover { background: var(--rose-dim); box-shadow: 0 6px 20px rgba(200,36,76,.4); }
         .btn-primary:active { transform: scale(.98); }
+        .btn-primary:disabled { opacity: .55; cursor: wait; box-shadow: none; transform: none; }
 
         .btn-dark {
             flex: 1;
@@ -1442,7 +1443,7 @@
                 <div id="quickSaleError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
                 <div style="display:flex; gap:8px; margin-top:14px;">
                     <button class="btn-ghost" style="flex:1; border-radius:var(--r-sm);" onclick="closeModal('quickSaleModal')">Vazgeç</button>
-                    <button class="btn-primary" style="flex:2; border-radius:var(--r-sm); background:var(--success);" onclick="submitQuickSale()">✓ Kaydet</button>
+                    <button class="btn-primary" id="quickSaleSubmitBtn" style="flex:2; border-radius:var(--r-sm); background:var(--success);" onclick="submitQuickSale()">✓ Kaydet</button>
                 </div>
             </div>
         </div>
@@ -1579,7 +1580,7 @@
                         <b>USD kuru</b> artık tüm mağazalarda otomatik ve ortak — sen hiç dokunmazsın, mağazalar da kuru değiştiremez, sadece kendi xU payını ayarlar.<br><br>
                         <b>Mağaza arşivleme</b> veriyi silmez, sadece girişi kapatır. Gerçekten kalıcı silmek için arşivdeki mağazada "Kalıcı Sil" gerekir, bu işlem geri alınamaz.<br><br>
                         <b>Kapanış tutarı</b> her satışta otomatik olarak sepetteki Nakit fiyatından gelir — mağaza ekstra bir tutar yazmaz, sadece isterse ödeme şeklini açıklar (nakit/havale/altın değişim vb.).<br><br>
-                        <b>Hesap Makinesi Modu:</b> Her mağaza kendi Ayarlar ekranından bu özelliği kapatabilir — kendi POS/muhasebe sistemini kullanan mağazalar, fiyat hesaplama yerine sadece "Etiket + Satış Tutarı" girip kayıt tutar. Etiket değeri her durumda zorunlu kalır (senin etiket÷3 raporların bozulmaz), sadece otomatik fiyatlandırma ekranı devre dışı kalır. Bu tamamen mağazanın kendi tercihidir, sen admin'den göremez/değiştiremezsin.<br><br>
+                        <b>Hesap Makinesi Modu:</b> Mağaza ekranında, ana ekranda (logonun altında) tek tıkla değiştirilebilen bir anahtar — kendi POS/muhasebe sistemini kullanan mağazalar, fiyat hesaplama yerine sadece "Etiket + Satış Tutarı" girip kayıt tutar. Etiket değeri her durumda zorunlu kalır (senin etiket÷3 raporların bozulmaz), sadece otomatik fiyatlandırma ekranı devre dışı kalır. Bu tamamen mağazanın kendi tercihidir, sen admin'den göremez/değiştiremezsin.<br><br>
                         <b>Teklif sayısı</b> gerçek müşteri trafiğini yansıtmaz — mağaza sadece kaydetmeyi seçtiği teklifleri girer. Bu yüzden "teklif/satış dönüşüm oranı" gibi bir metrik güvenilir değildir, kullanılmıyor.
                     </div>
                 </div>
@@ -1631,6 +1632,13 @@
                 <img src="https://www.sinapirlanta.com/themes/custom/sina/logo.svg" alt="Sina Pırlanta">
                 <div id="h-store-display" class="brand-name">SINA TERMİNAL</div>
                 <div id="h-tel-display" class="brand-sub"></div>
+            </div>
+
+            <!-- Hesap Makinesi Modu artık ana ekranda, tek tıkla — Ayarlar'a girip "Kaydet" demeye gerek
+                 yok, müşteriden müşteriye sık değiştirilen bir tercih olduğu için buraya taşındı. -->
+            <div onclick="toggleCalcModeQuick()" style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:9px 14px; margin-bottom:14px; cursor:pointer;">
+                <span style="font-size:11.5px; font-weight:700; color:var(--ink-mid);">🧮 Hesap Makinesi Modu</span>
+                <span id="calcModeQuickBtn" style="background:var(--success); color:#fff; border-radius:100px; padding:5px 12px; font-size:10.5px; font-weight:700; white-space:nowrap;">Açık</span>
             </div>
 
             <div class="input-card" id="calc-mode-section">
@@ -1795,7 +1803,8 @@
                     <div class="help-card">
                         <b>Kur / Katsayı:</b> <em>U</em> (USD kuru) artık <b>otomatik</b> çekiliyor, dokunmana gerek yok — gri ve değiştirilemez görünür. <em>xU</em> = liste fiyatını şişirmek için kur üstü pay yüzdesi (örn: 8 → kur × 1.08 olur, müşteri bu fiyattan görür). İstediğin nihai fiyata <b>xU'yu değiştirerek</b> ulaşırsın.<br><br>
                         <b>Pırlanta Kâr %:</b> Maliyet üzerine eklenecek kâr. 3T, 2T, Tek Çekim, Nakit için ayrı ayrı ayarla.<br><br>
-                        <b>Mağaza:</b> PDF'e basılacak mağaza adı, telefon, adres. Burada bir de <b>Hesap Makinesi Modu</b> anahtarı var — eğer kendi POS/muhasebe sisteminizi kullanıp burada sadece satış kaydı tutmak istiyorsanız <b>Kapalı</b> yapabilirsiniz. Kapatınca fiyat hesaplama ekranı ve kartları gizlenir, yerine sadece <b>Etiket</b> ve <b>Satış Tutarı</b> girip kaydettiğin sade bir ekran gelir — etiket değeri yine girilir (raporlarda gerekli), ama otomatik fiyat hesaplaması yapılmaz. Birden fazla ürün <em>+</em> ile girilirse (örn. 1000+2000), her ürün için kod kutucuğu çıkar — toplam satış tutarı etiket oranına göre ürünlere otomatik dağıtılır. Bu modda <b>kod her zaman zorunludur</b>, çünkü zaten direkt satış kaydı oluşturuluyor.
+                        <b>Mağaza:</b> PDF'e basılacak mağaza adı, telefon, adres.<br><br>
+                        <b>🧮 Hesap Makinesi Modu:</b> Bu anahtar artık Ayarlar'da değil, <b>ana ekranda, logonun altında</b> — müşteriden müşteriye sık değiştirebileceğin bir tercih olduğu için tek tıkla erişilebilir, "Ayarları Kaydet" demene gerek kalmadan anında kaydedilir. Kendi POS/muhasebe sisteminizi kullanıp burada sadece satış kaydı tutmak istiyorsanız <b>Kapalı</b> yapabilirsiniz. Kapatınca fiyat hesaplama ekranı ve kartları gizlenir, yerine sadece <b>Etiket</b> ve <b>Satış Tutarı</b> girip kaydettiğin sade bir ekran gelir — etiket değeri yine girilir (raporlarda gerekli), ama otomatik fiyat hesaplaması yapılmaz. Birden fazla ürün <em>+</em> ile girilirse (örn. 1000+2000), her ürün için kod kutucuğu çıkar — toplam satış tutarı etiket oranına göre ürünlere otomatik dağıtılır. Bu modda <b>kod her zaman zorunludur</b>, çünkü zaten direkt satış kaydı oluşturuluyor.
                     </div>
                 </div>
 
@@ -3141,6 +3150,22 @@
         applyCalcModeUI();
     }
 
+    // Ana ekrandaki hızlı toggle — basıldığı anda hem değeri değiştirir hem otomatik Firebase'e kaydeder.
+    // Ayarlar'a girip "Kaydet" demeye gerek yok, çünkü bu tercih müşteriden müşteriye sık değişebiliyor.
+    function toggleCalcModeQuick() {
+        const input = document.getElementById('cfgCalcMode');
+        if(!input) return;
+        input.value = input.value === '1' ? '0' : '1';
+        applyCalcModeUI();
+        if(currentStoreId && !isAdmin) {
+            storeConfigRef().update({ cfgCalcMode: input.value, lastTime: new Date().toISOString() })
+                .catch(function(err) {
+                    console.error('Hesap Makinesi Modu kaydedilemedi:', err);
+                    sysAlert('Mod değiştirildi ama kaydedilemedi (bağlantı sorunu olabilir). Sayfa yenilenirse eski moda dönebilir.', { tone: 'warn' });
+                });
+        }
+    }
+
     // cfgCalcMode değerine göre ekrandaki ilgili bölümleri gösterir/gizler.
     function applyCalcModeUI() {
         const modeInput = document.getElementById('cfgCalcMode');
@@ -3150,6 +3175,11 @@
         if(btn) {
             btn.innerText = enabled ? 'Açık' : 'Kapalı';
             btn.style.background = enabled ? 'var(--success)' : 'var(--ink-dim)';
+        }
+        const quickBtn = document.getElementById('calcModeQuickBtn');
+        if(quickBtn) {
+            quickBtn.innerText = enabled ? 'Açık' : 'Kapalı';
+            quickBtn.style.background = enabled ? 'var(--success)' : 'var(--ink-dim)';
         }
         const calcSection = document.getElementById('calc-mode-section');
         const calcPricegrid = document.getElementById('calc-mode-pricegrid');
@@ -3489,7 +3519,7 @@
               up = smartEval(document.getElementById('cfgU_plus').value);
         const xU = u * (1 + up/100);
         document.getElementById('tech-rates').innerHTML =
-            `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)}`;
+            `U: ${u.toFixed(2)} | xU: ${xU.toFixed(2)} (+${up.toFixed(1)}%)`;
 
         let details = '';
 
@@ -3923,6 +3953,8 @@
         document.getElementById('quickSaleDate').value = new Date().toISOString().slice(0,10);
         document.getElementById('quickPaymentNote').value = '';
         document.getElementById('quickSaleError').style.display = 'none';
+        const quickSubmitBtn = document.getElementById('quickSaleSubmitBtn');
+        if(quickSubmitBtn) quickSubmitBtn.disabled = false; // önceki açılıştan kalan bir kilitlenme olmasın
         openModal('quickSaleModal');
     }
 
@@ -3942,6 +3974,8 @@
     }
 
     function submitQuickSale() {
+        const submitBtn = document.getElementById('quickSaleSubmitBtn');
+        if(submitBtn && submitBtn.disabled) return; // zaten işlem sürüyor, ikinci tıklama yok sayılır
         const errEl = document.getElementById('quickSaleError');
         const cusName = document.getElementById('quickCusName').value.trim().toUpperCase();
         const quickPhoneRefused = document.getElementById('quickCusPhoneRefused').checked;
@@ -3994,7 +4028,9 @@
             };
         });
 
+        if(submitBtn) submitBtn.disabled = true; // kayıt sürerken tekrar tıklamayı engelle
         saveToHistory(cusName, cusPhone, 'sold', dateStr, Math.round(totalAmount), paymentNote, items).then(function() {
+            if(submitBtn) submitBtn.disabled = false;
             closeModal('quickSaleModal');
             document.getElementById('quickEtiket').value = '';
             document.getElementById('quickSaleAmount').value = '';
@@ -4003,6 +4039,7 @@
             renderMultiCodeInputs(document.getElementById('quickEtiket-parts'), [], '_quickMultiCodeValues');
             sysAlert('"' + cusName + '" için satış kaydedildi.' + getOfflineSaveWarning(), { title: 'Kaydedildi' });
         }).catch(function(err) {
+            if(submitBtn) submitBtn.disabled = false; // hata durumunda da buton geri açılır
             console.error('Kaydedilemedi:', err);
             errEl.innerText = 'Kaydedilirken hata oluştu: ' + err.message;
             errEl.style.display = 'block';
@@ -4027,6 +4064,7 @@
         const closeWrap = document.getElementById('cusModalCloseWrap');
         btnEl.className = 'btn-primary';
         btnEl.style.background = '';
+        btnEl.disabled = false; // önceki açılıştan kalan bir kilitlenme olmasın
         btnEl.onclick = submitCusModal;
         if(purpose === 'save') {
             titleEl.innerText = 'Müşteriye Kaydet';
@@ -4086,6 +4124,12 @@
     }
 
     function submitCusModal() {
+        // Çift tıklama koruması: yavaş internette "çalışmadı mı" diye tekrar basılırsa aynı satış
+        // iki kere kaydedilebiliyordu (çift sayım, yanlış prim/ciro). Buton, kayıt tamamlanana (başarı
+        // ya da hata) kadar devre dışı bırakılır. PDF/teklif yolunda (else dalı) tekrar açılması gerekmez,
+        // çünkü generatePDF zaten kendi içinde anında tamamlanan, asenkron beklemesi olmayan bir akış.
+        const submitBtn = document.getElementById('cusModalSubmitBtn');
+        if(submitBtn && submitBtn.disabled) return; // zaten işlem sürüyor, ikinci tıklama tamamen yok sayılır
         const cusName  = document.getElementById('iCus').value.trim().toUpperCase();
         const phoneRefused = document.getElementById('iPhoneRefused').checked;
         const phoneRaw = phoneRefused ? '' : document.getElementById('iPhone').value.trim();
@@ -4129,7 +4173,9 @@
                 closingAmount = Math.round(basket.reduce(function(a,b){ return a + b.v.vN; }, 0));
                 paymentNote = document.getElementById('cusModalPaymentNote').value.trim();
             }
+            if(submitBtn) submitBtn.disabled = true; // kayıt sürerken tekrar tıklamayı engelle
             saveToHistory(cusName, cusPhone, status, customDate, closingAmount, paymentNote).then(function() {
+                if(submitBtn) submitBtn.disabled = false;
                 closeModal('cusModal');
                 const offlineWarn = getOfflineSaveWarning();
                 if(status === 'sold') {
@@ -4148,6 +4194,7 @@
                     }
                 });
             }).catch(function(err) {
+                if(submitBtn) submitBtn.disabled = false; // hata durumunda da buton geri açılır, yoksa kalıcı kilitlenir
                 console.error('Kaydedilemedi:', err);
                 if(!navigator.onLine || err.code === 'auth/network-request-failed' || err.message.includes('network')) {
                     errEl.innerText = '⚠ İnternet bağlantısı yok, kayıt yapılamadı. Lütfen bağlantını kontrol edip tekrar dene.';
