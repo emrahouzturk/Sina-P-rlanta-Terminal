@@ -1508,6 +1508,7 @@
                     <h4>1. Genel Bakış</h4>
                     <div class="help-card">
                         <b>🏆 Mağaza Sıralama Ekranı:</b> Açık/Kapalı anahtarıyla, mağazaların kendi Türkiye/bölge sıralamasını görüp görmeyeceğini tek tıkla kontrol edersin. Hiçbir ciro/tutar/adet rakamı paylaşılmaz, mağaza sadece kendi sıra numarasını (örn. "2 / 5") görür — yüzde fark bile gösterilmez, çünkü mağaza kendi cirosunu bildiği için üsttekinin cirosunu geri hesaplayabilirdi. Sıralama her ay için ayrı hesaplanır — mağaza geçmiş 6 aya kadar gidip karşılaştırabilir. Bu hesaplama, sen Genel Bakış'a her girdiğinde otomatik tazelenir.<br><br>
+                        <b>💰 Mağazada Prim Görünürlüğü:</b> Açık/Kapalı anahtarıyla, mağazaların "Performansım" ekranındaki kendi tahmini prim kartını görüp görmeyeceğini kontrol edersin. Kapattığında kart mağaza ekranında hiç görünmez (yardım kılavuzundaki ilgili bölüm de otomatik gizlenir) — ama bu, prim HESABININ kendisini durdurmaz, sadece mağazanın kendi ekranındaki görünürlüğü değişir. Sen (admin) Satış Raporu, Excel ve PDF'te primi her zaman görmeye devam edersin, bu ayardan etkilenmez.<br><br>
                         <b>Üst kartlar (1. sıra):</b> Toplam mağaza sayısı, bu ay satılan ürün adedi, bu ayki etiket÷3 toplamı (prim hesap tabanı, $) — ikisinin altında <b>geçen aya göre % fark</b> (▲ arttı / ▼ azaldı) görünür, geçen ay hiç veri yoksa bu kısım boş kalır.<br><br>
                         <b>Üst kartlar (2. sıra):</b> <em>Bu Çeyrek</em> (3 aylık dönem, Oca-Mar/Nis-Haz/Tem-Eyl/Eki-Ara, geçen çeyreğin aynı gün sayısı kadarıyla adil kıyaslanır) · <em>Bu Yıl (YTD)</em> — 1 Ocak'tan bugüne toplam, karşılaştırma yok, sadece düz toplam · <em>Ortalama Satış Tutarı</em> — bu ay yapılan satışların (değişim hariç) ortalama ₺ tutarı · <em>Genel Kâr Marjı</em> — bu ay şirket genelinde (TL ciro − maliyet) / maliyet, her satışın kendi kayıt anındaki kuru ile hesaplanır, etiketi bilinmeyen kayıtlar hariç tutulur.<br><br>
                         <b>💰 Bu Ay Toplam Tahmini Prim:</b> Altın/pembe çerçeveli kart — tüm mağazaların bu ayki prim hak edişlerinin toplamı, dolar cinsinden. Her mağazayı Satış Raporu'nda tek tek toplaman gerekmeden, ay sonunda "toplamda ne kadar ödeyeceğim" sorusunu tek bakışta cevaplar.<br><br>
@@ -1904,10 +1905,10 @@
 
                 <div class="help-section">
                     <h4>7. Performansım</h4>
-                    <p>Sağ üstteki <b>📊 Performansım</b> butonuna girince açılan ekranda üç bölüm var — bunlar artık ana ekranda değil, ayrı bir sekmede, çünkü müşteri yanındayken bu bilgilerin görünmesi uygun değildi.</p>
+                    <p>Sağ üstteki <b>📊 Performansım</b> butonuna girince açılan ekranda bölümler var — bunlar artık ana ekranda değil, ayrı bir sekmede, çünkü müşteri yanındayken bu bilgilerin görünmesi uygun değildi.</p>
                     <div class="help-card">
-                        <b>📅 Aylık Performansım:</b> O ay kaç ürün sattığını, toplam ₺ tutarını ve etiket toplamını anında gösterir. ‹ › okları ile geçmiş aylara gidip karşılaştırabilirsin (gelecek aya gidilemez). Sadece <b>gerçekten satılmış</b> kayıtlar sayılır<span id="help-sec7-durum-on">, bekleyen teklifler dahil değildir</span>.<br><br>
-                        <b>💰 Bu Ayki Tahmini Prim:</b> Seçili aydaki tüm satışların prim toplamı, etiket÷3 üzerinden, <b>dolar ($) cinsinden</b> hesaplanır. Varsayılan oran <b>%3</b>'tür — bir ürün merkezin belirlediği istisnai (%1'lik) bir ürünse, Geçmiş ekranından o satışı açıp ürünün yanındaki "Prim: %3" etiketine dokunarak %1'e çevirebilirsin (tekrar dokunursan %3'e döner). Bu işaretleme satış kapandıktan sonra yapılır, müşteri hiç görmez. <b>Değişimlerde</b> prim, yeni ürünün tam tutarından değil, <b>net farktan</b> (yeni ürün etiketi − geri alınan ürün etiketi) hesaplanır, yeni ürünün prim oranı kullanılır.
+                        <b>📅 Aylık Performansım:</b> O ay kaç ürün sattığını, toplam ₺ tutarını ve etiket toplamını anında gösterir. ‹ › okları ile geçmiş aylara gidip karşılaştırabilirsin (gelecek aya gidilemez). Sadece <b>gerçekten satılmış</b> kayıtlar sayılır<span id="help-sec7-durum-on">, bekleyen teklifler dahil değildir</span>.
+                        <span id="help-sec7-prim-on"><br><br><b>💰 Bu Ayki Tahmini Prim:</b> Seçili aydaki tüm satışların prim toplamı, etiket÷3 üzerinden, <b>dolar ($) cinsinden</b> hesaplanır. Varsayılan oran <b>%3</b>'tür — bir ürün merkezin belirlediği istisnai (%1'lik) bir ürünse, Geçmiş ekranından o satışı açıp ürünün yanındaki "Prim: %3" etiketine dokunarak %1'e çevirebilirsin (tekrar dokunursan %3'e döner). Bu işaretleme satış kapandıktan sonra yapılır, müşteri hiç görmez. <b>Değişimlerde</b> prim, yeni ürünün tam tutarından değil, <b>net farktan</b> (yeni ürün etiketi − geri alınan ürün etiketi) hesaplanır, yeni ürünün prim oranı kullanılır.</span>
                     </div>
                 </div>
 
@@ -2281,6 +2282,13 @@
                         <div style="font-size:10.5px; color:var(--dash-ink-dim); margin-top:2px;">Açıksa mağazalar "Müşteriye Kaydet" ile teklif girip sonradan satışa çevirebilir. Kapalıyken her satış doğrudan kaydedilir, geçmiş hep "Satış" olarak görünür.</div>
                     </div>
                     <button id="teklif-toggle-btn" class="dash-btn-ghost" onclick="toggleTeklifVisibility()">Yükleniyor…</button>
+                </div>
+                <div class="dash-panel" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding:14px 20px;">
+                    <div>
+                        <div style="font-size:12.5px; font-weight:700; color:var(--dash-ink);">💰 Mağazada Prim Görünürlüğü</div>
+                        <div style="font-size:10.5px; color:var(--dash-ink-dim); margin-top:2px;">Açıksa mağazalar "Performansım" ekranında kendi tahmini prim tutarlarını ($ cinsinden) görür. Kapalıyken bu kart mağaza ekranında hiç görünmez — prim hesabı ve admin tarafındaki raporlar bundan etkilenmez, sadece mağazanın kendi ekranındaki görünürlüğü değişir.</div>
+                    </div>
+                    <button id="prim-toggle-btn" class="dash-btn-ghost" onclick="togglePrimVisibility()">Yükleniyor…</button>
                 </div>
                 <div class="dash-stat-grid" style="grid-template-columns:repeat(3,1fr);">
                     <div class="dash-stat-card accent-gold">
@@ -3047,6 +3055,7 @@
                     loadCfg();
                     attachHistoryListener();
                     attachLeaderboardListener(uname);
+                    attachPrimVisibilityListener();
                     attachTeklifFeatureListener();
                     setTimeout(adjustPadding, 100); // main-wrapper az önce göründü, top-bar yüksekliği şimdi doğru ölçülebilir
                 }).catch(function() {
@@ -3057,6 +3066,7 @@
                     loadCfg();
                     attachHistoryListener();
                     attachLeaderboardListener(uname);
+                    attachPrimVisibilityListener();
                     attachTeklifFeatureListener();
                     setTimeout(adjustPadding, 100);
                 });
@@ -3293,6 +3303,7 @@
     }
 
     let _leaderboardFeatureEnabled = true; // varsayılan: açık — yardım kılavuzu görünürlüğü için ayrıca tutulur
+    let _primFeatureEnabled = true; // varsayılan: açık — mağaza ekranında prim kartının görünürlüğü
 
     function attachLeaderboardListener(storeId) {
         _leaderboardStoreId = storeId;
@@ -3303,6 +3314,19 @@
             applyHelpSectionVisibility();
         });
         loadLeaderboardForCurrentMonth();
+    }
+
+    // Mağaza tarafında "Performansım" ekranındaki prim kartının görünürlüğünü admin kontrolüne bağlar.
+    // Kapalıyken kart hiç render edilmez (DOM'dan gizlenir) — admin tarafındaki prim hesabı/raporları
+    // bundan etkilenmez, sadece mağazanın kendi ekranındaki görünürlük değişir.
+    function attachPrimVisibilityListener() {
+        fbDb.ref('globalSettings/primVisibleToStores').on('value', function(snap) {
+            const enabled = snap.val() !== false; // varsayılan: açık
+            _primFeatureEnabled = enabled;
+            const card = document.getElementById('monthly-prim-card');
+            if(card) card.style.display = enabled ? 'block' : 'none';
+            applyHelpSectionVisibility();
+        });
     }
 
     function loadLeaderboardForCurrentMonth() {
@@ -5008,6 +5032,7 @@
     function applyHelpSectionVisibility() {
         const teklifOn = !!_teklifFeatureEnabled;
         const siralamaOn = _leaderboardFeatureEnabled !== false;
+        const primOn = _primFeatureEnabled !== false;
 
         ['help-sec4-teklif-on', 'help-sec5-teklif-on'].forEach(function(id) {
             const el = document.getElementById(id);
@@ -5023,6 +5048,8 @@
         });
         const siralamaSec = document.getElementById('help-sec8-siralama');
         if(siralamaSec) siralamaSec.style.display = siralamaOn ? '' : 'none';
+        const primSec = document.getElementById('help-sec7-prim-on');
+        if(primSec) primSec.style.display = primOn ? '' : 'none';
     }
 
     function openHistoryScreen() {
@@ -5906,6 +5933,31 @@
         fbDb.ref('globalSettings/leaderboardEnabled').once('value').then(function(snap) {
             const current = snap.val() !== false;
             fbDb.ref('globalSettings/leaderboardEnabled').set(!current);
+        }).catch(function(err) {
+            console.error('Ayar değiştirilemedi:', err);
+            sysAlert('Ayar değiştirilemedi: ' + err.message, { tone: 'danger' });
+        });
+    }
+
+    // ── MAĞAZADA PRİM GÖRÜNÜRLÜĞÜ AÇMA/KAPAMA (admin kontrolü) ──
+    // Bu, prim HESABININ kendisini kapatmaz — sadece mağaza tarafındaki "Performansım" ekranında
+    // kartın görünüp görünmediğini kontrol eder. Admin tarafındaki Satış Raporu/PDF/Excel'deki prim
+    // rakamları bu ayardan hiç etkilenmez, her zaman hesaplanır ve gösterilir.
+    function attachPrimToggleListener() {
+        fbDb.ref('globalSettings/primVisibleToStores').on('value', function(snap) {
+            const enabled = snap.val() !== false; // varsayılan: açık
+            _primFeatureEnabled = enabled;
+            const btn = document.getElementById('prim-toggle-btn');
+            if(btn) {
+                btn.innerText = enabled ? '🟢 Açık — Kapat' : '⚪ Kapalı — Aç';
+            }
+        });
+    }
+
+    function togglePrimVisibility() {
+        fbDb.ref('globalSettings/primVisibleToStores').once('value').then(function(snap) {
+            const current = snap.val() !== false;
+            fbDb.ref('globalSettings/primVisibleToStores').set(!current);
         }).catch(function(err) {
             console.error('Ayar değiştirilemedi:', err);
             sysAlert('Ayar değiştirilemedi: ' + err.message, { tone: 'danger' });
