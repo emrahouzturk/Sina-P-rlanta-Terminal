@@ -1358,7 +1358,10 @@
                 <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">YENİ ÜRÜN(LER) — bir veya birden fazla ekleyebilirsin</div>
 
                 <label class="field-label">Pırlanta Etiket</label>
-                <input type="text" id="exNewEtiket" class="big-input" oninput="applyThousandsMask(this); exRunCalc();" placeholder="0.00" inputmode="text">
+                <div style="display:flex; gap:8px; align-items:stretch;">
+                    <input type="text" id="exNewEtiket" class="big-input" oninput="applyThousandsMask(this); exRunCalc();" placeholder="0.00" inputmode="decimal" style="flex:1;">
+                    <button type="button" onclick="appendPlusToField('exNewEtiket', exRunCalc)" title="Birden fazla ürün için: sayı gir, + bas, sonraki sayıyı gir" style="flex-shrink:0; width:52px; font-size:24px; font-weight:800; color:var(--rose); background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); cursor:pointer;">+</button>
+                </div>
 
                 <div class="price-grid" id="exPriceGrid" style="margin:14px 0; max-width:100%;">
                     <div class="price-card" id="exBox3" style="padding:10px 8px;">
@@ -1644,7 +1647,10 @@
             <div class="input-card" id="calc-mode-section">
                 <div id="formP">
                     <label class="field-label">Pırlanta Etiket</label>
-                    <input type="text" id="inpP" class="big-input" oninput="applyThousandsMask(this); runCalc();" placeholder="0.00" inputmode="text">
+                <div style="display:flex; gap:8px; align-items:stretch;">
+                    <input type="text" id="inpP" class="big-input" oninput="applyThousandsMask(this); runCalc();" placeholder="0.00" inputmode="decimal" style="flex:1;">
+                    <button type="button" onclick="appendPlusToField('inpP', runCalc)" title="Birden fazla ürün için: sayı gir, + bas, sonraki sayıyı gir" style="flex-shrink:0; width:52px; font-size:24px; font-weight:800; color:var(--rose); background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); cursor:pointer;">+</button>
+                </div>
                 </div>
             </div>
 
@@ -1692,7 +1698,10 @@
             <!-- HIZLI SATIŞ GİRİŞİ — Hesap Makinesi Modu kapalıyken görünür -->
             <div class="input-card" id="quick-sale-section" style="display:none;">
                 <label class="field-label">Pırlanta Etiket</label>
-                <input type="text" id="quickEtiket" class="big-input" oninput="applyThousandsMask(this); onQuickEtiketInput();" placeholder="0.00" inputmode="text" style="margin-bottom:6px;">
+                <div style="display:flex; gap:8px; align-items:stretch; margin-bottom:6px;">
+                    <input type="text" id="quickEtiket" class="big-input" oninput="applyThousandsMask(this); onQuickEtiketInput();" placeholder="0.00" inputmode="decimal" style="flex:1;">
+                    <button type="button" onclick="appendPlusToField('quickEtiket', onQuickEtiketInput)" title="Birden fazla ürün için: sayı gir, + bas, sonraki sayıyı gir" style="flex-shrink:0; width:52px; font-size:24px; font-weight:800; color:var(--rose); background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); cursor:pointer;">+</button>
+                </div>
                 <div id="quickEtiket-parts" style="display:none; margin-bottom:10px; text-align:left;"></div>
                 <label class="field-label" style="margin-top:8px;">Satış Tutarı (₺)</label>
                 <input type="text" id="quickSaleAmount" class="big-input" oninput="applyThousandsMask(this);" placeholder="0.00" inputmode="text">
@@ -2893,6 +2902,22 @@
     //     "SON 6 AY TREND GRAFİĞİ"            — basit SVG grafik
     // ══════════════════════════════════════════════════════════════════════
 
+    // ── GÜVENLİK: KULLANICI GİRDİSİNİ innerHTML'E YAZMADAN ÖNCE KAÇIŞLA ──
+    // Müşteri adı, mağaza adı, telefon, ödeme notu gibi alanlar mağaza/admin tarafından serbest metin
+    // olarak girilir ve başka ekranlarda (özellikle admin'in TÜM mağazaları gördüğü ekranlarda)
+    // innerHTML ile basılır. Kaçışlanmadan basılırsa, birisi bu alana HTML/script içeren bir metin
+    // yazarsa, o metni görüntüleyen kişinin (örn. admin'in) tarayıcısında çalışabilir (XSS). Bu
+    // fonksiyon metni her zaman DÜZ METİN olarak güvenli hâle getirir.
+    function escapeHtml(s) {
+        if(s === null || s === undefined) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // ── İL / BÖLGE VERİ YAPISI ──
     const TR_REGIONS = {
         'Marmara': ['İstanbul','Edirne','Kırklareli','Tekirdağ','Çanakkale','Balıkesir','Bursa','Yalova','Kocaeli','Sakarya','Bilecik'],
@@ -3081,6 +3106,24 @@
         });
     }
 
+    // Mağaza girişi başarılı olduğunda (arşiv kontrolü başarılı ya da bağlantı sorunuyla atlanmış olsun,
+    // ikisinde de aynı ekrana geçilir) çalışan TEK yer. Önceden bu blok .then()/.catch() içinde iki kere
+    // kopyalanmıştı — biri güncellenip diğeri unutulursa sessiz bir tutarsızlık doğardı, artık tek yerden
+    // düzeltiliyor.
+    function enterStoreScreen(uname) {
+        document.getElementById('dashboard-screen').style.display = 'none';
+        document.getElementById('main-wrapper').style.display = 'flex';
+        document.getElementById('app-footer').style.display = 'block';
+        document.getElementById('user-chip').innerText = '🏪 ' + uname;
+        loadCfg();
+        attachHistoryListener();
+        attachLeaderboardListener(uname);
+        attachPrimVisibilityListener();
+        attachTeklifFeatureListener();
+        flushPendingWrites(); // önceki oturumdan sunucuya ulaşmamış kayıt var mı diye kontrol et
+        setTimeout(adjustPadding, 100); // main-wrapper az önce göründü, top-bar yüksekliği şimdi doğru ölçülebilir
+    }
+
     fbAuth.onAuthStateChanged(function(user) {
         if(user) {
             currentUser = user;
@@ -3099,7 +3142,9 @@
                 attachHistoryListener();
                 showDashboard();
             } else {
-                // Arşivlenmiş mağaza girişini engelle
+                // Arşivlenmiş mağaza girişini engelle. Arşiv durumu okunamazsa (örn. bağlantı sorunu)
+                // bile mağaza ekrana geçebilsin diye .catch() da .then() ile AYNI fonksiyonu çağırır —
+                // tek yerde tanımlı olduğu için ikisi arasında sessizce ayrışma riski kalmaz.
                 fbDb.ref('stores/' + uname + '/config/archived').once('value').then(function(snap) {
                     if(snap.val() === true) {
                         sysAlert('Bu mağaza hesabı arşivlenmiştir ve giriş yapılamaz. Bilgi için yöneticinle iletişime geç.', { title: 'Hesap Arşivlendi', tone: 'danger' }).then(function() {
@@ -3107,29 +3152,9 @@
                         });
                         return;
                     }
-                    document.getElementById('dashboard-screen').style.display = 'none';
-                    document.getElementById('main-wrapper').style.display = 'flex';
-                    document.getElementById('app-footer').style.display = 'block';
-                    document.getElementById('user-chip').innerText = '🏪 ' + uname;
-                    loadCfg();
-                    attachHistoryListener();
-                    attachLeaderboardListener(uname);
-                    attachPrimVisibilityListener();
-                    attachTeklifFeatureListener();
-                    flushPendingWrites(); // önceki oturumdan sunucuya ulaşmamış kayıt var mı diye kontrol et
-                    setTimeout(adjustPadding, 100); // main-wrapper az önce göründü, top-bar yüksekliği şimdi doğru ölçülebilir
+                    enterStoreScreen(uname);
                 }).catch(function() {
-                    document.getElementById('dashboard-screen').style.display = 'none';
-                    document.getElementById('main-wrapper').style.display = 'flex';
-                    document.getElementById('app-footer').style.display = 'block';
-                    document.getElementById('user-chip').innerText = '🏪 ' + uname;
-                    loadCfg();
-                    attachHistoryListener();
-                    attachLeaderboardListener(uname);
-                    attachPrimVisibilityListener();
-                    attachTeklifFeatureListener();
-                    flushPendingWrites();
-                    setTimeout(adjustPadding, 100);
+                    enterStoreScreen(uname);
                 });
             }
         } else {
@@ -3180,6 +3205,23 @@
         const formatted = input.value.split('+').map(formatThousands).join('+');
         input.value = formatted;
         input.setSelectionRange(formatted.length, formatted.length);
+    }
+
+    // Etiket alanları sayı klavyesi (inputmode="decimal") açılsın diye artık type metin ama sayısal
+    // tuş takımı gösteriyor — ama telefonların sayısal/decimal tuş takımında '+' tuşu YOK (sadece
+    // rakam ve virgül/nokta var), oysa bu alanlar birden fazla ürünü '+' ile ayırarak girmeyi
+    // destekliyor (örn. "15.000+8.000"). Bu yüzden alanın yanına ayrı bir '+' butonu eklendi — kullanıcı
+    // sayıyı yazar, bu butona basar, sonraki sayıyı yazar. afterFn verilirse (runCalc, exRunCalc,
+    // onQuickEtiketInput gibi) '+' eklendikten sonra çağrılır, oninput ile aynı işlem tetiklenir.
+    function appendPlusToField(inputId, afterFn) {
+        const el = document.getElementById(inputId);
+        if(!el) return;
+        const trimmed = el.value.trim();
+        if(!trimmed || trimmed.endsWith('+')) { el.focus(); return; } // boşken veya zaten '+' ile bitiyorken eklemenin anlamı yok
+        el.value = trimmed + '+';
+        applyThousandsMask(el);
+        if(typeof afterFn === 'function') afterFn();
+        el.focus();
     }
 
     // Her mağaza tamamen kendi kutusunda çalışır: stores/{storeId}/config, stores/{storeId}/history
@@ -3957,6 +3999,10 @@
     // Bağlantı kurulduğunda ya da uygulama açıldığında, önceki oturumdan sunucuya ulaşmamış kalan
     // kayıtları tekrar göndermeyi dener. set() ile aynı path'e tekrar yazmak idempotent'tir (sabit
     // push key kullanıldığı için aynı kayıt üzerine yazar, mükerrer kayıt oluşmaz).
+    // MAX_PENDING_ATTEMPTS: bir kayıt bu kadar denemeden sonra hâlâ gönderilemiyorsa (örn. mağaza
+    // hesabı arşivlenmiş/silinmiş, kalıcı bir yetki hatası vb.), sonsuza kadar sessizce denemeyi
+    // bırakır ve kullanıcıyı uyarır — yoksa kayıt hiç haber verilmeden kuyrukta sonsuza dek kalırdı.
+    const MAX_PENDING_ATTEMPTS = 5;
     let _flushingPendingWrites = false;
     function flushPendingWrites() {
         if(_flushingPendingWrites) return;
@@ -3964,19 +4010,47 @@
         const paths = Object.keys(all);
         if(!paths.length) return;
         _flushingPendingWrites = true;
+        let permanentlyFailed = 0;
         Promise.all(paths.map(function(path) {
             return fbDb.ref(path).set(all[path].data).then(function() {
                 _clearPendingWrite(path);
             }).catch(function(err) {
                 console.error('Bekleyen kayıt gönderilemedi (' + path + '):', err);
+                const attempts = (all[path].attempts || 0) + 1;
+                if(attempts >= MAX_PENDING_ATTEMPTS) {
+                    // Vazgeç: bu kaydı kuyruktan çıkar ama sessizce silme — kullanıcı görsün diye
+                    // ayrı bir "başarısız kayıtlar" listesine taşı, tekrar deneme döngüsüne girmesin.
+                    _moveToFailedWrites(path, all[path].data);
+                    _clearPendingWrite(path);
+                    permanentlyFailed++;
+                } else {
+                    const cur = _readPendingWrites();
+                    if(cur[path]) { cur[path].attempts = attempts; _writePendingWrites(cur); }
+                }
             });
         })).then(function() {
             _flushingPendingWrites = false;
             const remaining = Object.keys(_readPendingWrites()).length;
-            if(remaining === 0 && paths.length > 0) {
+            if(remaining === 0 && paths.length > 0 && permanentlyFailed === 0) {
                 console.info('Bekleyen ' + paths.length + ' kayıt sunucuya gönderildi.');
             }
+            if(permanentlyFailed > 0) {
+                sysAlert(permanentlyFailed + ' adet kayıt ' + MAX_PENDING_ATTEMPTS + ' denemeden sonra sunucuya gönderilemedi ve otomatik denemeyi bıraktı. Muhtemelen hesap yetkisiyle ilgili bir sorun var — lütfen yöneticinle iletişime geç, bu satışların kaydedilip kaydedilmediğini birlikte kontrol edin.', { title: 'Gönderilemeyen Kayıtlar', tone: 'danger' });
+            }
         });
+    }
+
+    // Kalıcı olarak başarısız olan yazmaları ayrı bir localStorage anahtarında tutar — flushPendingWrites
+    // bunları bir daha denemez, ama veri kaybolmaz; en azından tarayıcı konsolundan/desteğe iletmek için
+    // erişilebilir kalır.
+    const FAILED_WRITES_KEY = 'sinaFailedWrites_v1';
+    function _moveToFailedWrites(path, data) {
+        try {
+            const raw = localStorage.getItem(FAILED_WRITES_KEY);
+            const all = raw ? JSON.parse(raw) : {};
+            all[path] = { data: data, failedAtMillis: Date.now() };
+            localStorage.setItem(FAILED_WRITES_KEY, JSON.stringify(all));
+        } catch(e) { /* localStorage dolu vb. — elimizden gelen bu, en azından deneme döngüsünden çıkardık */ }
     }
 
     function saveToHistory(cusName, cusPhone, status, customSaleDateStr, closingAmount, paymentNote, basketOverride) {
@@ -5075,7 +5149,7 @@
             listEl.innerHTML = data.rows.map(function(r) {
                 const etiketLine = r.etiketUnknown ? 'Etiket $: — · Maliyet $: —' : 'Etiket $: ' + f(r.etiket) + ' · Maliyet $: ' + f(r.etiketBolu3);
                 return '<div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">' +
-                    '<div><b style="font-size:13px;">' + r.kod + '</b><br><span style="font-size:10.5px; color:var(--ink-dim);">' + r.musteri + ' · ' + r.tarih + '</span></div>' +
+                    '<div><b style="font-size:13px;">' + escapeHtml(r.kod) + '</b><br><span style="font-size:10.5px; color:var(--ink-dim);">' + escapeHtml(r.musteri) + ' · ' + r.tarih + '</span></div>' +
                     '<div style="text-align:right;"><div style="font-weight:700; color:var(--ink);">' + f(r.tl) + ' ₺</div><div style="font-size:10px; color:var(--ink-dim);">' + etiketLine + '</div>' + profitBadge(r) + '</div>' +
                     '</div>';
             }).join('');
@@ -5143,8 +5217,8 @@
                 const costCell = r.etiketUnknown ? '—' : f(r.cost) + ' ₺';
                 return '<tr style="' + rowStyle(r) + '">' +
                     '<td style="padding:7px 6px; ' + cellColor(r) + '">' + r.tarih + '</td>' +
-                    '<td style="padding:7px 6px; ' + cellColor(r) + '">' + r.musteri + '</td>' +
-                    '<td style="padding:7px 6px; ' + cellColor(r) + '">' + r.kod + '</td>' +
+                    '<td style="padding:7px 6px; ' + cellColor(r) + '">' + escapeHtml(r.musteri) + '</td>' +
+                    '<td style="padding:7px 6px; ' + cellColor(r) + '">' + escapeHtml(r.kod) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right; ' + cellColor(r) + '">' + etiketCell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right; ' + cellColor(r) + '">' + etiketBolu3Cell + '</td>' +
                     '<td style="padding:7px 6px; text-align:right; ' + cellColor(r) + '">' + f(r.tl) + ' ₺</td>' +
@@ -5420,9 +5494,9 @@
             return '<div class="hist-card" style="padding:14px 16px; border-bottom:1px solid var(--border);">' +
                 '<div style="display:flex; justify-content:space-between; align-items:center;">' +
                 '<div style="flex:1; cursor:pointer;" onclick="previewHistory(\'' + realKey + '\')">' +
-                '<div style="font-weight:700; font-size:14px; color:var(--ink);">' + h.cusName + ' <span style="font-size:11px; color:var(--ink-dim); font-weight:400;">' + h.cusPhone + '</span></div>' +
+                '<div style="font-weight:700; font-size:14px; color:var(--ink);">' + escapeHtml(h.cusName) + ' <span style="font-size:11px; color:var(--ink-dim); font-weight:400;">' + escapeHtml(h.cusPhone) + '</span></div>' +
                 '<div style="font-size:11px; color:var(--ink-dim); margin-top:2px;">' + h.ts + ' · ' + h.basket.length + ' ürün</div>' +
-                '<div style="font-size:10px; color:var(--rose); font-weight:700; margin-top:2px;">🏪 ' + (h.storeName || 'Mağaza') + '</div>' +
+                '<div style="font-size:10px; color:var(--rose); font-weight:700; margin-top:2px;">🏪 ' + escapeHtml(h.storeName || 'Mağaza') + '</div>' +
                 '<div style="margin-top:5px;">' + statusBadge + '</div>' +
                 '</div>' +
                 '<div style="text-align:right; margin-left:12px;">' +
@@ -5851,7 +5925,7 @@
             ? '<div style="margin-top:8px; padding:10px 12px; background:var(--success-bg); border-radius:10px;">' +
               '<div style="font-size:9px; color:var(--success); font-weight:800; text-transform:uppercase; letter-spacing:.04em;">KAPANIŞ TUTARI</div>' +
               '<div style="font-size:18px; font-weight:800; color:var(--ink); margin-top:2px;">' + (h.closingAmount ? f(h.closingAmount) + ' ₺' : '—') + editClosingBtn + '</div>' +
-              (h.paymentNote ? '<div style="font-size:11px; color:var(--ink-mid); margin-top:4px;">💳 ' + h.paymentNote + '</div>' : '') +
+              (h.paymentNote ? '<div style="font-size:11px; color:var(--ink-mid); margin-top:4px;">💳 ' + escapeHtml(h.paymentNote) + '</div>' : '') +
               '</div>'
             : '';
 
@@ -5872,8 +5946,8 @@
         }
 
         document.getElementById('prev-title').innerHTML =
-            '<b>' + h.cusName + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + h.cusPhone + ' · ' + h.ts + '</span>' + editCustomerBtn +
-            '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + (h.storeName || 'Mağaza') + '</span>' +
+            '<b>' + escapeHtml(h.cusName) + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + escapeHtml(h.cusPhone) + ' · ' + h.ts + '</span>' + editCustomerBtn +
+            '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + escapeHtml(h.storeName || 'Mağaza') + '</span>' +
             (isSold ? ' <span style="font-size:10px;color:var(--success);font-weight:800;">✓ SATIŞ OLDU' + (h.soldAt ? ' · '+h.soldAt : '') + '</span>' + editDateBtn : '') +
             closingBlock + exchangeLinkBlock;
         document.getElementById('prev-items').innerHTML = h.basket.map(function(i, idx) {
@@ -6554,9 +6628,9 @@
                     '<span style="font-size:15px;">' + meta.icon + '</span>' +
                     '<div>' +
                     '<span style="font-weight:700; color:' + meta.color + ';">' + meta.label + '</span> ' +
-                    '<span style="color:var(--dash-ink);">' + (r.storeName || r.storeId || '—') + '</span>' +
+                    '<span style="color:var(--dash-ink);">' + escapeHtml(r.storeName || r.storeId || '—') + '</span>' +
                     (r.storeId ? ' <span style="font-size:10px; color:var(--dash-ink-dim);">@' + r.storeId + '</span>' : '') +
-                    '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + (r.details || '') + '</span>' +
+                    '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + escapeHtml(r.details || '') + '</span>' +
                     '</div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
@@ -6911,7 +6985,7 @@
             html += '<div style="max-height:260px; overflow-y:auto; border:1px solid var(--dash-border); border-radius:8px;">';
             html += preview.map(function(p) {
                 return '<div style="display:flex; justify-content:space-between; gap:10px; padding:7px 10px; border-bottom:1px solid var(--dash-border);">' +
-                    '<div><b>' + (p.storeName || '—') + '</b> <span style="color:var(--dash-ink-dim); font-size:10px;">@' + (p.storeId || '—') + '</span></div>' +
+                    '<div><b>' + escapeHtml(p.storeName || '—') + '</b> <span style="color:var(--dash-ink-dim); font-size:10px;">@' + escapeHtml(p.storeId || '—') + '</span></div>' +
                     '<div style="text-align:right; white-space:nowrap;">' + statusBadge(p.status) + '<br><span style="font-size:9.5px; color:var(--dash-ink-dim);">' + p.reason + '</span></div>' +
                     '</div>';
             }).join('') + '</div>';
@@ -7147,7 +7221,7 @@
                 return '<div style="border-bottom:1px solid var(--dash-border); opacity:' + (isArchived ? '0.65' : '1') + ';">' +
                     '<div style="display:flex; justify-content:space-between; align-items:center; padding:13px 4px; cursor:pointer;" onclick="toggleStoreDetail(\'' + sid + '\')">' +
                     '<div style="display:flex; align-items:center;">' + checkboxHtml +
-                    '<div><b style="font-size:13.5px; color:var(--dash-ink);">' + (cfg.cfgStore || sid) + '</b> <span style="font-size:11px; color:var(--dash-ink-dim);">@' + sid + '</span>' +
+                    '<div><b style="font-size:13.5px; color:var(--dash-ink);">' + escapeHtml(cfg.cfgStore || sid) + '</b> <span style="font-size:11px; color:var(--dash-ink-dim);">@' + sid + '</span>' +
                     (cfg.il ? ' <span class="dash-badge teklif" style="margin-left:4px;">📍 ' + cfg.il + '</span>' : '') +
                     ' <span class="dash-badge teklif" style="margin-left:4px;">' + typeLabel + '</span>' +
                     (isArchived ? ' <span class="dash-badge teklif" style="margin-left:4px;">ARŞİV · ' + daysLeft + ' gün sonra silinir</span>' : '') +
@@ -7162,11 +7236,11 @@
                     '<div id="store-detail-' + sid + '" style="display:none; padding:2px 4px 16px;">' +
                     '<div style="font-size:11.5px; color:var(--dash-ink-dim); line-height:2; background:var(--dash-surface-2); border-radius:10px; padding:12px 14px;">' +
                     '<span style="color:var(--dash-ink);"><b>Kullanıcı Adı:</b> ' + sid + '</span><br>' +
-                    '<span style="color:var(--dash-ink);"><b>Ad:</b> ' + (cfg.cfgStore || '—') + '</span><br>' +
+                    '<span style="color:var(--dash-ink);"><b>Ad:</b> ' + escapeHtml(cfg.cfgStore || '—') + '</span><br>' +
                     '<span style="color:var(--dash-ink);"><b>Tür:</b> ' + typeLabel + '</span><br>' +
                     '<span style="color:var(--dash-ink);"><b>İl / Bölge:</b> ' + (cfg.il || '—') + (cfg.bolge ? ' / ' + cfg.bolge : '') + '</span><br>' +
-                    '<span style="color:var(--dash-ink);"><b>Telefon:</b> ' + (cfg.cfgTel || '—') + '</span><br>' +
-                    '<span style="color:var(--dash-ink);"><b>Adres:</b> ' + (cfg.cfgAddr || '—') + '</span><br>' +
+                    '<span style="color:var(--dash-ink);"><b>Telefon:</b> ' + escapeHtml(cfg.cfgTel || '—') + '</span><br>' +
+                    '<span style="color:var(--dash-ink);"><b>Adres:</b> ' + escapeHtml(cfg.cfgAddr || '—') + '</span><br>' +
                     '<span style="color:var(--dash-rose);"><b>Şifre (not):</b> ' + (cfg.passwordNote || '— kayıtlı değil, "🔑 Şifre Sıfırla" ile not edilebilir') + '</span>' +
                     '</div>' +
                     '<div style="display:flex; gap:8px; margin-top:10px;">' + actionsHtml + '</div>' +
@@ -7791,7 +7865,7 @@
                 return '<div class="dash-store-row">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b>' + (s.il ? ' <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' : '') + '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + '</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + escapeHtml(s.name) + '</b>' + (s.il ? ' <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' : '') + '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -7907,7 +7981,7 @@
         listEl.innerHTML = inactive.map(function(s) {
             const daysText = s.days === null ? 'Hiç kayıt girmemiş' : s.days + ' gündür hareket yok';
             return '<div class="dash-store-row">' +
-                '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span></div>' +
+                '<div><b style="color:var(--dash-ink);">' + escapeHtml(s.name) + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span></div>' +
                 '<div style="font-size:11.5px; font-weight:700; color:var(--dash-rose);">' + daysText + '</div>' +
                 '</div>';
         }).join('');
@@ -7981,7 +8055,7 @@
         const f = n => Math.round(n).toLocaleString('tr-TR');
         listEl.innerHTML = declining.map(function(s) {
             return '<div class="dash-store-row">' +
-                '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' +
+                '<div><b style="color:var(--dash-ink);">' + escapeHtml(s.name) + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span>' +
                 '<br><span style="font-size:10.5px; color:var(--dash-ink-dim);">Geçen ay $' + f(s.prev) + ' → Bu ay $' + f(s.cur) + '</span></div>' +
                 '<div style="font-size:14px; font-weight:800; color:var(--dash-rose);">▼ ' + s.pct + '%</div>' +
                 '</div>';
@@ -8390,7 +8464,7 @@
                 return '<div class="dash-store-row">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + s.name + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + discountHtml + '</span><br><span style="font-size:10.5px; color:var(--dash-gold); font-weight:700;">💰 Prim: $ ' + s.primUsd.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + escapeHtml(s.name) + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + s.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + s.count + ' ürün' + (s.exchangeCount > 0 ? ' <span style="color:var(--dash-rose);">+' + s.exchangeCount + ' 🔄</span>' : '') + discountHtml + '</span><br><span style="font-size:10.5px; color:var(--dash-gold); font-weight:700;">💰 Prim: $ ' + s.primUsd.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:var(--dash-gold); font-size:15px;">$ ' + f(s.etiket/3) + '</div>' +
@@ -8430,7 +8504,7 @@
                 return '<div class="dash-store-row"' + (p.isExchangeReturn ? ' style="background:var(--rose-pale);"' : '') + '>' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                     '<span class="dash-rank-num">' + (idx+1).toString().padStart(2,'0') + '</span>' +
-                    '<div><b style="color:var(--dash-ink);">' + p.kod + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + p.il + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + p.storeName + ' · ' + p.cusName + '</span></div>' +
+                    '<div><b style="color:var(--dash-ink);">' + escapeHtml(p.kod) + '</b> <span style="font-size:10px; color:var(--dash-ink-dim);">📍 ' + escapeHtml(p.il) + '</span><br><span style="font-size:10.5px; color:var(--dash-ink-dim);">' + escapeHtml(p.storeName) + ' · ' + escapeHtml(p.cusName) + '</span></div>' +
                     '</div>' +
                     '<div style="text-align:right;">' +
                     '<div style="font-weight:700; color:' + rowColor + '; font-size:14px;">$ ' + f(p.etiketBolu3) + '</div>' +
@@ -8560,8 +8634,8 @@
                     '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + r.magaza + '</td>' +
                     '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + r.il + '</td>' +
                     '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + r.tarih + '</td>' +
-                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + r.musteri + '</td>' +
-                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c; font-weight:700;' : '') + '">' + r.kod + '</td>' +
+                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c;' : '') + '">' + escapeHtml(r.musteri) + '</td>' +
+                    '<td style="padding:7px 6px;' + (r.isExchangeReturn ? ' color:#c8244c; font-weight:700;' : '') + '">' + escapeHtml(r.kod) + '</td>' +
                     '<td style="padding:7px 6px; text-align:right;' + (r.isExchangeReturn ? ' color:#c8244c; font-weight:700;' : '') + '">$ ' + f(r.etiketBolu3) + '</td>' +
                     '</tr>';
             }).join('');
@@ -8641,7 +8715,7 @@
                 const stores = byRegion[regionName];
                 const rows = stores.map(function(s) {
                     return '<tr style="border-bottom:1px solid #f0eef2;">' +
-                        '<td style="padding:9px 8px;"><b>' + s.name + '</b><br><span style="font-size:9.5px; color:#9090a0;">' + s.type + '</span></td>' +
+                        '<td style="padding:9px 8px;"><b>' + escapeHtml(s.name) + '</b><br><span style="font-size:9.5px; color:#9090a0;">' + s.type + '</span></td>' +
                         '<td style="padding:9px 8px;">' + s.il + '</td>' +
                         '<td style="padding:9px 8px; font-size:10px;">' + s.tel + '</td>' +
                         '<td style="padding:9px 8px; font-size:10px; color:#5a5564;">' + s.addr + '</td>' +
