@@ -2216,6 +2216,11 @@
                 </div>
             </div>
 
+            <!-- Dönemsel Karşılaştırma — tarih filtresi seçiliyse o dönemi kendi süresindeki önceki
+                 döneme, seçili değilse bu ayı geçen aya kıyaslar. Sadece gerçekleşmiş satışlar (teklif
+                 hariç) üzerinden hesaplanır. -->
+            <div id="sr-compare" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:16px;"></div>
+
             <!-- Özet kartları -->
             <div id="sr-summary" style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:10px;"></div>
 
@@ -2389,12 +2394,16 @@
                 </div>
 
                 <div style="margin-top:26px;">
-                    <div class="dash-section-title">Son 6 Ay — Etiket÷3 Trendi (Tüm Mağazalar)</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div class="dash-section-title" style="margin-bottom:14px;">Etiket÷3 Trendi (Tüm Mağazalar)</div>
+                        <div id="dash-trend-months-bar" style="display:flex; gap:6px; margin-bottom:14px;"></div>
+                    </div>
                     <div class="dash-panel">
                         <div id="trend-chart-container" style="overflow-x:auto;">
                             <svg id="trend-chart-svg" width="100%" height="200"></svg>
                         </div>
                     </div>
+                    <div class="dash-panel" id="dash-trend-table" style="padding:0; overflow:hidden; margin-top:12px;"></div>
                 </div>
             </div>
 
@@ -2513,16 +2522,28 @@
 
                 <div id="rep-summary" style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:14px;"></div>
 
-                <!-- Sadece tek bir mağaza seçiliyken görünür: o mağazanın kendi son 6 ay trendi.
-                     "Genel Bakış"taki trend tüm mağazaların toplamı olduğu için, tek bir mağazanın kendi
-                     gidişatını (artıyor mu, azalıyor mu) görmek için buraya, mağaza bazlı bir grafik gerekiyordu. -->
-                <div id="rep-store-trend-section" style="display:none; margin-bottom:16px;">
-                    <div class="dash-section-title" id="rep-store-trend-title">Mağaza Trendi</div>
+                <!-- FİYAT BANDI DAĞILIMI — satışlar hangi etiket ($) aralığında yoğunlaşıyor. Aktif
+                     bölge/il/mağaza/durum/tarih filtrelerine uyar (getFilteredHistoryRows ile aynı satırlar). -->
+                <div style="margin-bottom:16px;">
+                    <div class="dash-section-title">Fiyat Bandı Dağılımı</div>
+                    <div class="dash-panel" id="rep-price-bands" style="padding:0; overflow:hidden;"></div>
+                </div>
+
+                <!-- Etiket÷3 Trendi — aktif bölge/il/tür/mağaza filtresine göre hesaplanır (tarih ve durum
+                     filtreleri buraya uygulanmaz, çünkü trend kendi ay aralığını kendi belirler ve her
+                     zaman gerçekleşmiş satışlar üzerinden hesaplanır). Mağaza seçiliyse o mağazanın kendi
+                     trendini, seçili değilse filtreye uyan mağazaların toplamını gösterir. -->
+                <div id="rep-store-trend-section" style="margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div class="dash-section-title" id="rep-store-trend-title">Etiket÷3 Trendi</div>
+                        <div id="rep-trend-months-bar" style="display:flex; gap:6px; margin-bottom:14px;"></div>
+                    </div>
                     <div class="dash-panel">
                         <div style="overflow-x:auto;">
                             <svg id="rep-store-trend-svg" width="100%" height="200" style="display:block; min-width:280px;"></svg>
                         </div>
                     </div>
+                    <div class="dash-panel" id="rep-trend-table" style="padding:0; overflow:hidden; margin-top:12px;"></div>
                 </div>
 
                 <div id="rep-sort-bar" style="display:flex; gap:6px; margin-bottom:16px;"></div>
@@ -2839,6 +2860,39 @@
     </div>
 
 <script>
+    // ══════════════════════════════════════════════════════════════════════
+    // İÇİNDEKİLER — dosya tek parça kalıyor (bilerek), ama Ctrl+F ile bu
+    // başlıkları aratarak ilgili bölüme hızlı atlamak için bir harita:
+    //
+    //   ORTAK / ALT YAPI
+    //     "İL / BÖLGE VERİ YAPISI"           — 81 il / bölge listesi
+    //     "AUTH / OTURUM"                     — giriş, admin/mağaza ayrımı
+    //     "SİSTEM MODALI"                     — alert/confirm/prompt yerine geçen modal
+    //     "BEKLEYEN YAZMALAR KUYRUĞU"         — offline dayanıklılık (localStorage kuyruğu)
+    //     "OTOMATİK USD/TRY KURU"             — kur çekme/paylaşma
+    //     "BAĞLANTI DURUMU İZLEME"            — offline banner, sync-status
+    //
+    //   MAĞAZA TARAFI (store terminal)
+    //     "HESAP MAKİNESİ MODU"               — hesap makinesi / hızlı satış geçişi
+    //     "TEKLİF ÖZELLİĞİ"                   — teklif akışı (mağaza tarafı görünürlüğü)
+    //     "MAĞAZA SIRALAMA EKRANI (mağaza"    — sıralama kartı (mağaza tarafı görünürlüğü)
+    //     "HIZLI SATIŞ GİRİŞİ"                — hesap makinesi modu kapalıyken satış girişi
+    //     "ÜRÜN DEĞİŞİMİ"                     — değişim modalı ve akışı
+    //
+    //   ADMIN TARAFI (dashboard)
+    //     "ADMIN PANEL"                       — mağaza listesi/yönetimi
+    //     "MAĞAZA SIRALAMA EKRANI AÇMA/KAPAMA" — leaderboardEnabled toggle
+    //     "MAĞAZADA PRİM GÖRÜNÜRLÜĞÜ"         — primVisibleToStores toggle
+    //     "TEKLİF ÖZELLİĞİ AÇMA/KAPAMA"       — teklifEnabled toggle
+    //     "ADMIN İŞLEM GEÇMİŞİ (Audit Log)"   — adminLog okuma/yazma
+    //     "TÜM MAĞAZA VERİLERİNİ SIFIRLA"     — Tehlikeli Bölge
+    //     "TOPLU KÂR/xU DÜZENLEME"            — çoklu mağaza kâr oranı güncelleme
+    //     "PRİM HESABI"                       — komisyon hesaplama + çeyrek/YTD/bölge özetleri
+    //     "MAĞAZA SIRALAMASI HESAPLAMA"       — admin'in sıralamayı hesaplayıp yayınlaması
+    //     "HAREKETSİZ MAĞAZA UYARISI" / "AZALAN MAĞAZA UYARISI"
+    //     "SON 6 AY TREND GRAFİĞİ"            — basit SVG grafik
+    // ══════════════════════════════════════════════════════════════════════
+
     // ── İL / BÖLGE VERİ YAPISI ──
     const TR_REGIONS = {
         'Marmara': ['İstanbul','Edirne','Kırklareli','Tekirdağ','Çanakkale','Balıkesir','Bursa','Yalova','Kocaeli','Sakarya','Bilecik'],
@@ -3062,6 +3116,7 @@
                     attachLeaderboardListener(uname);
                     attachPrimVisibilityListener();
                     attachTeklifFeatureListener();
+                    flushPendingWrites(); // önceki oturumdan sunucuya ulaşmamış kayıt var mı diye kontrol et
                     setTimeout(adjustPadding, 100); // main-wrapper az önce göründü, top-bar yüksekliği şimdi doğru ölçülebilir
                 }).catch(function() {
                     document.getElementById('dashboard-screen').style.display = 'none';
@@ -3073,6 +3128,7 @@
                     attachLeaderboardListener(uname);
                     attachPrimVisibilityListener();
                     attachTeklifFeatureListener();
+                    flushPendingWrites();
                     setTimeout(adjustPadding, 100);
                 });
             }
@@ -3865,6 +3921,64 @@
         return '\n\n⚠ Şu an internet bağlantın yok. Bu kayıt cihazında bekliyor, bağlantı gelince otomatik gönderilecek — bağlantı gelene kadar bu sekmeyi/uygulamayı KAPATMA, yoksa kayıt kaybolabilir.';
     }
 
+    // ── BEKLEYEN YAZMALAR KUYRUĞU (offline dayanıklılık) ──
+    // Firebase Realtime Database'in web SDK'sında Firestore'daki enablePersistence() karşılığı yok:
+    // offline'da yapılan bir .push()/.set() sadece o anki sekmenin BELLEĞİNDE kuyruğa girer. Sekme
+    // kapanır/yenilenirse veya cihaz çökerse, sunucuya hiç ulaşmamış bir yazma kalıcı olarak kaybolur.
+    // Bu blok, en kritik yazma olan satış/teklif kaydını göndermeden ÖNCE tarayıcının localStorage'ına
+    // (diske) da yazar; başarılı gönderim sonrası kuyruktan silinir. Uygulama her açılışta ve bağlantı
+    // her kurulduğunda kuyrukta kalan (önceki oturumdan sunucuya ulaşmamış) kayıtları tekrar göndermeyi
+    // dener — böylece "kaydedildi" dedikten sonra tableti kapatan bir mağaza, bağlantı gelince veya
+    // uygulamayı tekrar açtığında kaydın sunucuya ulaştığından emin olur.
+    const PENDING_WRITES_KEY = 'sinaPendingWrites_v1';
+
+    function _readPendingWrites() {
+        try {
+            const raw = localStorage.getItem(PENDING_WRITES_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch(e) { return {}; }
+    }
+
+    function _writePendingWrites(obj) {
+        try { localStorage.setItem(PENDING_WRITES_KEY, JSON.stringify(obj)); } catch(e) { /* disk dolu vb. — sessizce geç */ }
+    }
+
+    function _queuePendingWrite(path, data) {
+        const all = _readPendingWrites();
+        all[path] = { data: data, queuedAtMillis: Date.now() };
+        _writePendingWrites(all);
+    }
+
+    function _clearPendingWrite(path) {
+        const all = _readPendingWrites();
+        if(all[path]) { delete all[path]; _writePendingWrites(all); }
+    }
+
+    // Bağlantı kurulduğunda ya da uygulama açıldığında, önceki oturumdan sunucuya ulaşmamış kalan
+    // kayıtları tekrar göndermeyi dener. set() ile aynı path'e tekrar yazmak idempotent'tir (sabit
+    // push key kullanıldığı için aynı kayıt üzerine yazar, mükerrer kayıt oluşmaz).
+    let _flushingPendingWrites = false;
+    function flushPendingWrites() {
+        if(_flushingPendingWrites) return;
+        const all = _readPendingWrites();
+        const paths = Object.keys(all);
+        if(!paths.length) return;
+        _flushingPendingWrites = true;
+        Promise.all(paths.map(function(path) {
+            return fbDb.ref(path).set(all[path].data).then(function() {
+                _clearPendingWrite(path);
+            }).catch(function(err) {
+                console.error('Bekleyen kayıt gönderilemedi (' + path + '):', err);
+            });
+        })).then(function() {
+            _flushingPendingWrites = false;
+            const remaining = Object.keys(_readPendingWrites()).length;
+            if(remaining === 0 && paths.length > 0) {
+                console.info('Bekleyen ' + paths.length + ' kayıt sunucuya gönderildi.');
+            }
+        });
+    }
+
     function saveToHistory(cusName, cusPhone, status, customSaleDateStr, closingAmount, paymentNote, basketOverride) {
         status = status || 'teklif';
         const now = new Date();
@@ -3887,7 +4001,12 @@
             }
         }
 
-        return fbDb.ref('stores/' + currentStoreId + '/history').push({
+        // push() burada network beklemeden, tamamen yerelde benzersiz bir key üretir — bu sayede
+        // kaydı localStorage'a yazmak için gerçek path'i (stores/.../history/<key>) network'e hiç
+        // ihtiyaç duymadan, offline'da bile önceden biliyoruz.
+        const historyRef = fbDb.ref('stores/' + currentStoreId + '/history').push();
+        const path = 'stores/' + currentStoreId + '/history/' + historyRef.key;
+        const payload = {
             ref, ts, tsMillis: now.getTime(), cusName, cusPhone, storeName,
             status: status,
             soldAt: soldAt,
@@ -3898,7 +4017,14 @@
             // kuru bilinmediği için, kayıt anının kuru kullanılır (mağaza bunu kabul etti).
             usdRateAtSave: status === 'sold' ? (smartEval(document.getElementById('cfgU').value) || null) : null,
             basket: JSON.parse(JSON.stringify(basketOverride || basket))
-        }).then(function() {
+        };
+
+        // Firebase'e göndermeden ÖNCE diske (localStorage) yaz — sekme, gönderim tamamlanmadan
+        // kapanırsa/çökerse bile kayıt cihazda kalır ve bir sonraki açılışta otomatik tekrar denenir.
+        _queuePendingWrite(path, payload);
+
+        return historyRef.set(payload).then(function() {
+            _clearPendingWrite(path);
             return { ref, ts };
         });
     }
@@ -4787,7 +4913,87 @@
         }
     }
 
+    // Seçili tarih filtresine göre "bu dönem vs önceki eşdeğer dönem" karşılaştırması.
+    // Tarih filtresi boşsa: bu ay vs geçen ay (takvim ayı). Tarih filtresi varsa: seçili aralık ile
+    // aynı gün sayısındaki, hemen öncesindeki dönem (örn. 1-15 Haziran seçiliyse 17-31 Mayıs).
+    // Sadece 'sold' (gerçekleşmiş satış) kayıtları sayılır — teklifler ciro/karşılaştırma dışıdır,
+    // aksi hâlde henüz satışa dönmemiş teklifler ciromuş gibi görünüp yanıltıcı bir kıyas doğar.
+    function renderStoreReportComparison() {
+        const el = document.getElementById('sr-compare');
+        if(!el) return;
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        const startVal = document.getElementById('srStart').value;
+        const endVal   = document.getElementById('srEnd').value;
+
+        let curStart, curEnd, curLabel, prevLabel;
+        if(startVal || endVal) {
+            curStart = startVal ? new Date(startVal + 'T00:00:00').getTime() : null;
+            curEnd   = endVal ? new Date(endVal + 'T23:59:59').getTime() : Date.now();
+            if(!curStart) { el.innerHTML = ''; return; } // sadece bitiş tarihi varsa dönem uzunluğu belirsiz, kıyas gösterilmez
+            curLabel = 'Seçili Dönem';
+            prevLabel = 'Önceki Eşdeğer Dönem';
+        } else {
+            const now = new Date();
+            curStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            curEnd = Date.now();
+            curLabel = 'Bu Ay';
+            prevLabel = 'Geçen Ay (Aynı Gün Sayısı)';
+        }
+        const durationMs = curEnd - curStart;
+        const prevEnd = curStart - 1;
+        const prevStart = prevEnd - durationMs;
+
+        function sumPeriod(fromMs, toMs) {
+            let tl = 0, count = 0;
+            _historyCache.forEach(function(h) {
+                if(h.status !== 'sold') return;
+                const t = h.soldAtMillis || h.tsMillis || 0;
+                if(t < fromMs || t > toMs) return;
+                // Ciro: closingAmount girilmemişse (0/null) sepet toplamına düşülür — renderStoreReport'taki
+                // tutar bazlı hesaplamayla (byDate[dateKey].tl) aynı mantık. Değişim iadeleri ciroya dahil
+                // edilir (genelde negatiftir, net farkı yansıtır) ama satış ADEDİNE dahil edilmez.
+                const amt = h.closingAmount ? h.closingAmount : (h.basket || []).reduce(function(a,b) { return a + (b.v ? b.v.vN : 0); }, 0);
+                tl += amt;
+                if(!h.isExchangeReturn) count += 1;
+            });
+            return { tl, count };
+        }
+
+        const cur = sumPeriod(curStart, curEnd);
+        const prev = sumPeriod(prevStart, prevEnd);
+
+        function delta(curVal, prevVal) {
+            if(prevVal === 0) return curVal === 0 ? null : Infinity;
+            return Math.round(((curVal - prevVal) / prevVal) * 100);
+        }
+        const tlDelta = delta(cur.tl, prev.tl);
+        const countDelta = delta(cur.count, prev.count);
+
+        function badge(d) {
+            if(d === null) return '<span style="color:var(--ink-dim); font-weight:700;">—</span>';
+            if(d === Infinity) return '<span style="color:var(--success); font-weight:800;">Yeni</span>';
+            const isUp = d >= 0;
+            return '<span style="color:' + (isUp ? 'var(--success)' : 'var(--rose)') + '; font-weight:800;">' + (isUp ? '▲ +' : '▼ ') + d + '%</span>';
+        }
+
+        el.innerHTML =
+            '<div style="font-size:10px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; margin-bottom:10px;">📈 Dönemsel Karşılaştırma · Sadece Satışlar</div>' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
+                '<div style="font-size:11px; color:var(--ink-dim);">' + curLabel + '</div>' +
+                '<div style="font-size:15px; font-weight:800; color:var(--ink);">' + f(cur.tl) + ' ₺ &nbsp;·&nbsp; ' + cur.count + ' satış</div>' +
+            '</div>' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                '<div style="font-size:11px; color:var(--ink-dim);">' + prevLabel + '</div>' +
+                '<div style="font-size:13px; color:var(--ink-dim);">' + f(prev.tl) + ' ₺ &nbsp;·&nbsp; ' + prev.count + ' satış</div>' +
+            '</div>' +
+            '<div style="display:flex; gap:20px; border-top:1px solid var(--border); padding-top:10px;">' +
+                '<div>Tutar: ' + badge(tlDelta) + '</div>' +
+                '<div>Adet: ' + badge(countDelta) + '</div>' +
+            '</div>';
+    }
+
     function renderStoreReport() {
+        renderStoreReportComparison();
         const data = buildStoreReportData();
         const rows = getFilteredStoreHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
@@ -7596,7 +7802,11 @@
 
         renderInactiveStores();
         renderDecliningStores();
-        renderTrendChart();
+        if(!document.getElementById('dash-trend-months-bar').innerHTML) {
+            document.getElementById('dash-trend-months-bar').innerHTML = monthsToggleBarHtml('dash-trend-months-bar', _dashTrendMonths, 'setDashTrendMonths');
+        }
+        renderTrendChart('trend-chart-svg', _dashTrendMonths, null);
+        renderCiroHistoryTable('dash-trend-table', _dashTrendMonths, null);
 
         // Sıralama: bu ay + geçmiş 5 ay (toplam 6 ay) hesaplanır, mağazalar geçmiş ayları da görüp karşılaştırabilsin.
         for(let i = 0; i <= 5; i++) {
@@ -7825,30 +8035,120 @@
         }).join('');
     }
 
-    function renderTrendChart(svgId, storeIdFilter) {
-        const svg = document.getElementById(svgId || 'trend-chart-svg');
-        if(!svg) return;
-
+    // Son N ay için ay ay etiket÷3 ($) toplamlarını hesaplar. matchFn verilirse (bölge/il/tür/mağaza gibi
+    // durum/tarih DIŞI filtreler için) her satır bu fonksiyondan geçirilir; verilmezse şirket geneli.
+    // Yalnızca 'sold' (gerçekleşmiş satış) sayılır. Değişimde geri alınan ürünün etiketi negatiftir ve
+    // kasıtlı olarak DAHİL edilir — hariç tutmak sahte yüksek bir rakam verirdi.
+    function getMonthlyEtiketSeries(monthsCount, matchFn) {
         const now = new Date();
         const months = [];
-        for(let i = 5; i >= 0; i--) {
+        for(let i = monthsCount - 1; i >= 0; i--) {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            months.push({ start: d.getTime(), end: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(), label: d.toLocaleDateString('tr-TR', { month: 'short' }) });
+            months.push({
+                start: d.getTime(),
+                end: new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(),
+                label: d.toLocaleDateString('tr-TR', { month: 'short' }),
+                fullLabel: d.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+            });
         }
-
         const totals = months.map(function(m) {
             const rows = _historyCache.filter(function(h) {
                 if(h.status !== 'sold') return false;
-                // Değişimde geri alınan ürünün etiketi negatiftir, kasıtlı olarak DAHİL edilir (sistemin
-                // genel kuralı: adet sayımında ayrı tutulur, ama etiket/ciro toplamında her zaman dahildir
-                // — bkz. Genel Bakış'taki "Bu Ay Etiket Toplamı"). Hariç tutmak sahte yüksek bir rakam verirdi.
-                if(storeIdFilter && h.storeId !== storeIdFilter) return false;
+                if(matchFn && !matchFn(h)) return false;
                 const d = h.soldAtMillis || h.tsMillis || 0;
                 return d >= m.start && d < m.end;
             });
             const etiket = rows.reduce(function(a,h){ return a + h.basket.reduce(function(aa,b){ return aa + (b._rawP ? smartEval(b._rawP) : 0); }, 0); }, 0);
             return etiket / 3;
         });
+        return { months: months, totals: totals };
+    }
+
+    // Etiket÷3 trendini sayısal tablo olarak gösterir (grafikten okunması zor olan tam rakamlar için) —
+    // Aylık Prim Geçmişi tablosuyla aynı görsel dil, farklı renk (rose) ile ayrıştırılır.
+    function renderCiroHistoryTable(containerId, monthsCount, matchFn) {
+        const container = document.getElementById(containerId);
+        if(!container) return;
+        const series = getMonthlyEtiketSeries(monthsCount, matchFn);
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        const maxVal = Math.max.apply(null, series.totals.concat([1]));
+        container.innerHTML = series.months.map(function(m, i) {
+            const val = series.totals[i];
+            const barPct = Math.max(3, Math.round((val / maxVal) * 100));
+            const isCurrent = i === series.months.length - 1;
+            return '<div style="display:flex; align-items:center; gap:12px; padding:10px 16px; border-bottom:1px solid var(--dash-border);' + (isCurrent ? ' background:rgba(184,150,106,.06);' : '') + '">' +
+                '<div style="width:90px; font-size:11.5px; font-weight:' + (isCurrent ? '800' : '600') + '; color:var(--dash-ink); flex-shrink:0;">' + m.fullLabel + (isCurrent ? ' <span style="color:var(--dash-gold); font-size:9.5px;">(bu ay)</span>' : '') + '</div>' +
+                '<div style="flex:1; background:var(--dash-surface-2); border-radius:100px; height:10px; overflow:hidden;"><div style="background:var(--dash-rose); height:100%; width:' + barPct + '%; border-radius:100px;"></div></div>' +
+                '<div style="width:90px; text-align:right; font-size:12.5px; font-weight:700; color:var(--dash-rose); flex-shrink:0;">$ ' + f(val) + '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    function monthsToggleBarHtml(barId, activeMonths, onclickFnName) {
+        return [3,6,12].map(function(n) {
+            return '<button class="dash-sort-btn' + (activeMonths === n ? ' active' : '') + '" data-months="' + n + '" onclick="' + onclickFnName + '(' + n + ')">' + n + ' Ay</button>';
+        }).join('');
+    }
+
+    // ── GENEL BAKIŞ TRENDİ (şirket geneli, 3/6/12 ay seçilebilir) ──
+    let _dashTrendMonths = 6;
+    function setDashTrendMonths(n) {
+        _dashTrendMonths = n;
+        const bar = document.getElementById('dash-trend-months-bar');
+        if(bar) bar.innerHTML = monthsToggleBarHtml('dash-trend-months-bar', n, 'setDashTrendMonths');
+        renderTrendChart('trend-chart-svg', n, null);
+        renderCiroHistoryTable('dash-trend-table', n, null);
+    }
+
+    // ── SATIŞ RAPORU TRENDİ (aktif bölge/il/tür/mağaza filtresine göre, 3/6/12 ay seçilebilir) ──
+    let _repTrendMonths = 6;
+    function setRepTrendMonths(n) {
+        _repTrendMonths = n;
+        const bar = document.getElementById('rep-trend-months-bar');
+        if(bar) bar.innerHTML = monthsToggleBarHtml('rep-trend-months-bar', n, 'setRepTrendMonths');
+        renderReportTrend();
+    }
+
+    // repStore/repBolge/repIl/repType filtrelerine göre trend için eşleşme fonksiyonu üretir — repStart/
+    // repEnd/repStatus buraya kasıtlı uygulanmaz (trend kendi ay aralığını kendi belirler, her zaman
+    // gerçekleşmiş satış üzerinden hesaplanır).
+    function renderReportTrend() {
+        const bar = document.getElementById('rep-trend-months-bar');
+        if(bar && !bar.innerHTML) bar.innerHTML = monthsToggleBarHtml('rep-trend-months-bar', _repTrendMonths, 'setRepTrendMonths');
+
+        const storeFilter = document.getElementById('repStore').value;
+        const bolgeFilter = document.getElementById('repBolge') ? document.getElementById('repBolge').value : '';
+        const ilFilter    = document.getElementById('repIl') ? document.getElementById('repIl').value : '';
+        const typeFilter  = document.getElementById('repType') ? document.getElementById('repType').value : '';
+
+        const matchFn = (storeFilter || bolgeFilter || ilFilter || typeFilter) ? function(h) {
+            const info = _storesInfo[h.storeId] || {};
+            if(storeFilter && h.storeId !== storeFilter) return false;
+            if(bolgeFilter && info.bolge !== bolgeFilter) return false;
+            if(ilFilter && info.il !== ilFilter) return false;
+            if(typeFilter && info.storeType !== typeFilter) return false;
+            return true;
+        } : null;
+
+        const titleEl = document.getElementById('rep-store-trend-title');
+        if(storeFilter) {
+            titleEl.innerText = 'Etiket÷3 Trendi — ' + ((_storesInfo[storeFilter]||{}).cfgStore || storeFilter);
+        } else if(bolgeFilter || ilFilter || typeFilter) {
+            titleEl.innerText = 'Etiket÷3 Trendi — Filtreli Seçim';
+        } else {
+            titleEl.innerText = 'Etiket÷3 Trendi — Şirket Geneli';
+        }
+
+        renderTrendChart('rep-store-trend-svg', _repTrendMonths, matchFn);
+        renderCiroHistoryTable('rep-trend-table', _repTrendMonths, matchFn);
+    }
+
+    function renderTrendChart(svgId, monthsCount, matchFn) {
+        const svg = document.getElementById(svgId || 'trend-chart-svg');
+        if(!svg) return;
+
+        const series = getMonthlyEtiketSeries(monthsCount || 6, matchFn);
+        const months = series.months, totals = series.totals;
 
         // Mobilde de tüm grafik tek ekrana sığsın diye gerçek konteyner genişliği kullanılır, asla daha büyük çizilmez.
         const w = svg.parentElement.clientWidth || 480, h = 200;
@@ -7958,23 +8258,67 @@
         if(ids.includes(current)) sel.value = current;
     }
 
+    // ── FİYAT BANDI DAĞILIMI ──
+    // Satılan ürünleri etiket ($) değerine göre bantlara ayırıp, hangi fiyat aralığının satış adedi ve
+    // ciro (etiket÷3 bazında) açısından en yoğun olduğunu gösterir. Alım/kampanya kararları için:
+    // "en çok hangi bantta satıyoruz" bilgisi, tekil ürün kodu bazlı bir kategori/tip alanı olmadığı için
+    // (her ürünün kodu benzersiz), şu an elimizdeki veriyle yapılabilecek en yakın "ürün segmenti" analizi.
+    // Bantlar sabit kodlanmış — iş ihtiyacına göre kolayca değiştirilebilir.
+    const PRICE_BANDS = [
+        { label: '< $300',          min: 0,    max: 300 },
+        { label: '$300 – $600',     min: 300,  max: 600 },
+        { label: '$600 – $1.000',   min: 600,  max: 1000 },
+        { label: '$1.000 – $2.000', min: 1000, max: 2000 },
+        { label: '$2.000+',         min: 2000, max: Infinity }
+    ];
+
+    function renderPriceBandDistribution(rows) {
+        const el = document.getElementById('rep-price-bands');
+        if(!el) return;
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        const bands = PRICE_BANDS.map(function(b) { return Object.assign({ count: 0, etiket: 0 }, b); });
+
+        rows.forEach(function(h) {
+            if(h.status !== 'sold' || h.isExchangeReturn) return; // sadece gerçekleşmiş satış, değişim iadeleri hariç
+            h.basket.forEach(function(item) {
+                const etiketUsd = (item._rawP ? smartEval(item._rawP) : 0);
+                if(!(etiketUsd > 0)) return;
+                const band = bands.find(function(b) { return etiketUsd >= b.min && etiketUsd < b.max; }) || bands[bands.length - 1];
+                band.count += 1;
+                band.etiket += etiketUsd;
+            });
+        });
+
+        const totalCount = bands.reduce(function(a,b) { return a + b.count; }, 0);
+        if(!totalCount) {
+            el.innerHTML = '<div style="color:var(--dash-ink-dim); font-size:12.5px; padding:12px 4px;">Bu filtrelerle satış kaydı yok.</div>';
+            return;
+        }
+        const maxCount = Math.max.apply(null, bands.map(function(b) { return b.count; }).concat([1]));
+        el.innerHTML = bands.map(function(b) {
+            const pct = Math.round((b.count / totalCount) * 100);
+            const barPct = Math.max(b.count > 0 ? 4 : 0, Math.round((b.count / maxCount) * 100));
+            return '<div style="padding:10px 16px; border-bottom:1px solid var(--dash-border);">' +
+                '<div style="display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px;">' +
+                    '<b style="color:var(--dash-ink);">' + b.label + '</b>' +
+                    '<span style="color:var(--dash-ink-dim);">' + b.count + ' ürün · %' + pct + ' &nbsp;·&nbsp; <span style="color:var(--dash-gold); font-weight:700;">$ ' + f(b.etiket/3) + '</span></span>' +
+                '</div>' +
+                '<div style="background:var(--dash-surface-2); border-radius:100px; height:8px; overflow:hidden;"><div style="background:var(--dash-gold); height:100%; width:' + barPct + '%; border-radius:100px;"></div></div>' +
+                '</div>';
+        }).join('');
+    }
+
     function renderAdminPanel() {
         if(!isAdmin || !document.getElementById('rep-list')) return;
         updateRepStoreOptions();
         const rows = getFilteredHistoryRows();
         const f = n => Math.round(n).toLocaleString('tr-TR');
+        renderPriceBandDistribution(rows);
 
-        // Tek bir mağaza seçiliyken o mağazanın kendi son 6 ay trendini göster — Genel Bakış'taki
-        // grafik tüm mağazaların toplamı olduğu için, tek bir mağazanın gidişatını orada göremezsin.
+        // Etiket÷3 trendi artık her zaman görünür ve aktif bölge/il/tür/mağaza filtresine göre hesaplanır
+        // (tek mağaza seçiliyken sadece o mağaza, seçili değilse filtreye uyan mağazaların toplamı).
         const selectedStoreId = document.getElementById('repStore').value;
-        const trendSection = document.getElementById('rep-store-trend-section');
-        if(selectedStoreId) {
-            trendSection.style.display = 'block';
-            document.getElementById('rep-store-trend-title').innerText = (_storesInfo[selectedStoreId]||{}).cfgStore || selectedStoreId;
-            renderTrendChart('rep-store-trend-svg', selectedStoreId);
-        } else {
-            trendSection.style.display = 'none';
-        }
+        renderReportTrend();
 
         renderPrimHistoryTable(selectedStoreId);
 
@@ -8459,6 +8803,7 @@
     fbDb.ref('.info/connected').on('value', function(snap) {
         _fbConnected = snap.val() === true;
         updateOfflineBanner();
+        if(_fbConnected && !isAdmin && currentStoreId) flushPendingWrites();
     });
 
     window.onload = function() {
