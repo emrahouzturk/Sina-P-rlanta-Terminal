@@ -1338,6 +1338,14 @@
                 <span class="modal-close" onclick="closeModal('exchangeModal')">×</span>
             </div>
             <div class="simple-modal-body">
+                <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">MÜŞTERİ</div>
+                <label class="field-label">Müşteri Adı</label>
+                <input type="text" id="exCusName" style="font-size:15px; text-align:left; padding:10px 14px; text-transform:uppercase;" placeholder="Ad Soyad">
+                <label class="field-label" style="margin-top:12px;">Telefon (opsiyonel)</label>
+                <input type="text" id="exCusPhone" style="font-size:15px; text-align:left; padding:10px 14px;" placeholder="0 5XX XXX XX XX">
+
+                <div style="height:1px; background:var(--border); margin:16px 0;"></div>
+
                 <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">GERİ ALINAN ÜRÜN(LER)</div>
                 <label class="field-label">Kodu (varsa, opsiyonel)</label>
                 <input type="text" id="exManualKod" style="font-size:15px; text-align:left; padding:10px 14px; text-transform:uppercase;" placeholder="Opsiyonel">
@@ -1358,10 +1366,7 @@
                 <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">YENİ ÜRÜN(LER) — bir veya birden fazla ekleyebilirsin</div>
 
                 <label class="field-label">Pırlanta Etiket</label>
-                <div style="display:flex; gap:8px; align-items:stretch;">
-                    <input type="text" id="exNewEtiket" class="big-input" oninput="applyThousandsMask(this); exRunCalc();" placeholder="0.00" inputmode="decimal" style="flex:1;">
-                    <button type="button" onclick="appendPlusToField('exNewEtiket', exRunCalc)" title="Birden fazla ürün için: sayı gir, + bas, sonraki sayıyı gir" style="flex-shrink:0; width:52px; font-size:24px; font-weight:800; color:var(--rose); background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); cursor:pointer;">+</button>
-                </div>
+                <input type="text" id="exNewEtiket" class="big-input" oninput="applyThousandsMask(this); exRunCalc();" placeholder="0.00" inputmode="text">
 
                 <div class="price-grid" id="exPriceGrid" style="margin:14px 0; max-width:100%;">
                     <div class="price-card" id="exBox3" style="padding:10px 8px;">
@@ -1419,6 +1424,41 @@
                 <input type="text" id="exEditItemManualPrice" class="big-input" style="font-size:20px;" oninput="applyThousandsMask(this);">
                 <div id="exEditItemError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
                 <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="exSaveEditItem()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geçmişteki bir kaydı düzenlerken artık tek bir yerden: müşteri, tarih, kapanış tutarı, ödeme notu
+         ve ürün(ler) hepsi bu TEK modalde. Önceden bunlar ayrı ayrı sysPrompt() zincirleriyle (kaç tıklama
+         gerekiyordu) yapılıyordu — artık hepsi burada, TEK "Kaydet" ile TEK Firebase yazması olarak gider. -->
+    <div id="historyEditModal" class="modal-overlay">
+        <div class="modal" style="max-width:440px;">
+            <div class="modal-header">
+                <h3>✎ Kaydı Düzenle</h3>
+                <span class="modal-close" onclick="closeModal('historyEditModal')">×</span>
+            </div>
+            <div class="simple-modal-body" style="max-height:75vh; overflow-y:auto;">
+                <label class="field-label">Müşteri Adı</label>
+                <input type="text" id="heCusName" style="font-size:16px; text-align:left; padding:10px 14px; text-transform:uppercase;">
+                <label class="field-label" style="margin-top:12px;">Telefon</label>
+                <input type="text" id="heCusPhone" style="font-size:16px; text-align:left; padding:10px 14px;">
+
+                <div id="heSoldFieldsBlock" style="display:none;">
+                    <div style="height:1px; background:var(--border); margin:16px 0;"></div>
+                    <label class="field-label">Satış Tarihi</label>
+                    <input type="date" id="heSaleDate" style="font-size:15px; text-align:left; padding:10px 14px;">
+                    <label class="field-label" style="margin-top:12px;">Kapanış Tutarı (₺)</label>
+                    <input type="text" id="heClosingAmount" class="big-input" style="font-size:20px;" oninput="applyThousandsMask(this);">
+                    <label class="field-label" style="margin-top:12px;">Ödeme Açıklaması (opsiyonel)</label>
+                    <input type="text" id="hePaymentNote" style="font-size:14px; text-align:left; padding:10px 14px;">
+                </div>
+
+                <div style="height:1px; background:var(--border); margin:16px 0;"></div>
+                <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">ÜRÜN(LER)</div>
+                <div id="heItemsList"></div>
+
+                <div id="heError" style="display:none; margin-top:8px; font-size:11px; color:var(--rose); font-weight:600;"></div>
+                <button class="btn-primary" style="width:100%; margin-top:16px; border-radius:var(--r-sm);" onclick="saveHistoryEditModal()">Kaydet</button>
             </div>
         </div>
     </div>
@@ -1647,10 +1687,7 @@
             <div class="input-card" id="calc-mode-section">
                 <div id="formP">
                     <label class="field-label">Pırlanta Etiket</label>
-                <div style="display:flex; gap:8px; align-items:stretch;">
-                    <input type="text" id="inpP" class="big-input" oninput="applyThousandsMask(this); runCalc();" placeholder="0.00" inputmode="decimal" style="flex:1;">
-                    <button type="button" onclick="appendPlusToField('inpP', runCalc)" title="Birden fazla ürün için: sayı gir, + bas, sonraki sayıyı gir" style="flex-shrink:0; width:52px; font-size:24px; font-weight:800; color:var(--rose); background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); cursor:pointer;">+</button>
-                </div>
+                    <input type="text" id="inpP" class="big-input" oninput="applyThousandsMask(this); runCalc();" placeholder="0.00" inputmode="text">
                 </div>
             </div>
 
@@ -1698,10 +1735,7 @@
             <!-- HIZLI SATIŞ GİRİŞİ — Hesap Makinesi Modu kapalıyken görünür -->
             <div class="input-card" id="quick-sale-section" style="display:none;">
                 <label class="field-label">Pırlanta Etiket</label>
-                <div style="display:flex; gap:8px; align-items:stretch; margin-bottom:6px;">
-                    <input type="text" id="quickEtiket" class="big-input" oninput="applyThousandsMask(this); onQuickEtiketInput();" placeholder="0.00" inputmode="decimal" style="flex:1;">
-                    <button type="button" onclick="appendPlusToField('quickEtiket', onQuickEtiketInput)" title="Birden fazla ürün için: sayı gir, + bas, sonraki sayıyı gir" style="flex-shrink:0; width:52px; font-size:24px; font-weight:800; color:var(--rose); background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm); cursor:pointer;">+</button>
-                </div>
+                <input type="text" id="quickEtiket" class="big-input" oninput="applyThousandsMask(this); onQuickEtiketInput();" placeholder="0.00" inputmode="text" style="margin-bottom:6px;">
                 <div id="quickEtiket-parts" style="display:none; margin-bottom:10px; text-align:left;"></div>
                 <label class="field-label" style="margin-top:8px;">Satış Tutarı (₺)</label>
                 <input type="text" id="quickSaleAmount" class="big-input" oninput="applyThousandsMask(this);" placeholder="0.00" inputmode="text">
@@ -2107,7 +2141,10 @@
             <div id="history-preview" style="display:none; flex:1; min-width:0; padding:22px 26px; overflow-y:auto; background:var(--surface);">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
                     <div style="font-size:14px; font-weight:700; color:var(--ink);" id="prev-title">—</div>
-                    <button onclick="document.getElementById('history-preview').style.display='none'; _previewKey=null;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:7px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕</button>
+                    <div style="display:flex; gap:8px; flex-shrink:0;">
+                        <button id="btnEditHistory" onclick="openHistoryEditModal()" style="background:none; border:1.5px solid var(--success); color:var(--success); border-radius:8px; padding:7px 12px; font-size:11px; font-weight:700; cursor:pointer;">✎ Düzenle</button>
+                        <button onclick="document.getElementById('history-preview').style.display='none'; _previewKey=null;" style="background:none; border:1.5px solid var(--border); color:var(--ink-dim); border-radius:8px; padding:7px 12px; font-size:11px; font-weight:700; cursor:pointer;">✕</button>
+                    </div>
                 </div>
                 <div id="prev-items" style="font-size:12px; color:var(--ink-mid); line-height:1.9; margin-bottom:18px;"></div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -3205,23 +3242,6 @@
         const formatted = input.value.split('+').map(formatThousands).join('+');
         input.value = formatted;
         input.setSelectionRange(formatted.length, formatted.length);
-    }
-
-    // Etiket alanları sayı klavyesi (inputmode="decimal") açılsın diye artık type metin ama sayısal
-    // tuş takımı gösteriyor — ama telefonların sayısal/decimal tuş takımında '+' tuşu YOK (sadece
-    // rakam ve virgül/nokta var), oysa bu alanlar birden fazla ürünü '+' ile ayırarak girmeyi
-    // destekliyor (örn. "15.000+8.000"). Bu yüzden alanın yanına ayrı bir '+' butonu eklendi — kullanıcı
-    // sayıyı yazar, bu butona basar, sonraki sayıyı yazar. afterFn verilirse (runCalc, exRunCalc,
-    // onQuickEtiketInput gibi) '+' eklendikten sonra çağrılır, oninput ile aynı işlem tetiklenir.
-    function appendPlusToField(inputId, afterFn) {
-        const el = document.getElementById(inputId);
-        if(!el) return;
-        const trimmed = el.value.trim();
-        if(!trimmed || trimmed.endsWith('+')) { el.focus(); return; } // boşken veya zaten '+' ile bitiyorken eklemenin anlamı yok
-        el.value = trimmed + '+';
-        applyThousandsMask(el);
-        if(typeof afterFn === 'function') afterFn();
-        el.focus();
     }
 
     // Her mağaza tamamen kendi kutusunda çalışır: stores/{storeId}/config, stores/{storeId}/history
@@ -4961,10 +4981,14 @@
             rows.forEach(function(h) {
                 const rate = rateFor(h);
                 const dateKey = h.soldAt || h.ts.split(' ')[0];
+                const sortMillis = h.soldAtMillis || h.tsMillis || 0;
                 // closingAmount değişim kayıtlarında negatif olabilir, sadece null/0 ise sepete düşülür.
                 const sN = h.closingAmount ? h.closingAmount : h.basket.reduce((a,b)=>a+b.v.vN, 0);
                 const et = h.basket.reduce((a,b)=> a + (b._rawP ? smartEval(b._rawP) : 0), 0);
-                if(!byDate[dateKey]) byDate[dateKey] = { tarih: dateKey, adet: 0, exchangeAdet: 0, tl: 0, etiket: 0, tlUsdSum: 0 };
+                if(!byDate[dateKey]) byDate[dateKey] = { tarih: dateKey, sortMillis: sortMillis, adet: 0, exchangeAdet: 0, tl: 0, etiket: 0, tlUsdSum: 0 };
+                // Aynı gün içindeki en büyük tsMillis'i tut — o günün en güncel kaydı ne zaman girildiyse
+                // (birden fazla mağaza/işlem aynı güne düşse de sıralama her zaman gerçek takvim gününe göre olur).
+                if(sortMillis > byDate[dateKey].sortMillis) byDate[dateKey].sortMillis = sortMillis;
                 if(h.isExchangeReturn) {
                     byDate[dateKey].exchangeAdet += (h.exchangeAdet || h.basket.length);
                 } else {
@@ -4975,14 +4999,16 @@
                 byDate[dateKey].tlUsdSum += (rate > 0 ? (sN / rate) : 0);
             });
             let dateRows = Object.values(byDate).map(function(d) {
-                const row = withProfit({ tarih: d.tarih, adet: d.adet, exchangeAdet: d.exchangeAdet, tl: Math.round(d.tl), etiket: Math.round(d.etiket), etiketBolu3: Math.round(d.etiket/3) }, currentU);
+                const row = withProfit({ tarih: d.tarih, sortMillis: d.sortMillis, adet: d.adet, exchangeAdet: d.exchangeAdet, tl: Math.round(d.tl), etiket: Math.round(d.etiket), etiketBolu3: Math.round(d.etiket/3) }, currentU);
                 // Tutar bazlı modda USD toplamı zaten gün içindeki her satıştan ayrı ayrı toplandı (tlUsdSum) —
                 // withProfit'in tek kur ile hesapladığı tlUsd/profitUsd'nin üzerine bu daha doğru toplamı yazıyoruz.
                 row.tlUsd = Math.round(d.tlUsdSum);
                 row.profitUsd = Math.round(d.tlUsdSum - (d.etiket/3));
                 return row;
             });
-            dateRows.sort(function(a,b) { return b.etiket - a.etiket; });
+            // Tarihe göre YENİDEN ESKİYE sıralanır (gerçek satış tarihi/kaydın zaman damgası — etikete göre
+            // DEĞİL). Ekranda, PDF'de ve Excel'de aynı sıralamayı görür — hepsi bu fonksiyondan besleniyor.
+            dateRows.sort(function(a,b) { return b.sortMillis - a.sortMillis; });
             return { mode: 'tutar', rows: dateRows };
         }
     }
@@ -5419,6 +5445,8 @@
     function shiftHistoryPage(delta) {
         _histPage[_histTab] += delta;
         renderHistory();
+        const listEl = document.getElementById('history-list');
+        if(listEl) listEl.scrollTop = 0; // sayfa değişince en üstteki (ilk) kayda dön
     }
 
     function renderHistory() {
@@ -5480,7 +5508,7 @@
             const etiketTotal = h.basket.reduce(function(a,b){ return a + (b._rawP ? smartEval(b._rawP) : 0); }, 0);
             const isSold = h.status === 'sold';
             const isExchangeReturn = !!h.isExchangeReturn; // bu kayıt bir değişimin negatif (iade) tarafı mı
-            const cameFromExchange = !!h.exchangeFromKey || !!h.exchangeFromNote; // bu satış bir değişimle mi geldi
+            const cameFromExchange = !!h.exchangeReturnKey || !!h.exchangeFromNote; // bu satış bir değişimle mi geldi
             // Bu kayıt bir değişimin parçasıysa, karşı kaydın (storeId, key) bilgisini taşır — geri alma için kullanılır.
             const exchangeCounterpart = isExchangeReturn
                 ? { key: h.exchangeToKey, storeId: h.exchangeToStoreId }
@@ -5559,6 +5587,8 @@
     let _exNewBasket = []; // bu modalde eklenen yeni ürünler — { k, v, _rawP, _manualN }
 
     function openExchangeModal() {
+        document.getElementById('exCusName').value = '';
+        document.getElementById('exCusPhone').value = '';
         document.getElementById('exManualKod').value = '';
         document.getElementById('exManualAdet').value = '';
         document.getElementById('exManualTutar').value = '';
@@ -5726,6 +5756,9 @@
         errEl.style.display = 'none';
 
         if(!_exNewBasket.length) { errEl.innerText = 'En az bir yeni ürün eklemelisin (+ Ekle ile).'; errEl.style.display = 'block'; return; }
+        const exCusName = document.getElementById('exCusName').value.trim().toUpperCase();
+        if(!exCusName) { errEl.innerText = 'Müşteri adı gerekli.'; errEl.style.display = 'block'; return; }
+        const exCusPhone = document.getElementById('exCusPhone').value.trim() || 'Paylaşılmadı';
         const dateStr = document.getElementById('exSaleDate').value;
         if(!dateStr) { errEl.innerText = 'Satış tarihi gerekli.'; errEl.style.display = 'block'; return; }
 
@@ -5748,7 +5781,7 @@
         const newRef = dateShort.replace(/\./g,'') + '/' + (Math.floor(Math.random()*9000)+1000);
         const newSalePayload = {
             ref: newRef, ts: now.toLocaleString('tr-TR'), tsMillis: now.getTime(),
-            cusName: 'Müşterimiz', cusPhone: '—', storeName: document.getElementById('cfgStore').value || 'Mağaza',
+            cusName: exCusName, cusPhone: exCusPhone, storeName: document.getElementById('cfgStore').value || 'Mağaza',
             status: 'sold', soldAt: saleDate.toLocaleDateString('tr-TR'), soldAtMillis: saleDate.getTime(),
             closingAmount: newAmount, paymentNote: '', usdRateAtSave: u || null,
             basket: JSON.parse(JSON.stringify(_exNewBasket)),
@@ -5918,13 +5951,11 @@
         document.getElementById('btnPrintHistoryPdf').style.display = isAdmin ? 'none' : 'inline-block';
         const f = n => Math.round(n).toLocaleString('tr-TR');
         const isSold = h.status === 'sold';
-        const editDateBtn = (!isAdmin && isSold) ? ' <span onclick="editSaleDate(\'' + key + '\', \'' + h.storeId + '\')" style="font-size:9px; color:var(--success); cursor:pointer; font-weight:700; text-decoration:underline;">✎ tarihi düzelt</span>' : '';
-        const editClosingBtn = (!isAdmin && isSold) ? ' <span onclick="editClosingAmount(\'' + key + '\', \'' + h.storeId + '\')" style="font-size:9px; color:var(--success); cursor:pointer; font-weight:700; text-decoration:underline;">✎ kapanışı düzelt</span>' : '';
-        const editCustomerBtn = !isAdmin ? ' <span onclick="editHistoryCustomer(\'' + key + '\', \'' + h.storeId + '\')" style="font-size:9px; color:var(--ink-dim); cursor:pointer; font-weight:700; text-decoration:underline;">✎ müşteri bilgisini düzelt</span>' : '';
+        document.getElementById('btnEditHistory').style.display = isAdmin ? 'none' : 'inline-block';
         const closingBlock = isSold
             ? '<div style="margin-top:8px; padding:10px 12px; background:var(--success-bg); border-radius:10px;">' +
               '<div style="font-size:9px; color:var(--success); font-weight:800; text-transform:uppercase; letter-spacing:.04em;">KAPANIŞ TUTARI</div>' +
-              '<div style="font-size:18px; font-weight:800; color:var(--ink); margin-top:2px;">' + (h.closingAmount ? f(h.closingAmount) + ' ₺' : '—') + editClosingBtn + '</div>' +
+              '<div style="font-size:18px; font-weight:800; color:var(--ink); margin-top:2px;">' + (h.closingAmount ? f(h.closingAmount) + ' ₺' : '—') + '</div>' +
               (h.paymentNote ? '<div style="font-size:11px; color:var(--ink-mid); margin-top:4px;">💳 ' + escapeHtml(h.paymentNote) + '</div>' : '') +
               '</div>'
             : '';
@@ -5937,21 +5968,20 @@
                 '<div style="font-size:9px; color:var(--rose); font-weight:800; text-transform:uppercase; letter-spacing:.04em;">🔄 BU ÜRÜN DEĞİŞİME GİTTİ</div>' +
                 (newH ? '<div style="font-size:12px; color:var(--ink); margin-top:2px;">Yeni ürün: ' + newH.basket.map(function(i){return i.k;}).join(', ') + ' — ' + f(newH.closingAmount||0) + ' ₺ (tıkla, kaydı gör)</div>' : '<div style="font-size:11px; color:var(--ink-dim); margin-top:2px;">Yeni satış kaydı bulunamadı (silinmiş olabilir).</div>') +
                 '</div>';
-        } else if(h.exchangeFromKey || h.exchangeFromNote) {
-            const oldH = h.exchangeFromKey ? _historyCache.find(function(x){ return x.key === h.exchangeFromKey; }) : null;
-            exchangeLinkBlock = '<div style="margin-top:8px; padding:10px 12px; background:var(--rose-pale); border-radius:10px;' + (oldH ? ' cursor:pointer;' : '') + '"' + (oldH ? ' onclick="previewHistory(\'' + h.exchangeFromKey + '\')"' : '') + '>' +
+        } else if(h.exchangeReturnKey || h.exchangeFromNote) {
+            const oldH = h.exchangeReturnKey ? _historyCache.find(function(x){ return x.key === h.exchangeReturnKey; }) : null;
+            exchangeLinkBlock = '<div style="margin-top:8px; padding:10px 12px; background:var(--rose-pale); border-radius:10px;' + (oldH ? ' cursor:pointer;' : '') + '"' + (oldH ? ' onclick="previewHistory(\'' + h.exchangeReturnKey + '\')"' : '') + '>' +
                 '<div style="font-size:9px; color:var(--rose); font-weight:800; text-transform:uppercase; letter-spacing:.04em;">🔄 BU SATIŞ DEĞİŞİMLE GELDİ</div>' +
-                (oldH ? '<div style="font-size:12px; color:var(--ink); margin-top:2px;">Geri verilen ürün: ' + oldH.basket.map(function(i){return i.k;}).join(', ') + ' — ' + f(oldH.closingAmount||0) + ' ₺ (tıkla, kaydı gör)</div>' : '<div style="font-size:12px; color:var(--ink); margin-top:2px;">Geri verilen ürün: ' + (h.exchangeFromNote || '—') + '</div>') +
+                (oldH ? '<div style="font-size:12px; color:var(--ink); margin-top:2px;">Geri verilen ürün: ' + oldH.basket.map(function(i){return i.k;}).join(', ') + ' — ' + f(oldH.closingAmount||0) + ' ₺ (tıkla, kaydı gör)</div>' : '<div style="font-size:12px; color:var(--ink); margin-top:2px;">Geri verilen ürün: ' + escapeHtml(h.exchangeFromNote || '—') + '</div>') +
                 '</div>';
         }
 
         document.getElementById('prev-title').innerHTML =
-            '<b>' + escapeHtml(h.cusName) + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + escapeHtml(h.cusPhone) + ' · ' + h.ts + '</span>' + editCustomerBtn +
+            '<b>' + escapeHtml(h.cusName) + '</b> <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">' + escapeHtml(h.cusPhone) + ' · ' + h.ts + '</span>' +
             '<br><span style="font-size:11px;color:var(--rose);font-weight:700;">🏪 ' + escapeHtml(h.storeName || 'Mağaza') + '</span>' +
-            (isSold ? ' <span style="font-size:10px;color:var(--success);font-weight:800;">✓ SATIŞ OLDU' + (h.soldAt ? ' · '+h.soldAt : '') + '</span>' + editDateBtn : '') +
+            (isSold ? ' <span style="font-size:10px;color:var(--success);font-weight:800;">✓ SATIŞ OLDU' + (h.soldAt ? ' · '+h.soldAt : '') + '</span>' : '') +
             closingBlock + exchangeLinkBlock;
         document.getElementById('prev-items').innerHTML = h.basket.map(function(i, idx) {
-            const editBtn = isAdmin ? '' : ' <span onclick="openEditHistoryItem(\'' + key + '\', ' + idx + ')" style="font-size:10px;color:var(--ink-dim);cursor:pointer;font-weight:400;">✎</span>';
             const etiketVal = i._rawP ? smartEval(i._rawP) : 0;
             // Prim oranı: varsayılan %3, mağaza isterse bu ürünü %1'e işaretleyebilir. Müşteri önündeki
             // sepette değil, satış kapandıktan sonra burada (Geçmiş) işaretlenir — müşteri hiç görmez.
@@ -5963,7 +5993,7 @@
                 (primPct === 1 ? 'background:var(--gold-pale); color:var(--gold);' : 'background:var(--success-bg); color:var(--success);') +
                 '">Prim: %' + primPct + '</span>';
             return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">' +
-                '<span><b>' + i.k + '</b>' + editBtn + primBtn + (i.note ? ' <em style="opacity:.6;">— ' + i.note + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + i.d + ' · Etiket: ' + f(etiketVal) + '</span></span>' +
+                '<span><b>' + escapeHtml(i.k) + '</b>' + primBtn + (i.note ? ' <em style="opacity:.6;">— ' + escapeHtml(i.note) + '</em>' : '') + '<br><span style="opacity:.6;font-size:10px;">' + escapeHtml(i.d) + ' · Etiket: ' + f(etiketVal) + '</span></span>' +
                 '<span style="text-align:right;flex-shrink:0;margin-left:12px;">' +
                 '<span style="color:var(--rose);font-weight:700;">' + f(i.v.vN) + ' ₺</span><br>' +
                 '<span style="opacity:.6;font-size:10px;">3T: ' + f(i.v.v3) + ' ₺</span>' +
@@ -5989,129 +6019,96 @@
         });
     }
 
-    // Bir kaydın müşteri adı/telefonunu sonradan düzeltir — teklif ya da satış, her durumda kullanılabilir.
-    // Bu kayıt admin tarafında da aynı yoldan (stores/{storeId}/history) okunduğu için değişiklik otomatik yansır.
-    function editHistoryCustomer(key, storeId) {
+    // Bir kaydın müşteri adı/telefonu, (satılmışsa) tarihi/kapanış tutarı/ödeme notu ve ürünlerinin
+    // kodu/notu — hepsi TEK bir modalde, TEK "Kaydet" ile TEK Firebase yazması olarak düzenlenir.
+    // Önceden bunlar 4 ayrı fonksiyon ve art arda sysPrompt() zincirleriyle yapılıyordu.
+    function openHistoryEditModal() {
+        const key = _previewKey;
         const h = _historyCache.find(function(x) { return x.key === key; });
         if(!h) return;
-        sysPrompt('Müşteri adını gir:', {
-            title: 'Müşteri Bilgisini Düzelt',
-            defaultValue: h.cusName || ''
-        }).then(function(nameStr) {
-            if(nameStr === null) return;
-            const newName = nameStr.trim().toUpperCase();
-            if(!newName) { sysAlert('Müşteri adı boş olamaz.', { tone: 'warn' }); return; }
-            sysPrompt('Telefon numarasını gir:', {
-                title: 'Telefon',
-                defaultValue: h.cusPhone || ''
-            }).then(function(phoneStr) {
-                if(phoneStr === null) return;
-                const newPhone = phoneStr.trim();
-                if(!newPhone) { sysAlert('Telefon boş olamaz.', { tone: 'warn' }); return; }
-                fbDb.ref('stores/' + storeId + '/history/' + key).update({
-                    cusName: newName,
-                    cusPhone: newPhone
-                }).then(function() {
-                    previewHistory(key);
-                }).catch(function(err) {
-                    console.error('Güncellenemedi:', err);
-                    sysAlert('Güncellenirken hata oluştu: ' + err.message, { tone: 'danger' });
-                });
-            });
-        });
+        const isSold = h.status === 'sold';
+
+        document.getElementById('heCusName').value = h.cusName || '';
+        document.getElementById('heCusPhone').value = h.cusPhone || '';
+        document.getElementById('heError').style.display = 'none';
+
+        document.getElementById('heSoldFieldsBlock').style.display = isSold ? 'block' : 'none';
+        if(isSold) {
+            document.getElementById('heSaleDate').value = h.soldAtMillis ? new Date(h.soldAtMillis).toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
+            document.getElementById('heClosingAmount').value = h.closingAmount ? String(Math.round(h.closingAmount)) : '';
+            document.getElementById('hePaymentNote').value = h.paymentNote || '';
+        }
+
+        document.getElementById('heItemsList').innerHTML = h.basket.map(function(item, idx) {
+            return '<div style="margin-bottom:10px; padding:10px 12px; background:var(--bg); border-radius:8px;">' +
+                '<label class="field-label" style="margin-top:0;">Ürün ' + (idx+1) + ' — Kod</label>' +
+                '<input type="text" data-he-item-kod="' + idx + '" value="' + escapeHtml(item.k) + '" style="font-size:14px; text-align:left; padding:8px 12px; text-transform:uppercase;">' +
+                '<label class="field-label" style="margin-top:8px;">Açıklama (opsiyonel)</label>' +
+                '<input type="text" data-he-item-note="' + idx + '" value="' + escapeHtml(item.note || '') + '" style="font-size:13px; text-align:left; padding:8px 12px;">' +
+                '</div>';
+        }).join('');
+
+        openModal('historyEditModal');
     }
 
-    // Zaten satılmış bir kaydın kapanış tutarını/ödeme açıklamasını sonradan düzeltir.
-    function editClosingAmount(key, storeId) {
+    function saveHistoryEditModal() {
+        const key = _previewKey;
         const h = _historyCache.find(function(x) { return x.key === key; });
+        const errEl = document.getElementById('heError');
+        errEl.style.display = 'none';
         if(!h) return;
-        sysPrompt('Doğru kapanış tutarını gir (₺):', {
-            title: 'Kapanış Tutarını Düzelt',
-            defaultValue: h.closingAmount ? String(Math.round(h.closingAmount)) : ''
-        }).then(function(amountStr) {
-            if(amountStr === null) return;
-            const amount = smartEvalThousands(amountStr);
-            if(!(amount > 0)) { sysAlert('Geçerli bir tutar gir.', { tone: 'warn' }); return; }
-            sysPrompt('Ödeme açıklaması (opsiyonel):', {
-                title: 'Ödeme Açıklaması',
-                defaultValue: h.paymentNote || ''
-            }).then(function(noteStr) {
-                if(noteStr === null) noteStr = h.paymentNote || '';
+        const isSold = h.status === 'sold';
 
-                // Yeni kapanış tutarı, sepetteki ürünlerin Nakit toplamından farklıysa, her ürüne
-                // etiket oranına göre orantılı dağıtılır — "kapanış tutarı" ile "ürün fiyatları" tutarsız kalmasın.
-                const updatedBasket = JSON.parse(JSON.stringify(h.basket));
-                const currentTotal = updatedBasket.reduce(function(a,b){ return a + b.v.vN; }, 0);
-                if(currentTotal > 0 && Math.round(currentTotal) !== Math.round(amount)) {
-                    const ratio = amount / currentTotal;
-                    updatedBasket.forEach(function(item) {
-                        item.v.v3 = item.v.v3 * ratio;
-                        item.v.v2 = item.v.v2 * ratio;
-                        item.v.v1 = item.v.v1 * ratio;
-                        item.v.vN = item.v.vN * ratio;
-                        item._manualN = true;
-                    });
-                }
+        const newName = document.getElementById('heCusName').value.trim().toUpperCase();
+        if(!newName) { errEl.innerText = 'Müşteri adı boş olamaz.'; errEl.style.display = 'block'; return; }
+        const newPhone = document.getElementById('heCusPhone').value.trim() || 'Paylaşılmadı';
 
-                fbDb.ref('stores/' + storeId + '/history/' + key).update({
-                    closingAmount: amount,
-                    paymentNote: noteStr.trim(),
-                    basket: updatedBasket
-                }).then(function() {
-                    previewHistory(key);
-                }).catch(function(err) {
-                    console.error('Güncellenemedi:', err);
-                    sysAlert('Güncellenirken hata oluştu: ' + err.message, { tone: 'danger' });
-                });
-            });
+        const updates = { cusName: newName, cusPhone: newPhone };
+
+        // Ürün kodu/notu — sıraya göre eşleşir (liste basket ile aynı sırada oluşturuldu).
+        const updatedBasket = JSON.parse(JSON.stringify(h.basket));
+        updatedBasket.forEach(function(item, idx) {
+            const kodEl = document.querySelector('[data-he-item-kod="' + idx + '"]');
+            const noteEl = document.querySelector('[data-he-item-note="' + idx + '"]');
+            if(kodEl) item.k = (kodEl.value.trim() || item.k).toUpperCase();
+            if(noteEl) item.note = noteEl.value.trim();
         });
-    }
 
-    // Zaten "Satış Oldu" işaretlenmiş bir kaydın satış tarihini sonradan düzeltir.
-    function editSaleDate(key, storeId) {
-        const h = _historyCache.find(function(x) { return x.key === key; });
-        if(!h) return;
-        const currentDateStr = h.soldAtMillis ? new Date(h.soldAtMillis).toISOString().slice(0,10) : new Date().toISOString().slice(0,10);
-        sysPrompt('Bu satışın doğru tarihini seç:', {
-            title: 'Satış Tarihini Düzelt',
-            inputType: 'date',
-            defaultValue: currentDateStr
-        }).then(function(dateStr) {
-            if(dateStr === null || !dateStr) return;
+        if(isSold) {
+            const dateStr = document.getElementById('heSaleDate').value;
+            if(!dateStr) { errEl.innerText = 'Satış tarihi gerekli.'; errEl.style.display = 'block'; return; }
+            const amount = smartEvalThousands(document.getElementById('heClosingAmount').value);
+            if(!(amount > 0)) { errEl.innerText = 'Geçerli bir kapanış tutarı gir.'; errEl.style.display = 'block'; return; }
+            const noteStr = document.getElementById('hePaymentNote').value.trim();
+
+            // Kapanış tutarı sepet toplamından farklıysa, her ürüne etiket oranına göre orantılı dağıtılır.
+            const currentTotal = updatedBasket.reduce(function(a,b){ return a + b.v.vN; }, 0);
+            if(currentTotal > 0 && Math.round(currentTotal) !== Math.round(amount)) {
+                const ratio = amount / currentTotal;
+                updatedBasket.forEach(function(item) {
+                    item.v.v3 = item.v.v3 * ratio;
+                    item.v.v2 = item.v.v2 * ratio;
+                    item.v.v1 = item.v.v1 * ratio;
+                    item.v.vN = item.v.vN * ratio;
+                    item._manualN = true;
+                });
+            }
+
             const d = new Date(dateStr + 'T12:00:00');
-            fbDb.ref('stores/' + storeId + '/history/' + key).update({
-                soldAt: d.toLocaleDateString('tr-TR'),
-                soldAtMillis: d.getTime()
-            }).then(function() {
-                previewHistory(key); // ekranı tazele
-            }).catch(function(err) {
-                console.error('Tarih güncellenemedi:', err);
-                sysAlert('Tarih güncellenirken hata oluştu: ' + err.message, { tone: 'danger' });
-            });
-        });
-    }
+            updates.soldAt = d.toLocaleDateString('tr-TR');
+            updates.soldAtMillis = d.getTime();
+            updates.closingAmount = amount;
+            updates.paymentNote = noteStr;
+        }
+        updates.basket = updatedBasket;
 
-    // Geçmişteki bir kaydın içindeki tek bir ürünün kodu/notunu düzenler (fiyat aynı kalır, geriye dönük doğru kod girilebilsin diye)
-    function openEditHistoryItem(key, itemIdx) {
-        const h = _historyCache.find(function(x) { return x.key === key; });
-        if(!h || !h.basket[itemIdx]) return;
-        const item = h.basket[itemIdx];
-        sysPrompt('Ürün kodu / adı:', { title: 'Geçmiş Ürünü Düzenle', defaultValue: item.k, placeholder: 'Örn: SINA-1200' }).then(function(newKod) {
-            if(newKod === null) return;
-            sysPrompt('Açıklama (opsiyonel):', { title: 'Açıklama', defaultValue: item.note || '', placeholder: 'Örn: 1.2 ct, G renk, VS1' }).then(function(newNote) {
-                if(newNote === null) newNote = item.note || '';
-                const updatedBasket = JSON.parse(JSON.stringify(h.basket));
-                updatedBasket[itemIdx].k = (newKod.trim() || item.k).toUpperCase();
-                updatedBasket[itemIdx].note = newNote.trim();
-                fbDb.ref('stores/' + h.storeId + '/history/' + key + '/basket').set(updatedBasket)
-                    .then(function() {
-                        previewHistory(key); // ekranı tazele
-                    })
-                    .catch(function(err) {
-                        console.error('Güncellenemedi:', err);
-                        sysAlert('Güncellenirken hata oluştu: ' + err.message, { tone: 'danger' });
-                    });
-            });
+        fbDb.ref('stores/' + h.storeId + '/history/' + key).update(updates).then(function() {
+            closeModal('historyEditModal');
+            previewHistory(key);
+        }).catch(function(err) {
+            console.error('Güncellenemedi:', err);
+            errEl.innerText = 'Kaydedilirken hata oluştu: ' + err.message;
+            errEl.style.display = 'block';
         });
     }
 
@@ -7625,15 +7622,18 @@
             }
 
             // Normal satır (değişim değil) — kendi etiketi üzerinden, her ürünün kendi prim oranıyla.
-            // Eğer bu satırın bağlı olduğu bir NEGATİF değişim kaydı varsa (exchangeFromKey), o kaydın
-            // etiketi burada negatif olarak eklenir — böylece net fark otomatik çıkar.
+            // Eğer bu satırın bağlı olduğu bir NEGATİF değişim kaydı varsa (exchangeReturnKey — değişim
+            // kaydedilirken yeni satışa yazılan alan BUDUR, "exchangeFromKey" hiçbir zaman yazılmıyordu ve
+            // bu yüzden aşağıdaki çıkarma adımı hiç çalışmıyordu; prim yanlışlıkla NET FARK yerine yeni
+            // ürünün TAM tutarı üzerinden hesaplanıyordu), o kaydın etiketi burada negatif olarak eklenir
+            // — böylece net fark otomatik çıkar.
             h.basket.forEach(function(item) {
                 const pct = (item.primPct || 3) / 100;
                 const itemEt = item._rawP ? smartEval(item._rawP) : 0;
                 addPrim(itemEt, pct, rate);
             });
-            if(h.exchangeFromKey) {
-                const oldH = rows.find(function(x) { return x.key === h.exchangeFromKey && x.storeId === h.storeId; });
+            if(h.exchangeReturnKey) {
+                const oldH = rows.find(function(x) { return x.key === h.exchangeReturnKey && x.storeId === h.storeId; });
                 if(oldH) {
                     processedExchangePairs[h.storeId + '::' + h.key] = true;
                     oldH.basket.forEach(function(item) {
@@ -7718,7 +7718,7 @@
         document.getElementById('dash-month-etiket').innerText = '$ ' + f(totalEtiket/3);
 
         // Şirket geneli toplam prim — calcPrimForRows TÜM mağazaların satırlarını birlikte alır, çünkü
-        // değişim eşleştirmesi (exchangeFromKey/exchangeToKey) zaten her mağazanın kendi satırları
+        // değişim eşleştirmesi (exchangeReturnKey/exchangeToKey) zaten her mağazanın kendi satırları
         // arasında çalışır (h.storeId ile mağaza ayrımı doğal olarak korunur, hesaplama yanlış karışmaz).
         const totalPrimEl = document.getElementById('dash-total-prim');
         if(totalPrimEl) {
@@ -8547,7 +8547,7 @@
             // mağaza ortalamadan çok daha yüksek oranda indirim yapıyorsa, bu kâr marjını eritir; admin'in
             // bunu görmesi için eklendi (bkz. Satış Raporu'ndaki "İndirim Oranı" sütunu).
             // primRows: mağaza bazlı satırlar — calcPrimForRows her mağaza için AYRI çağrılır, çünkü
-            // değişim eşleştirmesi (exchangeFromKey/exchangeToKey) sadece aynı mağazanın kendi satırları
+            // değişim eşleştirmesi (exchangeReturnKey/exchangeToKey) sadece aynı mağazanın kendi satırları
             // arasında anlamlıdır.
             const byStore = {};
             const primRowsByStore = {};
