@@ -2250,15 +2250,16 @@
                     </div>
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                    <div><label class="field-label" style="margin:0 0 4px;">Min Tutar (₺)</label><input type="text" id="srMinAmt" style="font-size:12px; padding:8px 10px; width:90px;" placeholder="0" oninput="applyThousandsMask(this); renderStoreReport();"></div>
+                    <div><label class="field-label" style="margin:0 0 4px;">Min Tutar (₺)<span onclick="event.stopPropagation(); showInfoTip('srMinMaxTutar')" style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--ink-dim); color:#fff; font-size:9px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:3px;">i</span></label><input type="text" id="srMinAmt" style="font-size:12px; padding:8px 10px; width:90px;" placeholder="0" oninput="applyThousandsMask(this); renderStoreReport();"></div>
                     <div><label class="field-label" style="margin:0 0 4px;">Max Tutar (₺)</label><input type="text" id="srMaxAmt" style="font-size:12px; padding:8px 10px; width:90px;" placeholder="∞" oninput="applyThousandsMask(this); renderStoreReport();"></div>
-                    <div><label class="field-label" style="margin:0 0 4px;">Min Adet</label><input type="text" id="srMinCount" style="font-size:12px; padding:8px 10px; width:70px;" placeholder="0" oninput="renderStoreReport()"></div>
+                    <div><label class="field-label" style="margin:0 0 4px;">Min Adet<span onclick="event.stopPropagation(); showInfoTip('srMinMaxAdet')" style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--ink-dim); color:#fff; font-size:9px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:3px;">i</span></label><input type="text" id="srMinCount" style="font-size:12px; padding:8px 10px; width:70px;" placeholder="0" oninput="renderStoreReport()"></div>
                     <div><label class="field-label" style="margin:0 0 4px;">Max Adet</label><input type="text" id="srMaxCount" style="font-size:12px; padding:8px 10px; width:70px;" placeholder="∞" oninput="renderStoreReport()"></div>
                     <button onclick="clearStoreReportFilters()" style="align-self:flex-end; background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 12px; font-size:11px; font-weight:700; color:var(--ink-dim); cursor:pointer;">Temizle</button>
                 </div>
-                <div style="display:flex; gap:8px;">
+                <div style="display:flex; gap:8px; align-items:center;">
                     <button class="s-tab active" data-mode="tutar" onclick="setStoreReportMode('tutar')" style="flex:1;">💰 Tutar Bazlı</button>
                     <button class="s-tab" data-mode="urun" onclick="setStoreReportMode('urun')" style="flex:1;">📦 Ürün Bazlı</button>
+                    <span onclick="showInfoTip('srTutarUrunBazli')" style="display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:var(--ink-dim); color:#fff; font-size:11px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; flex-shrink:0;">i</span>
                 </div>
             </div>
 
@@ -2268,6 +2269,7 @@
             <div id="sr-compare" style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; margin-bottom:16px;"></div>
 
             <!-- Özet kartları -->
+            <div class="dash-section-title" style="font-size:11px; margin-bottom:8px;">Özet Kartları<span onclick="showInfoTip('srSummary')" style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--ink-dim); color:#fff; font-size:9px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:4px;">i</span></div>
             <div id="sr-summary" style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:10px;"></div>
 
             <!-- Kârlılık özeti -->
@@ -2359,7 +2361,7 @@
                         <div class="stat-sub" id="dash-month-count-vs-prev" style="margin-top:2px;"></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="eyebrow">Bu Ay Etiket Toplamı (÷3)</div>
+                        <div class="eyebrow">Bu Ay Etiket Toplamı (÷3)<span onclick="showInfoTip('dashPeriodCards')" style="display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px; border-radius:50%; background:var(--dash-ink-dim); color:#fff; font-size:8.5px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:4px;">i</span></div>
                         <div class="stat-value" id="dash-month-etiket" style="font-size:26px; color:var(--dash-gold);">—</div>
                         <div class="stat-sub">prim hesap tabanı ($)</div>
                         <div class="stat-sub" id="dash-month-etiket-vs-prev" style="margin-top:2px;"></div>
@@ -2370,13 +2372,13 @@
                      "stratejik" bakış açısı sağlayan ikinci sıra. Yönetimin tipik sorduğu sorulara cevap. -->
                 <div class="dash-stat-grid" style="margin-top:-16px;">
                     <div class="dash-stat-card">
-                        <div class="eyebrow">Bu Çeyrek (Etiket÷3)</div>
+                        <div class="eyebrow">Bu Çeyrek (Etiket÷3)<span onclick="showInfoTip('dashPeriodCards')" style="display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px; border-radius:50%; background:var(--dash-ink-dim); color:#fff; font-size:8.5px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:4px;">i</span></div>
                         <div class="stat-value" id="dash-quarter-etiket" style="font-size:20px; color:var(--dash-gold);">—</div>
                         <div class="stat-sub" id="dash-quarter-label">—</div>
                         <div class="stat-sub" id="dash-quarter-vs-prev" style="margin-top:2px;"></div>
                     </div>
                     <div class="dash-stat-card">
-                        <div class="eyebrow">Bu Yıl (YTD, Etiket÷3)</div>
+                        <div class="eyebrow">Bu Yıl (YTD, Etiket÷3)<span onclick="showInfoTip('dashPeriodCards')" style="display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px; border-radius:50%; background:var(--dash-ink-dim); color:#fff; font-size:8.5px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:4px;">i</span></div>
                         <div class="stat-value" id="dash-ytd-etiket" style="font-size:20px; color:var(--dash-gold);">—</div>
                         <div class="stat-sub" id="dash-ytd-label">—</div>
                     </div>
@@ -2423,7 +2425,7 @@
 
                 <!-- Bölgeler arası karşılaştırma — hangi bölge güçlü, hangisi zayıf, tek ekranda. -->
                 <div style="margin-bottom:30px; margin-top:26px;">
-                    <div class="dash-section-title">Bölge Karşılaştırması — Bu Ay</div>
+                    <div class="dash-section-title">Bölge Karşılaştırması — Bu Ay<span onclick="showInfoTip('dashRegionCompare')" style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--dash-ink-dim); color:#fff; font-size:9px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:4px;">i</span></div>
                     <div class="dash-panel">
                         <div id="dash-region-comparison"></div>
                     </div>
@@ -2441,7 +2443,7 @@
 
                 <div style="margin-top:26px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <div class="dash-section-title" style="margin-bottom:14px;">Etiket÷3 Trendi (Tüm Mağazalar)</div>
+                        <div class="dash-section-title" style="margin-bottom:14px;">Etiket÷3 Trendi (Tüm Mağazalar)<span onclick="showInfoTip('dashTrend')" style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--dash-ink-dim); color:#fff; font-size:9px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:4px;">i</span></div>
                         <div id="dash-trend-months-bar" style="display:flex; gap:6px; margin-bottom:14px;"></div>
                     </div>
                     <div class="dash-panel">
@@ -2560,7 +2562,10 @@
                      değiştirmek yerine, ay ay karşılaştırmayı tek tabloda sağlar. Mevcut Bölge/İl/Tür/Durum
                      filtreleri burada uygulanmaz (sadece mağaza seçimi) — amaç basit, hızlı bir genel bakış. -->
                 <div style="margin-bottom:16px;">
-                    <div class="dash-section-title" id="rep-prim-history-title">Aylık Prim Geçmişi (Son 6 Ay)</div>
+                    <div style="display:flex; align-items:center;">
+                        <div class="dash-section-title" id="rep-prim-history-title" style="margin-bottom:14px;">Aylık Prim Geçmişi (Son 6 Ay)</div>
+                        <span onclick="showInfoTip('repPrimHistory')" style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--dash-ink-dim); color:#fff; font-size:9px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; margin-left:4px; margin-bottom:14px; flex-shrink:0;">i</span>
+                    </div>
                     <div class="dash-panel" style="padding:0; overflow:hidden;">
                         <div id="rep-prim-history-table" style="overflow-x:auto;"></div>
                     </div>
@@ -2571,7 +2576,7 @@
                 <!-- FİYAT BANDI DAĞILIMI — satışlar hangi etiket ($) aralığında yoğunlaşıyor. Aktif
                      bölge/il/mağaza/durum/tarih filtrelerine uyar (getFilteredHistoryRows ile aynı satırlar). -->
                 <div style="margin-bottom:16px;">
-                    <div class="dash-section-title">Fiyat Bandı Dağılımı</div>
+                    <div class="dash-section-title">Fiyat Bandı Dağılımı<span onclick="showInfoTip('repPriceBands')" style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--dash-ink-dim); color:#fff; font-size:9px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:4px;">i</span></div>
                     <div class="dash-panel" id="rep-price-bands" style="padding:0; overflow:hidden;"></div>
                 </div>
 
@@ -2581,7 +2586,10 @@
                      trendini, seçili değilse filtreye uyan mağazaların toplamını gösterir. -->
                 <div id="rep-store-trend-section" style="margin-bottom:16px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <div class="dash-section-title" id="rep-store-trend-title">Etiket÷3 Trendi</div>
+                        <div style="display:flex; align-items:center;">
+                            <div class="dash-section-title" id="rep-store-trend-title">Etiket÷3 Trendi</div>
+                            <span onclick="showInfoTip('dashTrend')" style="display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:var(--dash-ink-dim); color:#fff; font-size:9px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; margin-left:4px; flex-shrink:0;">i</span>
+                        </div>
                         <div id="rep-trend-months-bar" style="display:flex; gap:6px; margin-bottom:14px;"></div>
                     </div>
                     <div class="dash-panel">
@@ -2953,6 +2961,34 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
+    }
+
+    // ── BİLGİ İKONU (ⓘ) — kutucukların yanına, tıklayınca ne olduğunu açıklayan küçük bir daire.
+    // Metni doğrudan onclick içine gömmek yerine (tırnak/apostrof kaçış sorunlarına yol açar) sabit bir
+    // sözlükten anahtar (key) ile çağrılır. Yeni bir kutucuk için: aşağıdaki INFO_TEXTS'e bir satır ekle,
+    // sonra HTML'de infoIcon('anahtar') çağır.
+    const INFO_TEXTS = {
+        srMinMaxTutar: { title: 'Min / Max Tutar (₺)', text: 'Listedeki satışları KAPANIŞ TUTARINA (₺) göre süzer.\n\nÖrn. Min 10.000 yazarsan, 10.000₺\'nin altındaki satışlar listede görünmez.\n\nBoş bırakırsan (0 / ∞) tüm tutarlar dahil olur.' },
+        srMinMaxAdet: { title: 'Min / Max Adet', text: 'Bir satıştaki ÜRÜN ADEDİNE göre süzer.\n\nÖrn. Min Adet 2 yazarsan, tek ürünlük satışlar listede görünmez — sadece 2 veya daha fazla ürün içeren satışlar kalır.' },
+        srTutarUrunBazli: { title: 'Tutar Bazlı / Ürün Bazlı', text: 'Tutar Bazlı: satışları GÜNE göre gruplar, her günün toplam tutarını gösterir.\n\nÜrün Bazlı: her satılan ürünü kendi satırında tek tek gösterir, gruplama yapmaz. İkisi de tarihe göre (yeniden eskiye) sıralıdır.' },
+        srCompare: { title: 'Dönemsel Karşılaştırma', text: 'Bu ayki satışını, geçen ayın AYNI GÜN SAYISINA kıyaslar.\n\nÖrn. bugün ayın 10\'uysa, geçen ayın 1\'i ile 10\'u arasıyla karşılaştırılır — geçen ayın son günleriyle değil.\n\nTarih filtresi seçersen, seçtiğin dönemi kendi süresindeki hemen önceki eşdeğer döneme kıyaslar.\n\nSadece gerçekleşmiş SATIŞLAR sayılır, teklifler dahil değildir.' },
+        srSummary: { title: 'Özet Kartları', text: 'Aktif filtrelere uyan TÜM satışların toplamı.\n\n• Etiket $: ürünlerin dolar bazlı etiket değeri toplamı\n• Maliyet $: Etiket ÷ 3\n• Kâr/Zarar $: Satış Tutarı $ − Maliyet $' },
+        srProfit: { title: 'Filtre Sonucu Kârlılık', text: 'Aktif filtrelere uyan satışların kârlılık yüzdesi: (Satış Tutarı − Maliyet) ÷ Maliyet × 100.\n\nHem ₺ hem $ bazında ayrı ayrı gösterilir, çünkü kur değişimi ikisini farklı gösterebilir — $ bazındaki rakam kur dalgalanmasından bağımsız gerçek kârlılığı yansıtır.' },
+        dashPeriodCards: { title: 'Bu Ay / Çeyrek / YTD', text: 'Etiket ÷ 3 ($) üzerinden hesaplanır — TL\'ye çevrilip geri USD\'ye çevrilmez, doğrudan ürünün dolar etiketinden gelir. Bu yüzden kur dalgalanmasından bağımsızdır: buradaki büyüme/düşüş gerçek satış hacmini yansıtır, kur artışını değil.\n\nYTD (Year-To-Date) = yıl başından (1 Ocak) bugüne toplam, karşılaştırmasız.' },
+        dashRegionCompare: { title: 'Bölge Karşılaştırması', text: 'Bu ayki satışları (Etiket ÷ 3, $) bölgelere göre gruplar ve karşılaştırır. Değişimde geri alınan ürünler dahil edilmez.' },
+        dashTrend: { title: 'Etiket÷3 Trendi', text: 'Seçtiğin ay sayısı (3/6/12) kadar geçmişe giderek, her ayın toplam Etiket÷3 ($) ciro tutarını gösterir. Sadece gerçekleşmiş satışlar sayılır. Rakam dolar bazlı olduğu için kur dalgalanmasından bağımsızdır.' },
+        repPriceBands: { title: 'Fiyat Bandı Dağılımı', text: 'Satılan ürünleri etiket ($) değerine göre bantlara ayırır — hangi fiyat aralığının satış adedi ve ciro açısından en yoğun olduğunu gösterir.\n\nAktif bölge/il/mağaza/durum/tarih filtrelerine göre hesaplanır. Değişim iadeleri hariçtir.' },
+        repPrimHistory: { title: 'Aylık Prim Geçmişi', text: 'Seçili mağazanın (veya tüm mağazaların) son 6 aydaki tahmini prim (komisyon) hak edişini, dolar bazında ay ay gösterir. Değişimlerde net fark üzerinden hesaplanır.' }
+    };
+
+    function infoIcon(key) {
+        return ' <span onclick="event.stopPropagation(); showInfoTip(\'' + key + '\')" style="display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; border-radius:50%; background:var(--ink-dim); color:#fff; font-size:9.5px; font-weight:800; font-style:italic; font-family:Georgia,serif; cursor:pointer; vertical-align:middle; margin-left:3px;">i</span>';
+    }
+
+    function showInfoTip(key) {
+        const info = INFO_TEXTS[key];
+        if(!info) return;
+        sysAlert(info.text, { title: info.title });
     }
 
     // ── İL / BÖLGE VERİ YAPISI ──
@@ -4964,13 +5000,15 @@
                 h.basket.forEach(function(item) {
                     const etiket = item._rawP ? smartEval(item._rawP) : 0;
                     productRows.push(withProfit({
-                        tarih: h.soldAt || h.ts, musteri: h.cusName, kod: item.k + (h.isExchangeReturn ? ' 🔄' : ''),
+                        tarih: h.soldAt || h.ts, sortMillis: h.soldAtMillis || h.tsMillis || 0, musteri: h.cusName, kod: item.k + (h.isExchangeReturn ? ' 🔄' : ''),
                         etiket: Math.round(etiket), etiketBolu3: item._etiketUnknown ? null : Math.round(etiket/3), tl: Math.round(item.v.vN),
                         isExchangeReturn: !!h.isExchangeReturn, etiketUnknown: !!item._etiketUnknown
                     }, rate));
                 });
             });
-            productRows.sort(function(a,b) { return b.etiket - a.etiket; });
+            // Tarihe göre YENİDEN ESKİYE — önceden etikete göre büyükten küçüğe sıralıydı, artık tüm
+            // raporlar (ekran/PDF/Excel) aynı kronolojik sıralamayı kullanıyor.
+            productRows.sort(function(a,b) { return b.sortMillis - a.sortMillis; });
             return { mode: 'urun', rows: productRows };
         } else {
             // Tutar bazlı: tek mağaza olduğu için tarih bazlı (gün) gruplama anlamlı.
@@ -5025,23 +5063,32 @@
         const startVal = document.getElementById('srStart').value;
         const endVal   = document.getElementById('srEnd').value;
 
-        let curStart, curEnd, curLabel, prevLabel;
+        let curStart, curEnd, curLabel, prevLabel, prevStart, prevEnd;
         if(startVal || endVal) {
             curStart = startVal ? new Date(startVal + 'T00:00:00').getTime() : null;
             curEnd   = endVal ? new Date(endVal + 'T23:59:59').getTime() : Date.now();
             if(!curStart) { el.innerHTML = ''; return; } // sadece bitiş tarihi varsa dönem uzunluğu belirsiz, kıyas gösterilmez
             curLabel = 'Seçili Dönem';
             prevLabel = 'Önceki Eşdeğer Dönem';
+            // Seçili dönemin hemen ÖNCESİNDEKİ, aynı uzunluktaki dönem (örn. 10-20 Haziran seçiliyse
+            // 30 Mayıs - 9 Haziran) — burada bir "ay başı" referansı yok, sadece bitişik önceki dönem.
+            const durationMs = curEnd - curStart;
+            prevEnd = curStart - 1;
+            prevStart = prevEnd - durationMs;
         } else {
             const now = new Date();
             curStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
             curEnd = Date.now();
             curLabel = 'Bu Ay';
             prevLabel = 'Geçen Ay (Aynı Gün Sayısı)';
+            // "Aynı gün sayısı" = geçen ayın BAŞINDAN itibaren aynı süre kadar ileri — geçen ayın SONUNDAN
+            // geriye saymak YANLIŞ olurdu (örn. bugün ayın 1'i, saat 14:30 ise; doğrusu geçen ayın 1'i
+            // saat 00:00 - 14:30 arasıdır, geçen ayın son günü akşamı DEĞİL).
+            const durationMs = curEnd - curStart;
+            const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+            prevStart = prevMonthStart;
+            prevEnd = prevMonthStart + durationMs;
         }
-        const durationMs = curEnd - curStart;
-        const prevEnd = curStart - 1;
-        const prevStart = prevEnd - durationMs;
 
         function sumPeriod(fromMs, toMs) {
             let tl = 0, count = 0;
@@ -5077,7 +5124,7 @@
         }
 
         el.innerHTML =
-            '<div style="font-size:10px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; margin-bottom:10px;">📈 Dönemsel Karşılaştırma · Sadece Satışlar</div>' +
+            '<div style="font-size:10px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; margin-bottom:10px;">📈 Dönemsel Karşılaştırma · Sadece Satışlar' + infoIcon('srCompare') + '</div>' +
             '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
                 '<div style="font-size:11px; color:var(--ink-dim);">' + curLabel + '</div>' +
                 '<div style="font-size:15px; font-weight:800; color:var(--ink);">' + f(cur.tl) + ' ₺ &nbsp;·&nbsp; ' + cur.count + ' satış</div>' +
@@ -5139,7 +5186,7 @@
             const isProfitUsd = totalProfitUsd >= 0;
             const signUsd = isProfitUsd ? '+' : '';
             profitEl.innerHTML =
-                '<div style="font-size:10px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; margin-bottom:6px;">Filtre Sonucu Kârlılık</div>' +
+                '<div style="font-size:10px; color:var(--ink-dim); font-weight:800; text-transform:uppercase; margin-bottom:6px;">Filtre Sonucu Kârlılık' + infoIcon('srProfit') + '</div>' +
                 '<div style="font-size:22px; font-weight:800; color:' + (isProfit ? 'var(--success)' : 'var(--rose)') + ';">' + (isProfit ? '✓ KÂR: ' : '⚠ ZARAR: ') + sign + profitPct + '% (' + sign + f(totalProfitTl) + ' ₺)</div>' +
                 '<div style="font-size:15px; font-weight:800; color:' + (isProfitUsd ? 'var(--success)' : 'var(--rose)') + '; margin-top:4px;">' + (isProfitUsd ? '✓ KÂR ($): ' : '⚠ ZARAR ($): ') + signUsd + (profitPctUsd !== null ? profitPctUsd + '% ' : '') + '(' + signUsd + '$ ' + f(totalProfitUsd) + ')</div>' +
                 '<div style="font-size:10.5px; color:var(--ink-dim); margin-top:6px;">Maliyet ₺: ' + f(totalCost) + ' ₺ &nbsp;·&nbsp; Maliyet $: $ ' + f(totalMaliyetUsd) + ' &nbsp;·&nbsp; Satış Tutarı $: $ ' + f(totalTlUsd) + '</div>' +
@@ -8472,9 +8519,9 @@
                     '</div></div>';
             }).join('');
         } else {
-            // ÜRÜN BAZLI: her satılan ürünü kendi satırında, etikete göre büyükten küçüğe sıralı göster
+            // ÜRÜN BAZLI: her satılan ürünü kendi satırında, tarihe göre yeniden eskiye sıralı göster
             titleEl.innerText = 'Ürün Bazlı Satışlar';
-            sortBarEl.innerHTML = '<span style="font-size:10.5px; color:var(--dash-ink-dim); padding:6px 4px;">Etiket değerine göre büyükten küçüğe sıralı</span>';
+            sortBarEl.innerHTML = '<span style="font-size:10.5px; color:var(--dash-ink-dim); padding:6px 4px;">Tarihe göre yeniden eskiye sıralı</span>';
 
             const productRows = [];
             rows.filter(function(h) { return h.status === 'sold'; }).forEach(function(h) {
@@ -8485,6 +8532,7 @@
                         il: (_storesInfo[h.storeId]||{}).il || '—',
                         cusName: h.cusName,
                         ts: h.ts,
+                        sortMillis: h.soldAtMillis || h.tsMillis || 0,
                         kod: item.k + (h.isExchangeReturn ? ' 🔄' : ''),
                         etiket: etiket,
                         etiketBolu3: etiket / 3,
@@ -8493,7 +8541,7 @@
                     });
                 });
             });
-            productRows.sort(function(a,b) { return b.etiket - a.etiket; });
+            productRows.sort(function(a,b) { return b.sortMillis - a.sortMillis; });
 
             if(!productRows.length) {
                 listEl.innerHTML = '<div style="padding:24px 4px; text-align:center; color:var(--dash-ink-dim); font-size:13px;">Kayıt bulunamadı.</div>';
@@ -8530,6 +8578,7 @@
                         bolge: (_storesInfo[h.storeId]||{}).bolge || '—',
                         musteri: h.cusName,
                         tarih: h.soldAt || h.ts,
+                        sortMillis: h.soldAtMillis || h.tsMillis || 0,
                         kod: item.k + (h.isExchangeReturn ? ' 🔄' : ''),
                         etiket: Math.round(etiket),
                         etiketBolu3: Math.round(etiket/3),
@@ -8538,7 +8587,7 @@
                     });
                 });
             });
-            productRows.sort(function(a,b) { return b.etiket - a.etiket; });
+            productRows.sort(function(a,b) { return b.sortMillis - a.sortMillis; });
             return { mode: 'urun', rows: productRows };
         } else {
             // adet: mağazanın gerçek sattığı ürün sayısı (değişimde geri alınanlar hariç).
