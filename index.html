@@ -692,6 +692,7 @@
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(26,26,36,.65);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             display: none;
             justify-content: center;
@@ -873,11 +874,12 @@
         /* ── SİSTEM MODALI (alert/confirm/prompt yerine) ── */
         #sys-modal-overlay {
             position: fixed; inset: 0;
-            background: rgba(26,26,36,.55);
-            backdrop-filter: blur(6px);
+            background: rgba(0,0,0,0.72);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
             display: none;
             align-items: center; justify-content: center;
-            z-index: 99998;
+            z-index: 99999;
             padding: 20px;
         }
         #sys-modal-box {
@@ -3232,7 +3234,7 @@
         opts = opts || {};
         return new Promise(function(resolve) {
             document.getElementById('sys-modal-icon').className = opts.tone || 'warn';
-            document.getElementById('sys-modal-icon').innerText = '' + ph('warning', 16, 'currentColor') + '';
+            document.getElementById('sys-modal-icon').innerHTML = ph('warning', 20);
             document.getElementById('sys-modal-title').innerText = opts.title || 'Seçim Yap';
             document.getElementById('sys-modal-message').innerText = message;
             document.getElementById('sys-modal-input').style.display = 'none';
@@ -3260,7 +3262,7 @@
         opts = opts || {};
         return new Promise(function(resolve) {
             document.getElementById('sys-modal-icon').className = opts.tone || 'info';
-            document.getElementById('sys-modal-icon').innerText = opts.tone === 'danger' ? '' + ph('warning', 16, 'currentColor') + '' : (opts.tone === 'warn' ? '' + ph('warning', 16, 'currentColor') + '' : 'ℹ️');
+            document.getElementById('sys-modal-icon').innerHTML = (opts.tone === 'danger' || opts.tone === 'warn') ? ph('warning', 20) : ph('info', 20);
             document.getElementById('sys-modal-title').innerText = opts.title || 'Bilgi';
             document.getElementById('sys-modal-message').innerText = message;
             document.getElementById('sys-modal-input').style.display = 'none';
@@ -3277,7 +3279,7 @@
         opts = opts || {};
         return new Promise(function(resolve) {
             document.getElementById('sys-modal-icon').className = opts.tone || 'warn';
-            document.getElementById('sys-modal-icon').innerText = '' + ph('warning', 16, 'currentColor') + '';
+            document.getElementById('sys-modal-icon').innerHTML = ph('warning', 20);
             document.getElementById('sys-modal-title').innerText = opts.title || 'Onay Gerekiyor';
             document.getElementById('sys-modal-message').innerText = message;
             document.getElementById('sys-modal-input').style.display = 'none';
@@ -3385,7 +3387,7 @@
         document.getElementById('dashboard-screen').style.display = 'none';
         document.getElementById('main-wrapper').style.display = 'flex';
         document.getElementById('app-footer').style.display = 'block';
-        document.getElementById('user-chip').innerText = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M232,96a7.9,7.9,0,0,0-.5-2.7l-28-72A8,8,0,0,0,196,16H60a8,8,0,0,0-7.5,5.3l-28,72A7.9,7.9,0,0,0,24,96v16a40,40,0,0,0,16,32V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V144a40,40,0,0,0,16-32ZM108,208H56V166a39.8,39.8,0,0,0,52,0Zm52,0H116V166a39.8,39.8,0,0,0,52,0Zm40,0H152V166a39.8,39.8,0,0,0,52,0ZM216,112a24,24,0,0,1-48,0,8,8,0,0,0-16,0,24,24,0,0,1-48,0,8,8,0,0,0-16,0,24,24,0,0,1-48,0V98l25.1-66H205Z"/></svg> ' + uname;
+        document.getElementById('user-chip').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M232,96a7.9,7.9,0,0,0-.5-2.7l-28-72A8,8,0,0,0,196,16H60a8,8,0,0,0-7.5,5.3l-28,72A7.9,7.9,0,0,0,24,96v16a40,40,0,0,0,16,32V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V144a40,40,0,0,0,16-32ZM108,208H56V166a39.8,39.8,0,0,0,52,0Zm52,0H116V166a39.8,39.8,0,0,0,52,0Zm40,0H152V166a39.8,39.8,0,0,0,52,0ZM216,112a24,24,0,0,1-48,0,8,8,0,0,0-16,0,24,24,0,0,1-48,0,8,8,0,0,0-16,0,24,24,0,0,1-48,0V98l25.1-66H205Z"/></svg> ' + uname;
         loadCfg();
         attachHistoryListener();
         attachLeaderboardListener(uname);
@@ -3576,7 +3578,7 @@
                 document.getElementById('h-store-display').innerText = document.getElementById('cfgStore').value;
                 document.getElementById('h-tel-display').innerText = document.getElementById('cfgTel').value;
                 if(!isAdmin && data.cfgStore) {
-                    document.getElementById('user-chip').innerText = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M232,96a7.9,7.9,0,0,0-.5-2.7l-28-72A8,8,0,0,0,196,16H60a8,8,0,0,0-7.5,5.3l-28,72A7.9,7.9,0,0,0,24,96v16a40,40,0,0,0,16,32V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V144a40,40,0,0,0,16-32ZM108,208H56V166a39.8,39.8,0,0,0,52,0Zm52,0H116V166a39.8,39.8,0,0,0,52,0Zm40,0H152V166a39.8,39.8,0,0,0,52,0ZM216,112a24,24,0,0,1-48,0,8,8,0,0,0-16,0,24,24,0,0,1-48,0,8,8,0,0,0-16,0,24,24,0,0,1-48,0V98l25.1-66H205Z"/></svg> ' + data.cfgStore + ' (' + currentStoreId + ')';
+                    document.getElementById('user-chip').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M232,96a7.9,7.9,0,0,0-.5-2.7l-28-72A8,8,0,0,0,196,16H60a8,8,0,0,0-7.5,5.3l-28,72A7.9,7.9,0,0,0,24,96v16a40,40,0,0,0,16,32V208a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V144a40,40,0,0,0,16-32ZM108,208H56V166a39.8,39.8,0,0,0,52,0Zm52,0H116V166a39.8,39.8,0,0,0,52,0Zm40,0H152V166a39.8,39.8,0,0,0,52,0ZM216,112a24,24,0,0,1-48,0,8,8,0,0,0-16,0,24,24,0,0,1-48,0,8,8,0,0,0-16,0,24,24,0,0,1-48,0V98l25.1-66H205Z"/></svg> ' + data.cfgStore + ' (' + currentStoreId + ')';
                 }
                 applyCalcModeUI();
                 runCalc();
@@ -4513,13 +4515,13 @@
         btnEl.onclick = submitCusModal;
         if(purpose === 'save') {
             titleEl.innerText = 'Müşteriye Kaydet';
-            btnEl.innerText = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M230.9,212.4A128.2,128.2,0,0,0,168.6,165a72,72,0,1,0-81.2,0A128.2,128.2,0,0,0,25.1,212.4a8,8,0,1,0,13.8,8A112,112,0,0,1,128,184a112,112,0,0,1,89.1,36.4,8,8,0,0,0,11.3.6A8.1,8.1,0,0,0,230.9,212.4ZM72,96a56,56,0,1,1,56,56A56,56,0,0,1,72,96Z"/></svg> Kaydet';
+            btnEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M230.9,212.4A128.2,128.2,0,0,0,168.6,165a72,72,0,1,0-81.2,0A128.2,128.2,0,0,0,25.1,212.4a8,8,0,1,0,13.8,8A112,112,0,0,1,128,184a112,112,0,0,1,89.1,36.4,8,8,0,0,0,11.3.6A8.1,8.1,0,0,0,230.9,212.4ZM72,96a56,56,0,1,1,56,56A56,56,0,0,1,72,96Z"/></svg> Kaydet';
             dateWrap.style.display = 'none';
             closeWrap.style.display = 'none';
             renderCusModalMissingCodes(false);
         } else if(purpose === 'directSale') {
-            titleEl.innerText = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M229.7,77.7l-128,128a8.2,8.2,0,0,1-11.4,0l-64-64a8.1,8.1,0,0,1,11.4-11.4L96,188.7,218.3,66.3a8.1,8.1,0,0,1,11.4,11.4Z"/></svg> Satış Oldu';
-            btnEl.innerText = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M229.7,77.7l-128,128a8.2,8.2,0,0,1-11.4,0l-64-64a8.1,8.1,0,0,1,11.4-11.4L96,188.7,218.3,66.3a8.1,8.1,0,0,1,11.4,11.4Z"/></svg> Satışı Kaydet';
+            titleEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M229.7,77.7l-128,128a8.2,8.2,0,0,1-11.4,0l-64-64a8.1,8.1,0,0,1,11.4-11.4L96,188.7,218.3,66.3a8.1,8.1,0,0,1,11.4,11.4Z"/></svg> Satış Oldu';
+            btnEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M229.7,77.7l-128,128a8.2,8.2,0,0,1-11.4,0l-64-64a8.1,8.1,0,0,1,11.4-11.4L96,188.7,218.3,66.3a8.1,8.1,0,0,1,11.4,11.4Z"/></svg> Satışı Kaydet';
             btnEl.style.background = 'var(--success)';
             dateWrap.style.display = 'block';
             closeWrap.style.display = 'block';
@@ -4528,7 +4530,7 @@
             renderCusModalMissingCodes(true); // sadece direkt satışta kod zorunlu, teklif/yazdırmada değil
         } else {
             titleEl.innerText = 'Müşteri Bilgileri';
-            btnEl.innerText = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M216,72H200V40a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8V72H40A24,24,0,0,0,16,96V168a24,24,0,0,0,24,24H56v24a8,8,0,0,0,8,8H192a8,8,0,0,0,8-8V192h16a24,24,0,0,0,24-24V96A24,24,0,0,0,216,72ZM72,48H184V72H72ZM184,208H72V160H184Zm40-40H200V152a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8v16H40a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H216a8,8,0,0,1,8,8v72A8,8,0,0,1,224,168ZM180,116a12,12,0,1,1-12-12A12,12,0,0,1,180,116Z"/></svg> Yazdır';
+            btnEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M216,72H200V40a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8V72H40A24,24,0,0,0,16,96V168a24,24,0,0,0,24,24H56v24a8,8,0,0,0,8,8H192a8,8,0,0,0,8-8V192h16a24,24,0,0,0,24-24V96A24,24,0,0,0,216,72ZM72,48H184V72H72ZM184,208H72V160H184Zm40-40H200V152a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8v16H40a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H216a8,8,0,0,1,8,8v72A8,8,0,0,1,224,168ZM180,116a12,12,0,1,1-12-12A12,12,0,0,1,180,116Z"/></svg> Yazdır';
             dateWrap.style.display = 'none';
             closeWrap.style.display = 'none';
             renderCusModalMissingCodes(false);
@@ -5845,7 +5847,7 @@
         sysConfirm('Mağazanın TÜM geçmiş satışları taranacak ve müşteri kayıtları buna göre oluşturulacak/güncellenecek. Mağaza büyükse birkaç saniye sürebilir. Devam edilsin mi?', { title: 'Geçmişten İçe Aktar' }).then(function(ok) {
             if(!ok) return;
             const statusEl = document.querySelector('#customers-screen span[onclick^="importCustomersFromHistory"]');
-            if(statusEl) statusEl.innerText = '' + ph('hourglass', 14, 'currentColor') + ' Taranıyor…';
+            if(statusEl) statusEl.innerHTML = ph('hourglass', 14) + ' Taranıyor…';
             fbDb.ref('stores/' + currentStoreId + '/history').once('value').then(function(snap) {
                 const data = snap.val() || {};
                 const byPhone = {};
@@ -5887,7 +5889,7 @@
             }).catch(function(err) {
                 sysAlert('İçe aktarma sırasında hata oluştu: ' + err.message, { tone: 'danger' });
             }).finally(function() {
-                if(statusEl) statusEl.innerText = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.7,5.7a8.2,8.2,0,0,0,11.4,0l40-40a8.1,8.1,0,0,0-11.4-11.4L136,132.7V40a8,8,0,0,0-16,0v92.7L93.7,106.3a8.1,8.1,0,0,0-11.4,11.4Z"/></svg> Geçmiş satışlardan müşterileri içe aktar (bir kerelik)';
+                if(statusEl) statusEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 256 256" style="display:inline-block;vertical-align:-0.15em;flex-shrink:0;" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.7,5.7a8.2,8.2,0,0,0,11.4,0l40-40a8.1,8.1,0,0,0-11.4-11.4L136,132.7V40a8,8,0,0,0-16,0v92.7L93.7,106.3a8.1,8.1,0,0,0-11.4,11.4Z"/></svg> Geçmiş satışlardan müşterileri içe aktar (bir kerelik)';
             });
         });
     }
