@@ -1339,10 +1339,21 @@
             </div>
             <div class="simple-modal-body">
                 <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">MÜŞTERİ</div>
-                <label class="field-label">Müşteri Adı</label>
-                <input type="text" id="exCusName" style="font-size:15px; text-align:left; padding:10px 14px; text-transform:uppercase;" placeholder="Ad Soyad">
-                <label class="field-label" style="margin-top:12px;">Telefon (opsiyonel)</label>
-                <input type="text" id="exCusPhone" style="font-size:15px; text-align:left; padding:10px 14px;" placeholder="0 5XX XXX XX XX">
+                <div id="exPickSearchBlock">
+                    <input type="text" id="exPickSearch" placeholder="🔍 İsim veya telefon ara..." oninput="onCustomerPickerSearch('ex')" style="font-size:14px; text-align:left; padding:10px 14px;">
+                    <div id="exPickResults"></div>
+                    <button type="button" onclick="startNewCustomerPick('ex')" style="width:100%; margin-top:8px; background:none; border:1.5px dashed var(--border); border-radius:var(--r-sm); padding:10px; font-size:12.5px; font-weight:700; color:var(--ink-mid); cursor:pointer;">+ Yeni Müşteri</button>
+                </div>
+                <div id="exPickSelectedBlock" style="display:none; margin-bottom:14px; padding:10px 12px; background:var(--success-bg); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div><b id="exPickSelectedName" style="font-size:13.5px;"></b><br><span id="exPickSelectedPhone" style="font-size:11px; color:var(--ink-dim);"></span></div>
+                    <span onclick="changeCustomerPick('ex')" style="font-size:10.5px; color:var(--ink-dim); font-weight:700; text-decoration:underline; cursor:pointer;">Değiştir</span>
+                </div>
+                <div id="exNewFieldsBlock" style="display:none;">
+                    <label class="field-label">Müşteri Adı</label>
+                    <input type="text" id="exCusName" style="font-size:15px; text-align:left; padding:10px 14px; text-transform:uppercase;" placeholder="Ad Soyad">
+                    <label class="field-label" style="margin-top:12px;">Telefon (opsiyonel)</label>
+                    <input type="text" id="exCusPhone" style="font-size:15px; text-align:left; padding:10px 14px;" placeholder="0 5XX XXX XX XX">
+                </div>
 
                 <div style="height:1px; background:var(--border); margin:16px 0;"></div>
 
@@ -1463,6 +1474,48 @@
         </div>
     </div>
 
+    <!-- MÜŞTERİLER EKRANI (tam ekran) — müşteri kaydı otomatik oluşur (her satıştan telefon numarasıyla),
+         mağaza hiçbir ekstra işlem yapmadan burada birikir. Doğum günü/yıldönümü tamamen opsiyonel ve
+         SADECE burada, müşteri detayından girilir — satış akışına hiç dokunmaz, sıfır ek iş yükü. -->
+    <div id="customers-screen" style="position:fixed; inset:0; background:var(--bg); z-index:600; display:none; flex-direction:column;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0;">
+            <h3 style="margin:0; font-size:16px;">👥 Müşteriler</h3>
+            <button onclick="document.getElementById('customers-screen').style.display='none';" style="background:none; border:1.5px solid var(--border); border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; color:var(--ink-mid); cursor:pointer;">✕ Kapat</button>
+        </div>
+        <div id="cust-tabs-row" style="display:flex; gap:4px; padding:0 22px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; overflow-x:auto;">
+            <button class="hist-tab active" data-tab="special" onclick="setCustomersTab('special')" style="background:none; border:none; cursor:pointer; padding:13px 14px 11px; font-size:12.5px; font-weight:700; color:var(--ink-dim); border-bottom:2px solid transparent; white-space:nowrap;">🎂 Özel Günler</button>
+            <button class="hist-tab" data-tab="maintenance" onclick="setCustomersTab('maintenance')" style="background:none; border:none; cursor:pointer; padding:13px 14px 11px; font-size:12.5px; font-weight:700; color:var(--ink-dim); border-bottom:2px solid transparent; white-space:nowrap;">🔧 Bakım Zamanı</button>
+            <button class="hist-tab" data-tab="all" onclick="setCustomersTab('all')" style="background:none; border:none; cursor:pointer; padding:13px 14px 11px; font-size:12.5px; font-weight:700; color:var(--ink-dim); border-bottom:2px solid transparent; white-space:nowrap;">📋 Tüm Müşteriler</button>
+        </div>
+        <div style="padding:14px 22px; flex-shrink:0;">
+            <input type="text" id="custSearch" placeholder="🔍 İsim veya telefon ara..." oninput="renderCustomersScreen()" style="font-size:14px; text-align:left; padding:10px 14px;">
+        </div>
+        <div id="cust-list" style="flex:1; overflow-y:auto; padding:0 22px 22px;"></div>
+    </div>
+
+    <!-- MÜŞTERİ DETAY MODALI — geçmiş alışverişleri, sıklığı ve opsiyonel doğum günü/yıldönümü. -->
+    <div id="customerDetailModal" class="modal-overlay">
+        <div class="modal" style="max-width:440px;">
+            <div class="modal-header">
+                <h3 id="custDetailName">Müşteri</h3>
+                <span class="modal-close" onclick="closeModal('customerDetailModal')">×</span>
+            </div>
+            <div class="simple-modal-body" style="max-height:75vh; overflow-y:auto;">
+                <div id="custDetailStats" style="background:var(--bg); border-radius:10px; padding:12px 14px; margin-bottom:16px;"></div>
+
+                <label class="field-label">Doğum Tarihi (opsiyonel)</label>
+                <input type="date" id="custBirthDate" style="font-size:14px; text-align:left; padding:10px 14px;">
+                <label class="field-label" style="margin-top:12px;">Evlilik Yıldönümü (opsiyonel)</label>
+                <input type="date" id="custAnniversaryDate" style="font-size:14px; text-align:left; padding:10px 14px;">
+                <button class="btn-primary" style="width:100%; margin-top:14px; border-radius:var(--r-sm);" onclick="saveCustomerDates()">Kaydet</button>
+
+                <div style="height:1px; background:var(--border); margin:18px 0;"></div>
+                <div style="font-size:11px; color:var(--ink-dim); font-weight:700; margin-bottom:8px;">ALIŞVERİŞ GEÇMİŞİ</div>
+                <div id="custPurchaseHistory"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- HIZLI SATIŞ MODAL (Hesap Makinesi Modu kapalıyken kullanılır) -->
     <div id="quickSaleModal" class="modal-overlay">
         <div class="modal" style="max-width:400px;">
@@ -1471,14 +1524,26 @@
                 <span class="modal-close" onclick="closeModal('quickSaleModal')">×</span>
             </div>
             <div class="simple-modal-body">
-                <label class="field-label">Müşteri Adı</label>
-                <input type="text" id="quickCusName" placeholder="Ad Soyad" style="font-size:16px; text-transform:uppercase;">
-                <label class="field-label" style="margin-top:12px;">Telefon</label>
-                <input type="text" id="quickCusPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
-                <label style="display:flex; align-items:center; gap:7px; margin-top:8px; cursor:pointer; font-size:12px; color:var(--ink-mid); font-weight:600;">
-                    <input type="checkbox" id="quickCusPhoneRefused" onchange="toggleQuickPhoneRefused()" style="width:16px; height:16px; cursor:pointer; accent-color:var(--rose);">
-                    Müşteri telefon paylaşmak istemedi
-                </label>
+                <div id="quickPickSearchBlock">
+                    <label class="field-label">Müşteri Seç</label>
+                    <input type="text" id="quickPickSearch" placeholder="🔍 İsim veya telefon ara..." oninput="onCustomerPickerSearch('quick')" style="font-size:14px; text-align:left; padding:10px 14px;">
+                    <div id="quickPickResults"></div>
+                    <button type="button" onclick="startNewCustomerPick('quick')" style="width:100%; margin-top:8px; background:none; border:1.5px dashed var(--border); border-radius:var(--r-sm); padding:10px; font-size:12.5px; font-weight:700; color:var(--ink-mid); cursor:pointer;">+ Yeni Müşteri</button>
+                </div>
+                <div id="quickPickSelectedBlock" style="display:none; margin-bottom:14px; padding:10px 12px; background:var(--success-bg); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div><b id="quickPickSelectedName" style="font-size:13.5px;"></b><br><span id="quickPickSelectedPhone" style="font-size:11px; color:var(--ink-dim);"></span></div>
+                    <span onclick="changeCustomerPick('quick')" style="font-size:10.5px; color:var(--ink-dim); font-weight:700; text-decoration:underline; cursor:pointer;">Değiştir</span>
+                </div>
+                <div id="quickNewFieldsBlock" style="display:none;">
+                    <label class="field-label">Müşteri Adı</label>
+                    <input type="text" id="quickCusName" placeholder="Ad Soyad" style="font-size:16px; text-transform:uppercase;">
+                    <label class="field-label" style="margin-top:12px;">Telefon</label>
+                    <input type="text" id="quickCusPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
+                    <label style="display:flex; align-items:center; gap:7px; margin-top:8px; cursor:pointer; font-size:12px; color:var(--ink-mid); font-weight:600;">
+                        <input type="checkbox" id="quickCusPhoneRefused" onchange="toggleQuickPhoneRefused()" style="width:16px; height:16px; cursor:pointer; accent-color:var(--rose);">
+                        Müşteri telefon paylaşmak istemedi
+                    </label>
+                </div>
                 <label class="field-label" style="margin-top:12px;">Satış Tarihi</label>
                 <input type="date" id="quickSaleDate" style="font-size:15px; text-align:left; padding:10px 14px;">
                 <label class="field-label" style="margin-top:12px;">Ödeme Açıklaması (opsiyonel)</label>
@@ -1759,6 +1824,7 @@
                 </div>
                 <div style="display:flex; gap:8px; width:100%;">
                     <button class="btn-ghost" style="flex:1;" onclick="openHistoryScreen()">🕐 Geçmiş</button>
+                    <button class="btn-ghost" style="flex:1;" onclick="openCustomersScreen()">👥 Müşteriler</button>
                 </div>
             </div>
 
@@ -1768,7 +1834,10 @@
                     <input type="text" id="quickKod" placeholder="Model / Stok Kodu (opsiyonel)" style="font-size:15px; text-align:left; padding:12px 14px; text-transform:uppercase; width:100%;">
                 </div>
                 <button class="btn-dark" style="background:var(--success); padding:13px;" onclick="openQuickSaleModal()">✓ Satışı Kaydet</button>
-                <button class="btn-ghost" onclick="openHistoryScreen()">🕐 Geçmiş</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-ghost" style="flex:1;" onclick="openHistoryScreen()">🕐 Geçmiş</button>
+                    <button class="btn-ghost" style="flex:1;" onclick="openCustomersScreen()">👥 Müşteriler</button>
+                </div>
             </div>
 
         </div><!-- /.left-panel -->
@@ -2031,14 +2100,26 @@
                     <div style="font-size:10px; color:var(--rose); font-weight:800; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;">⚠ Ürün Kodu Eksik — Satıştan Önce Tamamla</div>
                     <div id="cusModalMissingCodesList"></div>
                 </div>
-                <label class="field-label">Müşteri Adı</label>
-                <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px; text-transform:uppercase;">
-                <label class="field-label" style="margin-top:12px;">Telefon</label>
-                <input type="text" id="iPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
-                <label style="display:flex; align-items:center; gap:7px; margin-top:8px; cursor:pointer; font-size:12px; color:var(--ink-mid); font-weight:600;">
-                    <input type="checkbox" id="iPhoneRefused" onchange="togglePhoneRefused()" style="width:16px; height:16px; cursor:pointer; accent-color:var(--rose);">
-                    Müşteri telefon paylaşmak istemedi
-                </label>
+                <div id="cusPickSearchBlock">
+                    <label class="field-label">Müşteri Seç</label>
+                    <input type="text" id="cusPickSearch" placeholder="🔍 İsim veya telefon ara..." oninput="onCustomerPickerSearch('cus')" style="font-size:14px; text-align:left; padding:10px 14px;">
+                    <div id="cusPickResults"></div>
+                    <button type="button" onclick="startNewCustomerPick('cus')" style="width:100%; margin-top:8px; background:none; border:1.5px dashed var(--border); border-radius:var(--r-sm); padding:10px; font-size:12.5px; font-weight:700; color:var(--ink-mid); cursor:pointer;">+ Yeni Müşteri</button>
+                </div>
+                <div id="cusPickSelectedBlock" style="display:none; margin-bottom:14px; padding:10px 12px; background:var(--success-bg); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div><b id="cusPickSelectedName" style="font-size:13.5px;"></b><br><span id="cusPickSelectedPhone" style="font-size:11px; color:var(--ink-dim);"></span></div>
+                    <span onclick="changeCustomerPick('cus')" style="font-size:10.5px; color:var(--ink-dim); font-weight:700; text-decoration:underline; cursor:pointer;">Değiştir</span>
+                </div>
+                <div id="cusNewFieldsBlock" style="display:none;">
+                    <label class="field-label">Müşteri Adı</label>
+                    <input type="text" id="iCus" placeholder="Ad Soyad" style="font-size:16px; text-transform:uppercase;">
+                    <label class="field-label" style="margin-top:12px;">Telefon</label>
+                    <input type="text" id="iPhone" placeholder="0 5XX XXX XX XX" style="font-size:16px;">
+                    <label style="display:flex; align-items:center; gap:7px; margin-top:8px; cursor:pointer; font-size:12px; color:var(--ink-mid); font-weight:600;">
+                        <input type="checkbox" id="iPhoneRefused" onchange="togglePhoneRefused()" style="width:16px; height:16px; cursor:pointer; accent-color:var(--rose);">
+                        Müşteri telefon paylaşmak istemedi
+                    </label>
+                </div>
                 <div id="cusModalDateWrap" style="display:none; margin-top:12px;">
                     <label class="field-label">Satış Tarihi</label>
                     <input type="date" id="cusModalSaleDate" style="font-size:15px; text-align:left; padding:10px 14px;">
@@ -4155,6 +4236,9 @@
 
         return historyRef.set(payload).then(function() {
             _clearPendingWrite(path);
+            // Müşteri kaydı otomatik güncellenir — sadece gerçekleşmiş SATIŞLARDA (teklifte değil) ve
+            // geçerli bir telefon varsa. Mağaza hiçbir ek işlem yapmaz, kayıt kendiliğinden birikir.
+            if(status === 'sold') upsertCustomerRecord(cusPhone, cusName, soldAtMillis);
             return { ref, ts };
         });
     }
@@ -4196,6 +4280,7 @@
         document.getElementById('quickSaleError').style.display = 'none';
         const quickSubmitBtn = document.getElementById('quickSaleSubmitBtn');
         if(quickSubmitBtn) quickSubmitBtn.disabled = false; // önceki açılıştan kalan bir kilitlenme olmasın
+        resetCustomerPicker('quick');
         openModal('quickSaleModal');
     }
 
@@ -4329,6 +4414,7 @@
             closeWrap.style.display = 'none';
             renderCusModalMissingCodes(false);
         }
+        initCustomerPickerOnOpen('cus');
         openModal('cusModal');
     }
 
@@ -5437,6 +5523,307 @@
         if(primSec) primSec.style.display = primOn ? '' : 'none';
     }
 
+    // ══════════════════════════════════════════════════════════════════════
+    // MÜŞTERİLER — her mağaza kendi müşterilerini görür (stores/{storeId}/customers/{phoneKey}).
+    // Kayıt telefon numarası üzerinden otomatik oluşur/güncellenir (saveToHistory ve confirmExchange
+    // içinde çağrılır) — mağaza hiçbir ek işlem yapmaz. Doğum günü/yıldönümü tamamen opsiyonel, sadece
+    // müşteri detayından girilir, satış akışına hiç dokunmaz.
+    // ══════════════════════════════════════════════════════════════════════
+
+    function sanitizePhoneKey(phone) {
+        return (phone || '').replace(/[^0-9]/g, '');
+    }
+
+    function upsertCustomerRecord(phone, name, saleMillis) {
+        const phoneKey = sanitizePhoneKey(phone);
+        if(!phoneKey || phoneKey.length < 7 || !currentStoreId) return; // geçersiz/paylaşılmamış telefon — müşteri kaydı oluşturulmaz
+        const ref = fbDb.ref('stores/' + currentStoreId + '/customers/' + phoneKey);
+        ref.once('value').then(function(snap) {
+            const existing = snap.val();
+            const update = {
+                name: (name || '').trim() || (existing && existing.name) || 'İsimsiz',
+                phone: phone,
+                purchaseCount: ((existing && existing.purchaseCount) || 0) + 1,
+                lastPurchaseMillis: saleMillis,
+                firstPurchaseMillis: (existing && existing.firstPurchaseMillis) || saleMillis,
+                updatedAtMillis: Date.now()
+            };
+            if(!existing) update.createdAtMillis = Date.now();
+            return ref.update(update).then(function() {
+                // Bellekteki listeyi de güncel tut — aynı oturumda hemen aranabilir olsun diye.
+                const cached = _customersCache.find(function(x) { return x.phoneKey === phoneKey; });
+                if(cached) { Object.assign(cached, update); }
+                else { _customersCache.push(Object.assign({ phoneKey: phoneKey }, update)); }
+            });
+        }).catch(function(err) { console.error('Müşteri kaydı güncellenemedi:', err); });
+    }
+
+    let _customersCache = [];
+    let _custTab = 'special';
+
+    // ── MÜŞTERİ SEÇİCİ (satış girişindeki 3 modalde ortak: cusModal, quickSaleModal, exchangeModal) ──
+    // Her modal açıldığında önce arama ekranı gelir: ya kayıtlı bir müşteri seçilir, ya da "+ Yeni
+    // Müşteri" ile yeni bir kayıt formu açılır. Gerçek Firebase yazması burada olmaz — seçilen/girilen
+    // isim+telefon sadece iCus/iPhone (veya quick*/ex*) alanlarına yazılır, müşteri kaydı satış
+    // tamamlandığında upsertCustomerRecord ile zaten otomatik oluşuyor/güncelleniyor.
+    const CUST_PICKER_FIELDS = {
+        cus:   { name: 'iCus',          phone: 'iPhone',      refused: 'iPhoneRefused' },
+        quick: { name: 'quickCusName',  phone: 'quickCusPhone', refused: 'quickCusPhoneRefused' },
+        ex:    { name: 'exCusName',     phone: 'exCusPhone',  refused: null }
+    };
+
+    let _customersCacheLoaded = false;
+    function ensureCustomersCacheLoaded() {
+        if(_customersCacheLoaded || !currentStoreId) return Promise.resolve();
+        return fbDb.ref('stores/' + currentStoreId + '/customers').once('value').then(function(snap) {
+            const data = snap.val() || {};
+            _customersCache = Object.keys(data).map(function(key) { return Object.assign({ phoneKey: key }, data[key]); });
+            _customersCacheLoaded = true;
+        }).catch(function(err) { console.error('Müşteri listesi yüklenemedi:', err); });
+    }
+
+    function resetCustomerPicker(prefix) {
+        const f = CUST_PICKER_FIELDS[prefix];
+        const searchEl = document.getElementById(prefix + 'PickSearch');
+        if(searchEl) searchEl.value = '';
+        const resultsEl = document.getElementById(prefix + 'PickResults');
+        if(resultsEl) resultsEl.innerHTML = '';
+        document.getElementById(prefix + 'PickSearchBlock').style.display = 'block';
+        document.getElementById(prefix + 'PickSelectedBlock').style.display = 'none';
+        document.getElementById(prefix + 'NewFieldsBlock').style.display = 'none';
+        document.getElementById(f.name).value = '';
+        document.getElementById(f.phone).value = '';
+        if(f.refused) {
+            document.getElementById(f.refused).checked = false;
+            document.getElementById(f.phone).disabled = false;
+        }
+        ensureCustomersCacheLoaded();
+    }
+
+    // Modal açılırken iCus/iPhone'da ZATEN bir değer varsa (örn. kaydedilmiş bir teklif sepete
+    // yüklendiğinde müşteri bilgisi otomatik dolduruluyordu) — arama ekranını göstermek yerine
+    // doğrudan o bilgiyle "Yeni Müşteri" formunu (değerler dolu hâlde) açar, veri kaybolmaz.
+    function initCustomerPickerOnOpen(prefix) {
+        const f = CUST_PICKER_FIELDS[prefix];
+        const existingName = document.getElementById(f.name).value.trim();
+        ensureCustomersCacheLoaded();
+        if(existingName) {
+            document.getElementById(prefix + 'PickSearchBlock').style.display = 'none';
+            document.getElementById(prefix + 'PickSelectedBlock').style.display = 'none';
+            document.getElementById(prefix + 'NewFieldsBlock').style.display = 'block';
+        } else {
+            resetCustomerPicker(prefix);
+        }
+    }
+
+    function onCustomerPickerSearch(prefix) {
+        const q = document.getElementById(prefix + 'PickSearch').value.trim().toLowerCase();
+        const resultsEl = document.getElementById(prefix + 'PickResults');
+        if(!q) { resultsEl.innerHTML = ''; return; }
+        ensureCustomersCacheLoaded().then(function() {
+            const matches = _customersCache.filter(function(c) {
+                return ((c.name||'') + ' ' + (c.phone||'')).toLowerCase().indexOf(q) !== -1;
+            }).slice(0, 6);
+            if(!matches.length) {
+                resultsEl.innerHTML = '<div style="font-size:11.5px; color:var(--ink-dim); padding:8px 2px;">Eşleşme yok — aşağıdaki "+ Yeni Müşteri" ile ekleyebilirsin.</div>';
+                return;
+            }
+            resultsEl.innerHTML = matches.map(function(c) {
+                return '<div onclick="selectCustomerPick(\'' + prefix + '\', \'' + c.phoneKey + '\')" style="padding:9px 10px; border:1px solid var(--border); border-radius:8px; margin-top:6px; cursor:pointer;">' +
+                    '<b style="font-size:13px;">' + escapeHtml(c.name) + '</b><br><span style="font-size:11px; color:var(--ink-dim);">' + escapeHtml(c.phone) + (c.purchaseCount ? ' · ' + c.purchaseCount + ' alışveriş' : '') + '</span>' +
+                    '</div>';
+            }).join('');
+        });
+    }
+
+    function selectCustomerPick(prefix, phoneKey) {
+        const c = _customersCache.find(function(x) { return x.phoneKey === phoneKey; });
+        if(!c) return;
+        const f = CUST_PICKER_FIELDS[prefix];
+        document.getElementById(f.name).value = c.name;
+        document.getElementById(f.phone).value = c.phone;
+        if(f.refused) { document.getElementById(f.refused).checked = false; document.getElementById(f.phone).disabled = false; }
+        document.getElementById(prefix + 'PickSelectedName').innerText = c.name;
+        document.getElementById(prefix + 'PickSelectedPhone').innerText = c.phone + (c.purchaseCount ? ' · ' + c.purchaseCount + ' alışveriş yapmış' : '');
+        document.getElementById(prefix + 'PickSearchBlock').style.display = 'none';
+        document.getElementById(prefix + 'PickSelectedBlock').style.display = 'flex';
+        document.getElementById(prefix + 'NewFieldsBlock').style.display = 'none';
+    }
+
+    function startNewCustomerPick(prefix) {
+        document.getElementById(prefix + 'PickSearchBlock').style.display = 'none';
+        document.getElementById(prefix + 'PickSelectedBlock').style.display = 'none';
+        document.getElementById(prefix + 'NewFieldsBlock').style.display = 'block';
+        const f = CUST_PICKER_FIELDS[prefix];
+        document.getElementById(f.name).value = '';
+        document.getElementById(f.phone).value = '';
+        document.getElementById(f.name).focus();
+    }
+
+    function changeCustomerPick(prefix) {
+        resetCustomerPicker(prefix);
+    }
+
+    function openCustomersScreen() {
+        if(!currentStoreId) return;
+        document.getElementById('custSearch').value = '';
+        _custTab = 'special';
+        document.querySelectorAll('#cust-tabs-row .hist-tab').forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.tab === _custTab);
+        });
+        document.getElementById('cust-list').innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-dim); font-size:13px;">Yükleniyor…</div>';
+        document.getElementById('customers-screen').style.display = 'flex';
+        fbDb.ref('stores/' + currentStoreId + '/customers').once('value').then(function(snap) {
+            const data = snap.val() || {};
+            _customersCache = Object.keys(data).map(function(key) { return Object.assign({ phoneKey: key }, data[key]); });
+            _customersCacheLoaded = true;
+            renderCustomersScreen();
+        }).catch(function(err) {
+            document.getElementById('cust-list').innerHTML = '<div style="padding:24px; text-align:center; color:var(--rose); font-size:13px;">Müşteriler yüklenemedi: ' + escapeHtml(err.message) + '</div>';
+        });
+    }
+
+    function setCustomersTab(tab) {
+        _custTab = tab;
+        document.querySelectorAll('#cust-tabs-row .hist-tab').forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+        renderCustomersScreen();
+    }
+
+    // Bir tarihin (YYYY-MM-DD, sadece ay/gün kısmı kullanılır) BUGÜNDEN itibaren kaç gün sonra tekrar
+    // geleceğini hesaplar (yıllık tekrar eden — doğum günü/yıldönümü mantığı). Geçmiş yıllarsa bir
+    // sonraki yıla sarar.
+    function daysUntilYearlyRecurrence(dateStr) {
+        if(!dateStr) return null;
+        const d = new Date(dateStr + 'T00:00:00');
+        if(isNaN(d.getTime())) return null;
+        const today = new Date(); today.setHours(0,0,0,0);
+        let next = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+        if(next < today) next = new Date(today.getFullYear() + 1, d.getMonth(), d.getDate());
+        return Math.round((next - today) / 86400000);
+    }
+
+    function renderCustomersScreen() {
+        const q = (document.getElementById('custSearch').value || '').toLowerCase().trim();
+        const listEl = document.getElementById('cust-list');
+        let filtered = _customersCache.filter(function(c) {
+            if(!q) return true;
+            return ((c.name||'') + ' ' + (c.phone||'')).toLowerCase().indexOf(q) !== -1;
+        });
+
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+
+        if(_custTab === 'special') {
+            const rows = [];
+            filtered.forEach(function(c) {
+                const bDays = daysUntilYearlyRecurrence(c.birthDate);
+                if(bDays !== null) rows.push({ c: c, days: bDays, label: '🎂 Doğum Günü', dateStr: c.birthDate });
+                const aDays = daysUntilYearlyRecurrence(c.anniversaryDate);
+                if(aDays !== null) rows.push({ c: c, days: aDays, label: '💍 Yıldönümü', dateStr: c.anniversaryDate });
+            });
+            rows.sort(function(a,b) { return a.days - b.days; });
+            if(!rows.length) {
+                listEl.innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-dim); font-size:13px;">Henüz doğum günü/yıldönümü girilmiş müşteri yok.<br><br>Bir müşterinin detayına girip ekleyebilirsin — tamamen opsiyonel.</div>';
+                return;
+            }
+            listEl.innerHTML = rows.map(function(r) {
+                const soon = r.days <= 14;
+                return '<div onclick="openCustomerDetail(\'' + r.c.phoneKey + '\')" style="padding:14px 4px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">' +
+                    '<div><b style="font-size:14px;">' + escapeHtml(r.c.name) + '</b><br><span style="font-size:11px; color:var(--ink-dim);">' + r.label + ' · ' + new Date(r.dateStr+'T00:00:00').toLocaleDateString('tr-TR', {day:'numeric', month:'long'}) + '</span></div>' +
+                    '<div style="text-align:right; font-size:12px; font-weight:800; color:' + (soon ? 'var(--rose)' : 'var(--ink-dim)') + ';">' + (r.days === 0 ? 'BUGÜN 🎉' : r.days + ' gün') + '</div>' +
+                    '</div>';
+            }).join('');
+        } else if(_custTab === 'maintenance') {
+            const rows = filtered.filter(function(c) { return c.lastPurchaseMillis; }).map(function(c) {
+                const due = new Date(c.lastPurchaseMillis);
+                due.setMonth(due.getMonth() + 6);
+                const daysLeft = Math.round((due.getTime() - Date.now()) / 86400000);
+                return { c: c, daysLeft: daysLeft, dueDate: due };
+            });
+            rows.sort(function(a,b) { return a.daysLeft - b.daysLeft; });
+            if(!rows.length) {
+                listEl.innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-dim); font-size:13px;">Henüz satışı olan müşteri yok.</div>';
+                return;
+            }
+            listEl.innerHTML = rows.map(function(r) {
+                const overdue = r.daysLeft < 0;
+                return '<div onclick="openCustomerDetail(\'' + r.c.phoneKey + '\')" style="padding:14px 4px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">' +
+                    '<div><b style="font-size:14px;">' + escapeHtml(r.c.name) + '</b><br><span style="font-size:11px; color:var(--ink-dim);">Son alışveriş: ' + new Date(r.c.lastPurchaseMillis).toLocaleDateString('tr-TR') + ' · Bakım: ' + r.dueDate.toLocaleDateString('tr-TR') + '</span></div>' +
+                    '<div style="text-align:right; font-size:12px; font-weight:800; color:' + (overdue ? 'var(--rose)' : (r.daysLeft <= 14 ? 'var(--gold)' : 'var(--ink-dim)')) + ';">' + (overdue ? (Math.abs(r.daysLeft) + ' gün gecikti') : r.daysLeft + ' gün kaldı') + '</div>' +
+                    '</div>';
+            }).join('');
+        } else {
+            filtered = filtered.slice().sort(function(a,b) { return (b.lastPurchaseMillis||0) - (a.lastPurchaseMillis||0); });
+            if(!filtered.length) {
+                listEl.innerHTML = '<div style="padding:24px; text-align:center; color:var(--ink-dim); font-size:13px;">Kayıtlı müşteri bulunamadı.</div>';
+                return;
+            }
+            listEl.innerHTML = filtered.map(function(c) {
+                return '<div onclick="openCustomerDetail(\'' + c.phoneKey + '\')" style="padding:14px 4px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">' +
+                    '<div><b style="font-size:14px;">' + escapeHtml(c.name) + '</b><br><span style="font-size:11px; color:var(--ink-dim);">' + escapeHtml(c.phone) + ' · ' + (c.purchaseCount||0) + ' alışveriş</span></div>' +
+                    '<div style="text-align:right; font-size:11px; color:var(--ink-dim);">' + (c.lastPurchaseMillis ? new Date(c.lastPurchaseMillis).toLocaleDateString('tr-TR') : '—') + '</div>' +
+                    '</div>';
+            }).join('');
+        }
+    }
+
+    let _custDetailPhoneKey = null;
+
+    function openCustomerDetail(phoneKey) {
+        const c = _customersCache.find(function(x) { return x.phoneKey === phoneKey; });
+        if(!c) return;
+        _custDetailPhoneKey = phoneKey;
+
+        document.getElementById('custDetailName').innerText = c.name || 'Müşteri';
+        document.getElementById('custBirthDate').value = c.birthDate || '';
+        document.getElementById('custAnniversaryDate').value = c.anniversaryDate || '';
+
+        const f = n => Math.round(n).toLocaleString('tr-TR');
+        let freqText = 'Tek alışveriş — henüz sıklık hesaplanamıyor.';
+        if(c.purchaseCount > 1 && c.firstPurchaseMillis && c.lastPurchaseMillis) {
+            const avgDays = Math.round((c.lastPurchaseMillis - c.firstPurchaseMillis) / (c.purchaseCount - 1) / 86400000);
+            freqText = 'Ortalama her ' + avgDays + ' günde bir alışveriş yapıyor.';
+        }
+        document.getElementById('custDetailStats').innerHTML =
+            '<div style="font-size:13px; color:var(--ink);"><b>' + escapeHtml(c.phone) + '</b></div>' +
+            '<div style="font-size:12px; color:var(--ink-mid); margin-top:6px;">📦 ' + (c.purchaseCount||0) + ' alışveriş · Son: ' + (c.lastPurchaseMillis ? new Date(c.lastPurchaseMillis).toLocaleDateString('tr-TR') : '—') + '</div>' +
+            '<div style="font-size:12px; color:var(--ink-mid); margin-top:4px;">🔁 ' + freqText + '</div>';
+
+        // Bu müşterinin geçmiş alışverişleri — mevcut _historyCache'ten telefon eşleşmesiyle süzülür,
+        // ayrı bir sorgu gerekmez (mağaza girişinde zaten yüklü).
+        const phoneKeyMatch = sanitizePhoneKey(c.phone);
+        const purchases = _historyCache.filter(function(h) { return h.status === 'sold' && sanitizePhoneKey(h.cusPhone) === phoneKeyMatch; })
+            .sort(function(a,b) { return (b.soldAtMillis||0) - (a.soldAtMillis||0); });
+        document.getElementById('custPurchaseHistory').innerHTML = purchases.length
+            ? purchases.map(function(h) {
+                const total = h.closingAmount || h.basket.reduce(function(a,b){return a+b.v.vN;}, 0);
+                return '<div style="padding:8px 0; border-bottom:1px solid var(--border); font-size:12px;">' +
+                    '<b>' + (h.soldAt || h.ts) + '</b> — ' + f(total) + ' ₺' +
+                    '<div style="color:var(--ink-dim); font-size:11px;">' + h.basket.map(function(i){return escapeHtml(i.k);}).join(', ') + '</div>' +
+                    '</div>';
+            }).join('')
+            : '<div style="font-size:12px; color:var(--ink-dim);">Bu cihazda yüklü geçmişte alışveriş bulunamadı (son 500 kayıt gösterilir).</div>';
+
+        openModal('customerDetailModal');
+    }
+
+    function saveCustomerDates() {
+        if(!_custDetailPhoneKey || !currentStoreId) return;
+        const birthDate = document.getElementById('custBirthDate').value || null;
+        const anniversaryDate = document.getElementById('custAnniversaryDate').value || null;
+        fbDb.ref('stores/' + currentStoreId + '/customers/' + _custDetailPhoneKey).update({
+            birthDate: birthDate, anniversaryDate: anniversaryDate
+        }).then(function() {
+            const c = _customersCache.find(function(x) { return x.phoneKey === _custDetailPhoneKey; });
+            if(c) { c.birthDate = birthDate; c.anniversaryDate = anniversaryDate; }
+            closeModal('customerDetailModal');
+            renderCustomersScreen();
+        }).catch(function(err) {
+            sysAlert('Kaydedilirken hata oluştu: ' + err.message, { tone: 'danger' });
+        });
+    }
+
     function openHistoryScreen() {
         document.getElementById('histSearch').value = '';
         document.getElementById('history-preview').style.display = 'none';
@@ -5634,8 +6021,7 @@
     let _exNewBasket = []; // bu modalde eklenen yeni ürünler — { k, v, _rawP, _manualN }
 
     function openExchangeModal() {
-        document.getElementById('exCusName').value = '';
-        document.getElementById('exCusPhone').value = '';
+        resetCustomerPicker('ex');
         document.getElementById('exManualKod').value = '';
         document.getElementById('exManualAdet').value = '';
         document.getElementById('exManualTutar').value = '';
@@ -5859,6 +6245,7 @@
             });
         }).then(function() {
             closeModal('exchangeModal');
+            upsertCustomerRecord(exCusPhone, exCusName, newSalePayload.soldAtMillis);
             sysAlert('Değişim tamamlandı: yeni satış (' + _exNewBasket.length + ' ürün) ve geri alınan ürün(ler)in kaydı geçmişe işlendi.' + getOfflineSaveWarning(), { title: '🔄 Değişim Tamamlandı' });
         }).catch(function(err) {
             console.error('Değişim kaydedilemedi:', err);
